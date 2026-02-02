@@ -1,0 +1,93 @@
+{
+  "meta": { "featureId": "feature-001-support-ticket", "title": "Support Ticket Create", "version": "1.0.0", "createdAt": "2026-02-02" },
+  "scope": {
+    "inScope": ["Create ticket", "Validation", "Persist SupportTicket", "Return ticketNumber + status"],
+    "outOfScope": ["Update/close", "Attachments", "Email notifications"]
+  },
+  "assumptions": [
+    "Endpoint requires authenticated user (placeholder).",
+    "Use JPA with relational database.",
+    "Correlation id via X-Correlation-Id header or generated."
+  ],
+  "openQuestions": [
+    "Link ticket to userId?",
+    "Existing global error response standard?"
+  ],
+  "requirements": [
+    { "id": "REQ-001", "text": "User can create ticket with subject, description, priority.", "priority": "must" },
+    { "id": "REQ-002", "text": "Subject required min 5 max 120.", "priority": "must" },
+    { "id": "REQ-003", "text": "Description required min 20 max 2000.", "priority": "must" },
+    { "id": "REQ-004", "text": "Priority required LOW/MEDIUM/HIGH.", "priority": "must" },
+    { "id": "REQ-005", "text": "Success returns ticketNumber and status OPEN.", "priority": "must" },
+    { "id": "REQ-006", "text": "Validation errors return field-specific errors.", "priority": "must" },
+    { "id": "REQ-007", "text": "Server errors show generic message with correlation id.", "priority": "must" }
+  ],
+  "domain": {
+    "entities": [
+      {
+        "name": "SupportTicket",
+        "fields": [
+          { "name": "id", "type": "uuid" },
+          { "name": "ticketNumber", "type": "string", "constraints": ["unique"] },
+          { "name": "subject", "type": "string", "constraints": ["min:5", "max:120"] },
+          { "name": "description", "type": "string", "constraints": ["min:20", "max:2000"] },
+          { "name": "priority", "type": "enum:LOW|MEDIUM|HIGH" },
+          { "name": "status", "type": "enum:OPEN" },
+          { "name": "createdAt", "type": "instant" }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "errorFormat": { "type": "ApiError", "fields": ["correlationId", "code", "message", "fieldErrors"] },
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/api/tickets",
+        "summary": "Create support ticket",
+        "request": {
+          "bodySchemaRef": "CreateTicketRequest",
+          "validationRules": ["subject min 5 max 120", "description min 20 max 2000", "priority in LOW|MEDIUM|HIGH"]
+        },
+        "responses": [
+          { "status": 201, "bodySchemaRef": "CreateTicketResponse", "notes": "ticketNumber + status" },
+          { "status": 400, "bodySchemaRef": "ApiError", "notes": "fieldErrors present" },
+          { "status": 500, "bodySchemaRef": "ApiError", "notes": "correlationId present" }
+        ],
+        "auth": "authenticated"
+      }
+    ]
+  },
+  "backend": {
+    "modules": [
+      {
+        "name": "tickets",
+        "classes": [
+          { "name": "TicketController", "responsibility": "REST endpoint mapping" },
+          { "name": "TicketService", "responsibility": "Business logic for creation" },
+          { "name": "TicketNumberGenerator", "responsibility": "Generate ticketNumber via DB sequence" },
+          { "name": "SupportTicketRepository", "responsibility": "Persist SupportTicket" },
+          { "name": "GlobalExceptionHandler", "responsibility": "Map exceptions to ApiError" }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "routes": ["/tickets/new"],
+    "components": ["TicketCreatePage", "TicketForm"]
+  },
+  "tests": {
+    "unit": ["TicketServiceTest", "TicketValidationTest"],
+    "integration": ["TicketControllerIT"],
+    "e2e": ["CreateTicketHappyFlow (optional Playwright)"]
+  },
+  "traceability": [
+    { "reqId": "REQ-001", "backendRefs": ["TicketController", "TicketService"], "frontendRefs": ["TicketForm"], "testRefs": ["TicketControllerIT", "TicketForm.test.tsx"] },
+    { "reqId": "REQ-002", "backendRefs": ["CreateTicketRequest"], "frontendRefs": ["TicketForm"], "testRefs": ["TicketValidationTest"] },
+    { "reqId": "REQ-003", "backendRefs": ["CreateTicketRequest"], "frontendRefs": ["TicketForm"], "testRefs": ["TicketValidationTest"] },
+    { "reqId": "REQ-004", "backendRefs": ["Priority"], "frontendRefs": ["TicketForm"], "testRefs": ["TicketValidationTest"] },
+    { "reqId": "REQ-005", "backendRefs": ["CreateTicketResponse"], "frontendRefs": ["TicketCreatePage"], "testRefs": ["TicketControllerIT"] },
+    { "reqId": "REQ-006", "backendRefs": ["GlobalExceptionHandler"], "frontendRefs": ["TicketForm"], "testRefs": ["TicketControllerIT", "TicketForm.test.tsx"] },
+    { "reqId": "REQ-007", "backendRefs": ["ApiError"], "frontendRefs": ["TicketForm"], "testRefs": ["TicketControllerIT"] }
+  ]
+}

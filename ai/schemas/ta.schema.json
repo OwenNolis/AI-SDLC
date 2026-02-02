@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/ta.schema.json",
+  "title": "Technical Analysis",
+  "type": "object",
+  "required": ["meta", "scope", "requirements", "domain", "api", "backend", "frontend", "tests", "traceability"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["featureId", "title", "version"],
+      "properties": {
+        "featureId": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "title": { "type": "string" },
+        "version": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "required": ["inScope", "outOfScope"],
+      "properties": {
+        "inScope": { "type": "array", "items": { "type": "string" } },
+        "outOfScope": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "openQuestions": { "type": "array", "items": { "type": "string" } },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "priority"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^REQ-[0-9]{3}$" },
+          "text": { "type": "string" },
+          "priority": { "type": "string", "enum": ["must", "should", "could"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "domain": {
+      "type": "object",
+      "required": ["entities"],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "fields"],
+            "properties": {
+              "name": { "type": "string" },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["name", "type"],
+                  "properties": {
+                    "name": { "type": "string" },
+                    "type": { "type": "string" },
+                    "constraints": { "type": "array", "items": { "type": "string" } }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "api": {
+      "type": "object",
+      "required": ["errorFormat", "endpoints"],
+      "properties": {
+        "errorFormat": {
+          "type": "object",
+          "required": ["type", "fields"],
+          "properties": {
+            "type": { "type": "string" },
+            "fields": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["method", "path", "summary", "request", "responses"],
+            "properties": {
+              "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+              "path": { "type": "string" },
+              "summary": { "type": "string" },
+              "request": {
+                "type": "object",
+                "properties": {
+                  "bodySchemaRef": { "type": "string" },
+                  "validationRules": { "type": "array", "items": { "type": "string" } }
+                },
+                "additionalProperties": false
+              },
+              "responses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["status", "bodySchemaRef"],
+                  "properties": {
+                    "status": { "type": "integer" },
+                    "bodySchemaRef": { "type": "string" },
+                    "notes": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "auth": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "backend": {
+      "type": "object",
+      "required": ["modules"],
+      "properties": {
+        "modules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "classes"],
+            "properties": {
+              "name": { "type": "string" },
+              "classes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["name", "responsibility"],
+                  "properties": {
+                    "name": { "type": "string" },
+                    "responsibility": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "frontend": {
+      "type": "object",
+      "required": ["routes", "components"],
+      "properties": {
+        "routes": { "type": "array", "items": { "type": "string" } },
+        "components": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "tests": {
+      "type": "object",
+      "required": ["unit", "integration", "e2e"],
+      "properties": {
+        "unit": { "type": "array", "items": { "type": "string" } },
+        "integration": { "type": "array", "items": { "type": "string" } },
+        "e2e": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "traceability": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reqId", "backendRefs", "frontendRefs", "testRefs"],
+        "properties": {
+          "reqId": { "type": "string", "pattern": "^REQ-[0-9]{3}$" },
+          "backendRefs": { "type": "array", "items": { "type": "string" } },
+          "frontendRefs": { "type": "array", "items": { "type": "string" } },
+          "testRefs": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

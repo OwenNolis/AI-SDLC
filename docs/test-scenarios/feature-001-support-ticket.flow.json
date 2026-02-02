@@ -1,0 +1,69 @@
+{
+  "meta": { "featureId": "feature-001-support-ticket", "version": "1.0.0" },
+  "flows": [
+    {
+      "id": "FLOW-001",
+      "name": "Happy path — create ticket",
+      "preconditions": ["User authenticated", "API available"],
+      "steps": [
+        {
+          "actor": "user",
+          "action": "Navigate to /tickets/new",
+          "expected": "Form shown with subject/description/priority, submit disabled"
+        },
+        {
+          "actor": "user",
+          "action": "Enter subject 'Cannot login to portal'",
+          "expected": "Subject valid"
+        },
+        {
+          "actor": "user",
+          "action": "Enter description with >= 20 characters",
+          "expected": "Description valid"
+        },
+        {
+          "actor": "user",
+          "action": "Select priority HIGH",
+          "expected": "Priority valid, submit enabled"
+        },
+        {
+          "actor": "user",
+          "action": "Click Submit",
+          "expected": "Loading indicator shown",
+          "apiCalls": ["POST /api/tickets"],
+          "observability": ["Client logs request started (optional)"]
+        },
+        {
+          "actor": "system",
+          "action": "Return 201 CreateTicketResponse",
+          "expected": "Success view shows ticketNumber and status OPEN",
+          "observability": ["Server log includes correlationId and ticketNumber"]
+        }
+      ],
+      "variants": [
+        {
+          "type": "negative",
+          "name": "Subject too short",
+          "steps": [
+            {
+              "actor": "user",
+              "action": "Enter subject 'abc'",
+              "expected": "Field error shown, submit disabled"
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "Server error 500",
+          "steps": [
+            {
+              "actor": "system",
+              "action": "Return 500 ApiError with correlationId",
+              "expected": "UI shows generic error with correlationId"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
