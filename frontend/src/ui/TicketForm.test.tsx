@@ -14,5 +14,7 @@ test("shows validation error for short subject", () => {
   render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
 
   fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
-  expect(screen.getByRole("alert")).toHaveTextContent("at least 5");
+
+  // ✅ there are multiple alerts; check the specific message exists
+  expect(screen.getByText(/subject must be at least 5/i)).toBeInTheDocument();
 });
