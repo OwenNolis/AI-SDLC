@@ -1,0 +1,21 @@
+  name: CI
+  
+  on:
+    push:
+    pull_request:
+  
+  jobs:
+    generate-tests:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-node@v4
+          with:
+            node-version: "20"
+        - name: Install validator + generate tests
+          run: |
+            cd ai/validator
+            npm ci
+            cd ../..
+            node ai/testgen/generate-backend-tests.mjs feature-001-support-ticket
+            node ai/testgen/generate-frontend-tests.mjs feature-001-support-ticket

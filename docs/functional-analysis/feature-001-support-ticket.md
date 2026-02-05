@@ -45,3 +45,8 @@ Out of scope:
 - Form met 3 velden + submit.
 - Submit disabled tot form geldig is.
 - Loading indicator tijdens submit.
+
+### Additional business rules
+
+- A ticket with priority HIGH must always be visible immediately after creation.
+- Ticket subject must be unique per day (business constraint).
