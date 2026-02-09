@@ -84,7 +84,8 @@
                           "too_short",
                           "too_long",
                           "missing",
-                          "invalid_value"
+                          "invalid_value",
+                          "duplicate_per_day"
                         ]
                       }
                     }

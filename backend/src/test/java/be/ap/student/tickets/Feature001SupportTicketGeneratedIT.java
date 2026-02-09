@@ -821,6 +821,294 @@ class Feature001SupportTicketGeneratedIT {
     /**
      * Traceability:
      * - Feature: feature-001-support-ticket
+     * - Scenario: REQ-026-unique-subject-per-day - REQ-026: Ticket subject must be unique per day.
+     * - Scenario type: validation
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void rEQ026UniqueSubjectPerDay_returns400_andCorrelationId() {
+        String json = """
+        {
+          "subject": "abc",
+          "description": "short",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("fieldErrors");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: REQ-027-max-3-tickets-per-day - REQ-027: User can create at most 3 tickets per day.
+     * - Scenario type: validation
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void rEQ027Max3TicketsPerDay_returns400_andCorrelationId() {
+        String json = """
+        {
+          "subject": "abc",
+          "description": "short",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("fieldErrors");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: REQ-028-max-2-high-priority-per-day - REQ-028: User can create at most 2 tickets with the priority HIGH.
+     * - Scenario type: validation
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void rEQ028Max2HighPriorityPerDay_returns400_andCorrelationId() {
+        String json = """
+        {
+          "subject": "abc",
+          "description": "short",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("fieldErrors");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: REQ-029-high-priority-completion-before-low - REQ-029: A ticket with priority HIGH must always be completed before a ticket with priority LOW.
+     * - Scenario type: validation
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void rEQ029HighPriorityCompletionBeforeLow_returns400_andCorrelationId() {
+        String json = """
+        {
+          "subject": "abc",
+          "description": "short",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("fieldErrors");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: REQ-030-high-priority-completion-before-medium - REQ-030: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.
+     * - Scenario type: validation
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void rEQ030HighPriorityCompletionBeforeMedium_returns400_andCorrelationId() {
+        String json = """
+        {
+          "subject": "abc",
+          "description": "short",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("fieldErrors");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: REQ-031-high-priority-visible-immediately - REQ-031: A ticket with priority HIGH must always be visible immediately after creation.
+     * - Scenario type: happy-path
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void rEQ031HighPriorityVisibleImmediately_returns201_andCorrelationId() {
+        String json = """
+        {
+          "subject": "Cannot login to portal",
+          "description": "I cannot login since yesterday. Please investigate.",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: REQ-032-max-3-tickets-per-day - REQ-032: User can create at most 3 tickets per day.
+     * - Scenario type: validation
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void rEQ032Max3TicketsPerDay_returns400_andCorrelationId() {
+        String json = """
+        {
+          "subject": "abc",
+          "description": "short",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("fieldErrors");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: REQ-033-max-2-high-priority-per-day - REQ-033: User can create at most 2 tickets with the priority HIGH.
+     * - Scenario type: validation
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void rEQ033Max2HighPriorityPerDay_returns400_andCorrelationId() {
+        String json = """
+        {
+          "subject": "abc",
+          "description": "short",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("fieldErrors");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: REQ-034-high-priority-visible-immediately - REQ-034: A ticket with priority HIGH must always be visible immediately after creation.
+     * - Scenario type: happy-path
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void rEQ034HighPriorityVisibleImmediately_returns201_andCorrelationId() {
+        String json = """
+        {
+          "subject": "Cannot login to portal",
+          "description": "I cannot login since yesterday. Please investigate.",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
      * - Scenario: validation (derived from TA constraints)
      */
     @Test

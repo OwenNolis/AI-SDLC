@@ -9,6 +9,19 @@ fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# --- Load .env automatically (if present) ---
+# Supports lines like:
+#   KEY=value
+#   KEY="value"
+# Ignores comments and empty lines.
+ENV_FILE="${ROOT_DIR}/.env"
+if [[ -f "$ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+fi
+
 echo "=============================================="
 echo "AI-SDLC FLOW"
 echo "Feature: ${FEATURE}"
@@ -24,7 +37,6 @@ run_step () {
   echo "✅ ${title} (ok)"
 }
 
-# --- Preflight checks for Gemini sync ---
 echo ""
 echo "==> Preflight"
 
@@ -35,16 +47,15 @@ else
   echo "GEMINI_MODEL not set (optional)."
 fi
 
-# Check key before running sync (only if sync script is present)
-if [[ -f "${ROOT_DIR}/ai/sync-from-fa.sh" ]]; then
-  if [[ -z "${GEMINI_API_KEY:-}" ]]; then
-    echo "❌ GEMINI_API_KEY is not set."
-    echo "   Fix: export GEMINI_API_KEY=\"<your key>\""
-    echo "   Or put it in your shell profile and restart the terminal."
-    exit 1
-  fi
-  echo "✅ GEMINI_API_KEY is set."
+# Check key before running sync (your sync uses Gemini now)
+if [[ -z "${GEMINI_API_KEY:-}" ]]; then
+  echo "❌ GEMINI_API_KEY is not set."
+  echo "   Fix options:"
+  echo "   1) Put GEMINI_API_KEY in .env at repo root"
+  echo "   2) Or export it: export GEMINI_API_KEY=\"<your key>\""
+  exit 1
 fi
+echo "✅ GEMINI_API_KEY is set."
 
 echo "✅ Preflight (ok)"
 

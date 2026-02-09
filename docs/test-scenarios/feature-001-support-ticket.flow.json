@@ -1,7 +1,7 @@
 {
   "meta": {
     "featureId": "feature-001-support-ticket",
-    "version": "1.0.3"
+    "version": "1.0.5"
   },
   "feature": "feature-001-support-ticket",
   "scenarios": [
@@ -129,6 +129,51 @@
       "id": "REQ-025-high-priority-completion-before-medium",
       "title": "REQ-025: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
       "type": "validation"
+    },
+    {
+      "id": "REQ-026-unique-subject-per-day",
+      "title": "REQ-026: Ticket subject must be unique per day.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-027-max-3-tickets-per-day",
+      "title": "REQ-027: User can create at most 3 tickets per day.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-028-max-2-high-priority-per-day",
+      "title": "REQ-028: User can create at most 2 tickets with the priority HIGH.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-029-high-priority-completion-before-low",
+      "title": "REQ-029: A ticket with priority HIGH must always be completed before a ticket with priority LOW.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-030-high-priority-completion-before-medium",
+      "title": "REQ-030: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-031-high-priority-visible-immediately",
+      "title": "REQ-031: A ticket with priority HIGH must always be visible immediately after creation.",
+      "type": "happy-path"
+    },
+    {
+      "id": "REQ-032-max-3-tickets-per-day",
+      "title": "REQ-032: User can create at most 3 tickets per day.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-033-max-2-high-priority-per-day",
+      "title": "REQ-033: User can create at most 2 tickets with the priority HIGH.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-034-high-priority-visible-immediately",
+      "title": "REQ-034: A ticket with priority HIGH must always be visible immediately after creation.",
+      "type": "happy-path"
     }
   ],
   "flows": [
@@ -204,7 +249,7 @@
             {
               "actor": "system",
               "action": "Reject ticket creation after 3 tickets created in same day",
-              "expected": "400 with field error on limit"
+              "expected": "400 with field error on dailyTicketLimit"
             }
           ]
         },
@@ -215,7 +260,7 @@
             {
               "actor": "system",
               "action": "Reject ticket creation when user already has 2 HIGH priority tickets today",
-              "expected": "400 with field error on HIGH priority limit"
+              "expected": "400 with field error on highPriorityCount"
             }
           ]
         },
@@ -259,7 +304,7 @@
             {
               "actor": "user",
               "action": "Attempt to create a ticket with a subject that already exists for the current day",
-              "expected": "409 Conflict or 400 Bad Request with error message 'Subject must be unique per day.'"
+              "expected": "API returns 409 Conflict or 400 Bad Request with error message 'Subject must be unique per day.'"
             }
           ]
         },

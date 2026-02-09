@@ -2,7 +2,7 @@
   "meta": {
     "featureId": "feature-001-support-ticket",
     "title": "Support Ticket Create",
-    "version": "1.0.3",
+    "version": "1.0.5",
     "createdAt": "2026-02-02"
   },
   "scope": {
@@ -27,14 +27,26 @@
     "User session or token provides user identity for daily limits.",
     "Ticket subject uniqueness is enforced per user per day.",
     "Completion order logic is handled by a background process or specific API endpoint.",
-    "Immediate visibility of HIGH priority tickets is a frontend concern, but backend must support quick retrieval."
+    "Immediate visibility of HIGH priority tickets is a frontend concern, but backend must support quick retrieval.",
+    "Backend must enforce daily limits for total tickets and high-priority tickets per user.",
+    "Backend must enforce unique subject per day per user.",
+    "Backend must enforce priority completion order (HIGH before LOW/MEDIUM).",
+    "Backend must enforce immediate visibility of HIGH priority tickets.",
+    "Backend must enforce that a user can create at most 3 tickets per day.",
+    "Backend must enforce that a user can create at most 2 tickets with the priority HIGH per day."
   ],
   "openQuestions": [
     "Link ticket to userId?",
     "Existing global error response standard?",
     "What is the exact mechanism for enforcing completion order (e.g., API endpoint for completion, or is this a background process)?",
     "How is 'immediately visible' defined in the context of the UI and data retrieval?",
-    "What is the expected behavior if a user attempts to create a ticket with a subject that is unique per day but already exists for another user?"
+    "What is the expected behavior if a user attempts to create a ticket with a subject that is unique per day but already exists for another user?",
+    "What is the specific error code or message for priority completion order violations?",
+    "What is the specific error code or message for exceeding the daily ticket limits (total and high-priority)?",
+    "What is the specific error code or message for violating the unique subject per day constraint?",
+    "What is the specific error code or message for violating the immediate visibility of HIGH priority tickets constraint?",
+    "What is the specific error code or message for violating the maximum 3 tickets per day constraint?",
+    "What is the specific error code or message for violating the maximum 2 HIGH priority tickets per day constraint?"
   ],
   "requirements": [
     {
@@ -161,6 +173,51 @@
       "id": "REQ-025",
       "text": "A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
       "priority": "must"
+    },
+    {
+      "id": "REQ-026",
+      "text": "Ticket subject must be unique per day.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-027",
+      "text": "A user can create at most 3 tickets per day.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-028",
+      "text": "A user can create at most 2 tickets with the priority HIGH.",
+      "priority": "should"
+    },
+    {
+      "id": "REQ-029",
+      "text": "A ticket with priority HIGH must always be completed before a ticket with priority LOW.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-030",
+      "text": "A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-031",
+      "text": "A ticket with priority HIGH must always be visible immediately after creation.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-032",
+      "text": "A user can create at most 3 tickets per day.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-033",
+      "text": "A user can create at most 2 tickets with the priority HIGH.",
+      "priority": "should"
+    },
+    {
+      "id": "REQ-034",
+      "text": "A ticket with priority HIGH must always be visible immediately after creation.",
+      "priority": "must"
     }
   ],
   "domain": {
@@ -190,7 +247,8 @@
             "testCases": [
               "empty",
               "too_short",
-              "too_long"
+              "too_long",
+              "duplicate_per_day"
             ]
           },
           {
@@ -263,7 +321,8 @@
             "priority in LOW|MEDIUM|HIGH",
             "userId required",
             "highPriorityCount <= 2",
-            "subject uniquePerDay"
+            "subject uniquePerDay",
+            "dailyTicketLimit <= 3"
           ]
         },
         "responses": [
@@ -530,6 +589,99 @@
       ],
       "frontendRefs": [],
       "testRefs": []
+    },
+    {
+      "reqId": "REQ-026",
+      "backendRefs": [
+        "TicketService",
+        "DailySubjectUniquenessEnforcer"
+      ],
+      "frontendRefs": [
+        "TicketForm"
+      ],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-027",
+      "backendRefs": [
+        "TicketService",
+        "UserTicketLimitService"
+      ],
+      "frontendRefs": [
+        "TicketForm"
+      ],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-028",
+      "backendRefs": [
+        "TicketService",
+        "HighPriorityTicketLimitService"
+      ],
+      "frontendRefs": [
+        "TicketForm"
+      ],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-029",
+      "backendRefs": [
+        "TicketService",
+        "PriorityCompletionEnforcer"
+      ],
+      "frontendRefs": [],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-030",
+      "backendRefs": [
+        "TicketService",
+        "PriorityCompletionEnforcer"
+      ],
+      "frontendRefs": [],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-031",
+      "backendRefs": [
+        "TicketService"
+      ],
+      "frontendRefs": [
+        "TicketCreatePage"
+      ],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-032",
+      "backendRefs": [
+        "TicketService",
+        "UserTicketLimitService"
+      ],
+      "frontendRefs": [
+        "TicketForm"
+      ],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-033",
+      "backendRefs": [
+        "TicketService",
+        "HighPriorityTicketLimitService"
+      ],
+      "frontendRefs": [
+        "TicketForm"
+      ],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-034",
+      "backendRefs": [
+        "TicketService"
+      ],
+      "frontendRefs": [
+        "TicketCreatePage"
+      ],
+      "testRefs": []
     }
   ],
   "generatedTests": {
@@ -553,6 +705,9 @@
         "missing"
       ],
       "SupportTicket.highPriorityCount": [
+        "exceeds_limit"
+      ],
+      "SupportTicket.dailyTicketLimit": [
         "exceeds_limit"
       ]
     }
