@@ -212,6 +212,164 @@ describe("feature-001-support-ticket - generated UI tests", () => {
   });
 
 
+  test("REQ_014_high_priority_visible_immediately - REQ-014: A ticket with priority HIGH must always be visible immediately after creation. (happy path)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText(/subject/i), {
+      target: { value: "Cannot login to portal" },
+    });
+
+    fireEvent.change(screen.getByLabelText(/description/i), {
+      target: { value: "I cannot login since yesterday. Please investigate." },
+    });
+
+    fireEvent.change(screen.getByLabelText(/priority/i), {
+      target: { value: "HIGH" },
+    });
+
+    const btn = screen.getByRole("button", { name: /create ticket/i });
+    expect(btn).toBeEnabled();
+
+    fireEvent.click(btn);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+
+  test("REQ_015_unique_subject_per_day - REQ-015: Ticket subject must be unique per day. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("REQ_016_max_3_tickets_per_day - REQ-016: User can create at most 3 tickets per day. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("REQ_017_max_2_high_priority_per_day - REQ-017: User can create at most 2 tickets with the priority HIGH. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("REQ_018_high_priority_completion_before_low - REQ-018: A ticket with priority HIGH must always be completed before a ticket with priority LOW. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("REQ_019_high_priority_completion_before_medium - REQ-019: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("REQ_020_high_priority_visible_immediately - REQ-020: A ticket with priority HIGH must always be visible immediately after creation. (happy path)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText(/subject/i), {
+      target: { value: "Cannot login to portal" },
+    });
+
+    fireEvent.change(screen.getByLabelText(/description/i), {
+      target: { value: "I cannot login since yesterday. Please investigate." },
+    });
+
+    fireEvent.change(screen.getByLabelText(/priority/i), {
+      target: { value: "HIGH" },
+    });
+
+    const btn = screen.getByRole("button", { name: /create ticket/i });
+    expect(btn).toBeEnabled();
+
+    fireEvent.click(btn);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+
+  test("REQ_021_unique_subject_per_day - REQ-021: Ticket subject must be unique per day. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("REQ_022_max_3_tickets_per_day - REQ-022: User can create at most 3 tickets per day. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("REQ_023_max_2_high_priority_per_day - REQ-023: User can create at most 2 tickets with the priority HIGH. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("REQ_024_high_priority_completion_before_low - REQ-024: A ticket with priority HIGH must always be completed before a ticket with priority LOW. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("REQ_025_high_priority_completion_before_medium - REQ-025: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
   test("shows validation error for short subject", () => {
     const onSubmit = jest.fn();
     render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);

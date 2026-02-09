@@ -1,7 +1,7 @@
 {
   "meta": {
     "featureId": "feature-001-support-ticket",
-    "version": "1.0.1"
+    "version": "1.0.3"
   },
   "feature": "feature-001-support-ticket",
   "scenarios": [
@@ -69,6 +69,66 @@
       "id": "ticket_priority_completion_order_high_vs_medium",
       "title": "HIGH priority tickets are completed before MEDIUM priority tickets",
       "type": "happy-path"
+    },
+    {
+      "id": "REQ-014-high-priority-visible-immediately",
+      "title": "REQ-014: A ticket with priority HIGH must always be visible immediately after creation.",
+      "type": "happy-path"
+    },
+    {
+      "id": "REQ-015-unique-subject-per-day",
+      "title": "REQ-015: Ticket subject must be unique per day.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-016-max-3-tickets-per-day",
+      "title": "REQ-016: User can create at most 3 tickets per day.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-017-max-2-high-priority-per-day",
+      "title": "REQ-017: User can create at most 2 tickets with the priority HIGH.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-018-high-priority-completion-before-low",
+      "title": "REQ-018: A ticket with priority HIGH must always be completed before a ticket with priority LOW.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-019-high-priority-completion-before-medium",
+      "title": "REQ-019: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-020-high-priority-visible-immediately",
+      "title": "REQ-020: A ticket with priority HIGH must always be visible immediately after creation.",
+      "type": "happy-path"
+    },
+    {
+      "id": "REQ-021-unique-subject-per-day",
+      "title": "REQ-021: Ticket subject must be unique per day.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-022-max-3-tickets-per-day",
+      "title": "REQ-022: User can create at most 3 tickets per day.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-023-max-2-high-priority-per-day",
+      "title": "REQ-023: User can create at most 2 tickets with the priority HIGH.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-024-high-priority-completion-before-low",
+      "title": "REQ-024: A ticket with priority HIGH must always be completed before a ticket with priority LOW.",
+      "type": "validation"
+    },
+    {
+      "id": "REQ-025-high-priority-completion-before-medium",
+      "title": "REQ-025: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
+      "type": "validation"
     }
   ],
   "flows": [
@@ -189,6 +249,76 @@
               "actor": "user",
               "action": "Create a HIGH priority ticket",
               "expected": "Ticket is immediately visible in user's ticket list or dashboard."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "Subject uniqueness violation",
+          "steps": [
+            {
+              "actor": "user",
+              "action": "Attempt to create a ticket with a subject that already exists for the current day",
+              "expected": "409 Conflict or 400 Bad Request with error message 'Subject must be unique per day.'"
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "User exceeds max 3 tickets per day",
+          "steps": [
+            {
+              "actor": "user",
+              "action": "Create 3 tickets within the same day",
+              "expected": "Successful creation of 3 tickets."
+            },
+            {
+              "actor": "user",
+              "action": "Attempt to create a 4th ticket on the same day",
+              "expected": "API returns 400 Bad Request with error message indicating daily limit exceeded."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "User exceeds max 2 HIGH priority tickets per day",
+          "steps": [
+            {
+              "actor": "user",
+              "action": "Create 2 HIGH priority tickets within the same day",
+              "expected": "Successful creation of 2 HIGH priority tickets."
+            },
+            {
+              "actor": "user",
+              "action": "Attempt to create a 3rd HIGH priority ticket on the same day",
+              "expected": "API returns 400 Bad Request with error message indicating HIGH priority limit exceeded."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "HIGH priority ticket visible immediately after creation",
+          "steps": [
+            {
+              "actor": "user",
+              "action": "Create a HIGH priority ticket",
+              "expected": "The newly created HIGH priority ticket is immediately visible in the user's ticket list or dashboard without requiring a refresh."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "Ticket subject must be unique per day",
+          "steps": [
+            {
+              "actor": "user",
+              "action": "Create a ticket with subject 'Issue with login'",
+              "expected": "Ticket created successfully."
+            },
+            {
+              "actor": "user",
+              "action": "Attempt to create another ticket with the same subject 'Issue with login' on the same day",
+              "expected": "API returns 409 Conflict or 400 Bad Request with error message 'Subject must be unique per day.'"
             }
           ]
         }

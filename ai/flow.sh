@@ -24,6 +24,30 @@ run_step () {
   echo "✅ ${title} (ok)"
 }
 
+# --- Preflight checks for Gemini sync ---
+echo ""
+echo "==> Preflight"
+
+# Optional printing of Gemini model
+if [[ -n "${GEMINI_MODEL:-}" ]]; then
+  echo "GEMINI_MODEL=${GEMINI_MODEL}"
+else
+  echo "GEMINI_MODEL not set (optional)."
+fi
+
+# Check key before running sync (only if sync script is present)
+if [[ -f "${ROOT_DIR}/ai/sync-from-fa.sh" ]]; then
+  if [[ -z "${GEMINI_API_KEY:-}" ]]; then
+    echo "❌ GEMINI_API_KEY is not set."
+    echo "   Fix: export GEMINI_API_KEY=\"<your key>\""
+    echo "   Or put it in your shell profile and restart the terminal."
+    exit 1
+  fi
+  echo "✅ GEMINI_API_KEY is set."
+fi
+
+echo "✅ Preflight (ok)"
+
 # 1) Sync FA -> TA + Flow + Context (LLM agent)
 run_step "1) Sync from FA (LLM)" \
   "${ROOT_DIR}/ai/sync-from-fa.sh" "${FEATURE}"
