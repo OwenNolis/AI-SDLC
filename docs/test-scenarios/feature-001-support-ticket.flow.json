@@ -39,6 +39,26 @@
       "id": "ticket_priority_completion_order",
       "title": "HIGH priority tickets are completed before LOW priority tickets",
       "type": "happy-path"
+    },
+    {
+      "id": "br_a_ticket_with_priority_high_must_always_be_visible_immediate",
+      "title": "Business rule: A ticket with priority HIGH must always be visible immediately after creation.",
+      "type": "validation"
+    },
+    {
+      "id": "br_ticket_subject_must_be_unique_per_day_business_constraint",
+      "title": "Business rule: Ticket subject must be unique per day (business constraint).",
+      "type": "validation"
+    },
+    {
+      "id": "br_user_can_only_add_3_tickets_per_day",
+      "title": "Business rule: User can only add 3 tickets per day",
+      "type": "validation"
+    },
+    {
+      "id": "br_a_ticket_with_priority_high_must_always_be_completed_before_",
+      "title": "Business rule: A ticket with priority HIGH must always be completed before a ticket with priority LOW",
+      "type": "validation"
     }
   ],
   "flows": [

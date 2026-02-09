@@ -7,8 +7,6 @@ if [[ -z "$FEATURE" ]]; then
   exit 1
 fi
 
-node ai/sync-flow-scenarios-from-fa.mjs "$FEATURE"
-
 FA="docs/functional-analysis/${FEATURE}.md"
 TA="docs/technical-analysis/${FEATURE}.ta.json"
 FLOW="docs/test-scenarios/${FEATURE}.flow.json"
@@ -26,7 +24,74 @@ touch "$CTX"
 
 echo "==> Syncing from FA: $FA"
 
-# Helper: add requirement if missing
+# Ensure scenarios exists (optional in schema, but useful for generators)
+if ! jq -e '.scenarios' "$FLOW" >/dev/null 2>&1; then
+  jq '.scenarios = []' "$FLOW" > "$FLOW.tmp" && mv "$FLOW.tmp" "$FLOW"
+fi
+
+# ------------------------------------------------------------
+# Generic: Additional business rules (FA) -> flow.scenarios[]
+# ------------------------------------------------------------
+
+# slugify: stable scenario ids derived from rule text
+slugify() {
+  echo "$1" \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed -E 's/[^a-z0-9]+/_/g' \
+    | sed -E 's/^_+|_+$//g' \
+    | cut -c1-60
+}
+
+# extract bullets under "### Additional business rules"
+extract_additional_business_rules() {
+  awk '
+    BEGIN { in=0 }
+    /^[[:space:]]*##[[:space:]]/ { if (in==1) exit }          # stop at next H2
+    /^[[:space:]]*### / {
+      if (tolower($0) ~ /^### additional business rules/) { in=1; next }
+      if (in==1) exit                                         # stop if another H3 starts
+    }
+    {
+      if (in==1 && $0 ~ /^[[:space:]]*-[[:space:]]+/) {
+        sub(/^[[:space:]]*-[[:space:]]+/, "", $0)
+        print $0
+      }
+    }
+  ' "$FA"
+}
+
+add_flow_scenario_generic() {
+  local ruleText="$1"
+  local sid="br_$(slugify "$ruleText")"
+
+  # already exists?
+  if jq -e --arg id "$sid" '.scenarios[]? | select(.id==$id)' "$FLOW" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  # heuristic type (keep it simple + deterministic)
+  local t="$(echo "$ruleText" | tr '[:upper:]' '[:lower:]')"
+  local stype="validation"
+  if echo "$t" | grep -Eq "happy|success|allowed"; then
+    stype="happy-path"
+  fi
+
+  echo "Adding generic flow scenario from FA rule: $sid"
+  jq --arg id "$sid" --arg title "Business rule: $ruleText" --arg type "$stype" \
+    '.scenarios += [{"id":$id,"title":$title,"type":$type}]' \
+    "$FLOW" > "$FLOW.tmp" && mv "$FLOW.tmp" "$FLOW"
+}
+
+# Apply generic rule -> scenarios
+while IFS= read -r rule; do
+  [[ -z "$rule" ]] && continue
+  add_flow_scenario_generic "$rule"
+done < <(extract_additional_business_rules)
+
+# ------------------------------------------------------------
+# Existing helpers (kept from your script)
+# ------------------------------------------------------------
+
 add_req () {
   local reqId="$1"
   local text="$2"
@@ -42,7 +107,6 @@ add_req () {
     "$TA" > "$TA.tmp" && mv "$TA.tmp" "$TA"
 }
 
-# Helper: append test-context section if missing marker
 append_ctx () {
   local marker="$1"
   shift
@@ -55,7 +119,6 @@ append_ctx () {
   printf "\n%s\n" "$block" >> "$CTX"
 }
 
-# Helper: add scenario entry if flow has scenarios[] and id missing
 add_flow_scenario () {
   local sid="$1"
   local title="$2"
@@ -65,18 +128,12 @@ add_flow_scenario () {
     return 0
   fi
 
-  # if scenarios doesn't exist, create it as empty array (keeps schema valid since it's optional)
-  if ! jq -e '.scenarios' "$FLOW" >/dev/null 2>&1; then
-    jq '.scenarios = []' "$FLOW" > "$FLOW.tmp" && mv "$FLOW.tmp" "$FLOW"
-  fi
-
   echo "Adding flow scenario ${sid}"
   jq --arg id "$sid" --arg title "$title" --arg type "$type" \
     '.scenarios += [{"id":$id,"title":$title,"type":$type}]' \
     "$FLOW" > "$FLOW.tmp" && mv "$FLOW.tmp" "$FLOW"
 }
 
-# Helper: add variant to FLOW-001 if not already present by variant name
 add_flow_variant () {
   local vtype="$1"
   local vname="$2"
@@ -93,9 +150,11 @@ add_flow_variant () {
     "$FLOW" > "$FLOW.tmp" && mv "$FLOW.tmp" "$FLOW"
 }
 
-# -----------------------------
+# ------------------------------------------------------------
+# Your specific mappings (still useful to patch TA + context)
+# ------------------------------------------------------------
+
 # RULE 1: max 3 tickets/day
-# -----------------------------
 if grep -qiE "only add 3 tickets per day|max 3 tickets per day|3 tickets per day" "$FA"; then
   add_req "REQ-009" "User can create at most 3 tickets per day." "must"
 
@@ -119,16 +178,12 @@ EOF
 )"
 fi
 
-# -----------------------------
 # RULE 2: HIGH completed before LOW
-# -----------------------------
 if grep -qiE "HIGH must always be completed before.*LOW|completed before.*LOW" "$FA"; then
   add_req "REQ-010" "Tickets with priority HIGH must be completed before tickets with priority LOW." "must"
 
-  # Put the intent into TA as a constraint (string-based, schema-safe)
-  if ! grep -q "priorityOrder:HIGH>MEDIUM>LOW" "$TA"; then
-    echo "Adding TA constraint priorityOrder:HIGH>MEDIUM>LOW (domain-level, schema-safe)"
-    # Store as a domain-level note via assumptions (schema-safe + no extra props)
+  if ! grep -q "Priority processing order: HIGH > MEDIUM > LOW (REQ-010)" "$TA"; then
+    echo "Adding TA assumption: Priority processing order: HIGH > MEDIUM > LOW (REQ-010)"
     jq '.assumptions += ["Priority processing order: HIGH > MEDIUM > LOW (REQ-010)"]' \
       "$TA" > "$TA.tmp" && mv "$TA.tmp" "$TA"
   fi
@@ -136,7 +191,7 @@ if grep -qiE "HIGH must always be completed before.*LOW|completed before.*LOW" "
   add_flow_scenario \
     "ticket_priority_completion_order" \
     "HIGH priority tickets are completed before LOW priority tickets" \
-    "happy-path"
+    "validation"
 
   add_flow_variant \
     "negative" \

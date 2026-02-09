@@ -52,3 +52,4 @@ Out of scope:
 - Ticket subject must be unique per day (business constraint).
 - User can only add 3 tickets per day
 - A ticket with priority HIGH must always be completed before a ticket with priority LOW
+- A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM
