@@ -3,7 +3,7 @@
   "$id": "https://example.org/schemas/ta.schema.json",
   "title": "Technical Analysis",
   "type": "object",
-  "required": ["meta", "scope", "requirements", "domain", "api", "backend", "frontend", "tests", "traceability"],
+  "required": ["meta", "scope", "domain", "api"],
   "properties": {
     "meta": {
       "type": "object",
@@ -56,12 +56,28 @@
                 "items": {
                   "type": "object",
                   "required": ["name", "type"],
+                  "additionalProperties": false,
                   "properties": {
                     "name": { "type": "string" },
                     "type": { "type": "string" },
-                    "constraints": { "type": "array", "items": { "type": "string" } }
-                  },
-                  "additionalProperties": false
+                    "constraints": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "testCases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "empty",
+                          "too_short",
+                          "too_long",
+                          "missing",
+                          "invalid_value"
+                        ]
+                      }
+                    }
+                  }
                 }
               }
             },
@@ -90,14 +106,20 @@
             "type": "object",
             "required": ["method", "path", "summary", "request", "responses"],
             "properties": {
-              "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+              "method": {
+                "type": "string",
+                "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+              },
               "path": { "type": "string" },
               "summary": { "type": "string" },
               "request": {
                 "type": "object",
                 "properties": {
                   "bodySchemaRef": { "type": "string" },
-                  "validationRules": { "type": "array", "items": { "type": "string" } }
+                  "validationRules": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
                 },
                 "additionalProperties": false
               },
@@ -184,6 +206,10 @@
         },
         "additionalProperties": false
       }
+    },
+    "generatedTests": {
+      "type": "object",
+      "additionalProperties": true
     }
   },
   "additionalProperties": false

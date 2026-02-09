@@ -1,10 +1,44 @@
 {
-  "meta": { "featureId": "feature-001-support-ticket", "version": "1.0.0" },
+  "meta": {
+    "featureId": "feature-001-support-ticket",
+    "version": "1.0.0"
+  },
+  "feature": "feature-001-support-ticket",
+  "scenarios": [
+    {
+      "id": "create_ticket_happy_path",
+      "title": "User creates a valid support ticket",
+      "type": "happy-path"
+    },
+    {
+      "id": "create_ticket_missing_subject",
+      "title": "Ticket creation fails when subject is missing",
+      "type": "validation"
+    },
+    {
+      "id": "create_ticket_invalid_priority",
+      "title": "Ticket creation fails when priority is invalid",
+      "type": "validation"
+    },
+    {
+      "id": "create_ticket_duplicate_subject_same_day",
+      "title": "Ticket creation fails when subject already exists for the same day",
+      "type": "validation"
+    },
+    {
+      "id": "create_ticket_high_priority_visible_immediately",
+      "title": "HIGH priority ticket visible immediately after creation",
+      "type": "happy-path"
+    }
+  ],
   "flows": [
     {
       "id": "FLOW-001",
       "name": "Happy path — create ticket",
-      "preconditions": ["User authenticated", "API available"],
+      "preconditions": [
+        "User authenticated",
+        "API available"
+      ],
       "steps": [
         {
           "actor": "user",
@@ -30,14 +64,12 @@
           "actor": "user",
           "action": "Click Submit",
           "expected": "Loading indicator shown",
-          "apiCalls": ["POST /api/tickets"],
-          "observability": ["Client logs request started (optional)"]
+          "apiCalls": ["POST /api/tickets"]
         },
         {
           "actor": "system",
           "action": "Return 201 CreateTicketResponse",
-          "expected": "Success view shows ticketNumber and status OPEN",
-          "observability": ["Server log includes correlationId and ticketNumber"]
+          "expected": "Success view shows ticketNumber and status OPEN"
         }
       ],
       "variants": [
