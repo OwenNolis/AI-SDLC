@@ -28,24 +28,58 @@
     "Existing global error response standard?"
   ],
   "requirements": [
-    { "id": "REQ-001", "text": "User can create ticket with subject, description, priority.", "priority": "must" },
-    { "id": "REQ-002", "text": "Subject required min 5 max 120.", "priority": "must" },
-    { "id": "REQ-003", "text": "Description required min 20 max 2000.", "priority": "must" },
-    { "id": "REQ-004", "text": "Priority required LOW/MEDIUM/HIGH.", "priority": "must" },
-    { "id": "REQ-005", "text": "Success returns ticketNumber and status OPEN.", "priority": "must" },
-    { "id": "REQ-006", "text": "Validation errors return field-specific errors.", "priority": "must" },
-    { "id": "REQ-007", "text": "Server errors show generic message with correlation id.", "priority": "must" },
-    { "id": "REQ-008", "text": "Subject must be unique per day.", "priority": "must" }
+    {
+      "id": "REQ-001",
+      "text": "User can create ticket with subject, description, priority.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "Subject required min 5 max 120.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "Description required min 20 max 2000.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "Priority required LOW/MEDIUM/HIGH.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-005",
+      "text": "Success returns ticketNumber and status OPEN.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "Validation errors return field-specific errors.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "Server errors show generic message with correlation id.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "Subject must be unique per day.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "User can create at most 3 tickets per day.",
+      "priority": "must"
+    }
   ],
   "domain": {
     "entities": [
       {
         "name": "SupportTicket",
         "fields": [
-          {
-            "name": "id",
-            "type": "uuid"
-          },
+          { "name": "id", "type": "uuid" },
           {
             "name": "ticketNumber",
             "type": "string",
@@ -107,6 +141,37 @@
       }
     ]
   },
+  "backend": {
+    "modules": [
+      {
+        "name": "tickets",
+        "classes": [
+          { "name": "TicketController", "responsibility": "REST endpoint mapping" },
+          { "name": "TicketService", "responsibility": "Business logic" },
+          { "name": "TicketNumberGenerator", "responsibility": "Generate ticket number" },
+          { "name": "SupportTicketRepository", "responsibility": "Persistence" },
+          { "name": "GlobalExceptionHandler", "responsibility": "Error handling" }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "routes": ["/tickets/new"],
+    "components": ["TicketCreatePage", "TicketForm"]
+  },
+  "tests": {
+    "unit": ["TicketValidationTest", "TicketServiceTest"],
+    "integration": ["TicketControllerIT"],
+    "e2e": []
+  },
+  "traceability": [
+    {
+      "reqId": "REQ-009",
+      "backendRefs": ["TicketService"],
+      "frontendRefs": ["TicketForm"],
+      "testRefs": ["Feature001SupportTicketGeneratedIT"]
+    }
+  ],
   "generatedTests": {
     "validationMatrix": {
       "SupportTicket.subject": ["empty", "too_short", "too_long"],

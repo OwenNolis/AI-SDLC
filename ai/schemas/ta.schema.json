@@ -16,6 +16,7 @@
       },
       "additionalProperties": false
     },
+
     "scope": {
       "type": "object",
       "required": ["inScope", "outOfScope"],
@@ -25,8 +26,17 @@
       },
       "additionalProperties": false
     },
-    "assumptions": { "type": "array", "items": { "type": "string" } },
-    "openQuestions": { "type": "array", "items": { "type": "string" } },
+
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+
+    "openQuestions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+
     "requirements": {
       "type": "array",
       "items": {
@@ -40,6 +50,7 @@
         "additionalProperties": false
       }
     },
+
     "domain": {
       "type": "object",
       "required": ["entities"],
@@ -87,6 +98,7 @@
       },
       "additionalProperties": false
     },
+
     "api": {
       "type": "object",
       "required": ["errorFormat", "endpoints"],
@@ -144,6 +156,7 @@
       },
       "additionalProperties": false
     },
+
     "backend": {
       "type": "object",
       "required": ["modules"],
@@ -174,6 +187,7 @@
       },
       "additionalProperties": false
     },
+
     "frontend": {
       "type": "object",
       "required": ["routes", "components"],
@@ -183,6 +197,7 @@
       },
       "additionalProperties": false
     },
+
     "tests": {
       "type": "object",
       "required": ["unit", "integration", "e2e"],
@@ -193,6 +208,7 @@
       },
       "additionalProperties": false
     },
+
     "traceability": {
       "type": "array",
       "items": {
@@ -207,6 +223,7 @@
         "additionalProperties": false
       }
     },
+
     "generatedTests": {
       "type": "object",
       "additionalProperties": true

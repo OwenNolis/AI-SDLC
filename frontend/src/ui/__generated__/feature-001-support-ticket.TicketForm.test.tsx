@@ -2,7 +2,7 @@
  * GENERATED FILE. DO NOT EDIT MANUALLY.
  * Traceability:
  * - Feature: feature-001-support-ticket
- * - Scenario: scenario_1 - happy path
+ * - Scenario: create_ticket_happy_path - User creates a valid support ticket
  * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
  */
 

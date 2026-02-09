@@ -11,3 +11,7 @@
 ## Performance assumptions
 
 - Ticket creation should respond within 500ms under normal load.
+## Daily ticket creation limit (REQ-009)
+- A user may create at most 3 tickets per calendar day.
+- The 4th attempt must fail.
+- Prevents abuse and accidental duplicate submissions.

@@ -21,11 +21,135 @@ class Feature001SupportTicketGeneratedIT {
     /**
      * Traceability:
      * - Feature: feature-001-support-ticket
-     * - Scenario: scenario_1 - happy path
+     * - Scenario: create_ticket_happy_path - User creates a valid support ticket
      * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
      */
     @Test
-    void scenario1_returns201_andCorrelationId() {
+    void createTicketHappyPath_returns201_andCorrelationId() {
+        String json = """
+        {
+          "subject": "Cannot login to portal",
+          "description": "I cannot login since yesterday. Please investigate.",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: create_ticket_missing_subject - Ticket creation fails when subject is missing
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void createTicketMissingSubject_returns201_andCorrelationId() {
+        String json = """
+        {
+          "subject": "Cannot login to portal",
+          "description": "I cannot login since yesterday. Please investigate.",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: create_ticket_invalid_priority - Ticket creation fails when priority is invalid
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void createTicketInvalidPriority_returns201_andCorrelationId() {
+        String json = """
+        {
+          "subject": "Cannot login to portal",
+          "description": "I cannot login since yesterday. Please investigate.",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: create_ticket_duplicate_subject_same_day - Ticket creation fails when subject already exists for the same day
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void createTicketDuplicateSubjectSameDay_returns201_andCorrelationId() {
+        String json = """
+        {
+          "subject": "Cannot login to portal",
+          "description": "I cannot login since yesterday. Please investigate.",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: create_ticket_high_priority_visible_immediately - HIGH priority ticket visible immediately after creation
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void createTicketHighPriorityVisibleImmediately_returns201_andCorrelationId() {
         String json = """
         {
           "subject": "Cannot login to portal",

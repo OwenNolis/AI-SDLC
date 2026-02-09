@@ -64,7 +64,9 @@
           "actor": "user",
           "action": "Click Submit",
           "expected": "Loading indicator shown",
-          "apiCalls": ["POST /api/tickets"]
+          "apiCalls": [
+            "POST /api/tickets"
+          ]
         },
         {
           "actor": "system",
@@ -92,6 +94,17 @@
               "actor": "system",
               "action": "Return 500 ApiError with correlationId",
               "expected": "UI shows generic error with correlationId"
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "User exceeds 3 tickets per day",
+          "steps": [
+            {
+              "actor": "system",
+              "action": "Reject ticket creation after 3 tickets created in same day",
+              "expected": "400 with field error on limit"
             }
           ]
         }

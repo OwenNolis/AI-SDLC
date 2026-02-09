@@ -1,0 +1,32 @@
+{
+  "businessRules": [
+    {
+      "match": "only add 3 tickets per day",
+      "ta": {
+        "requirement": {
+          "id": "REQ-009",
+          "text": "User can create at most 3 tickets per day.",
+          "priority": "must"
+        },
+        "constraint": {
+          "entity": "SupportTicket",
+          "field": "createdAt",
+          "value": "maxTicketsPerUserPerDay:3"
+        }
+      },
+      "flow": {
+        "scenario": {
+          "id": "create_ticket_limit_3_per_day",
+          "title": "Ticket creation fails when user exceeds 3 tickets in one day",
+          "type": "validation"
+        }
+      },
+      "testContext": [
+        "## Daily creation limit (REQ-009)",
+        "- A user may create at most 3 tickets per calendar day.",
+        "- The 4th attempt must fail with 400 (or 429) and a clear error code.",
+        "- Include regression protection to prevent burst abuse."
+      ]
+    }
+  ]
+}
