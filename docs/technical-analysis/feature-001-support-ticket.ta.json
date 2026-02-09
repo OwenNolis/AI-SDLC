@@ -21,7 +21,8 @@
   "assumptions": [
     "Endpoint requires authenticated user (placeholder).",
     "Use JPA with relational database.",
-    "Correlation id via X-Correlation-Id header or generated."
+    "Correlation id via X-Correlation-Id header or generated.",
+    "Priority processing order: HIGH > MEDIUM > LOW (REQ-010)"
   ],
   "openQuestions": [
     "Link ticket to userId?",
@@ -72,6 +73,11 @@
       "id": "REQ-009",
       "text": "User can create at most 3 tickets per day.",
       "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "Tickets with priority HIGH must be completed before tickets with priority LOW.",
+      "priority": "must"
     }
   ],
   "domain": {
@@ -79,28 +85,51 @@
       {
         "name": "SupportTicket",
         "fields": [
-          { "name": "id", "type": "uuid" },
+          {
+            "name": "id",
+            "type": "uuid"
+          },
           {
             "name": "ticketNumber",
             "type": "string",
-            "constraints": ["unique"]
+            "constraints": [
+              "unique"
+            ]
           },
           {
             "name": "subject",
             "type": "string",
-            "constraints": ["min:5", "max:120", "uniquePerDay:true"],
-            "testCases": ["empty", "too_short", "too_long"]
+            "constraints": [
+              "min:5",
+              "max:120",
+              "uniquePerDay:true"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long"
+            ]
           },
           {
             "name": "description",
             "type": "string",
-            "constraints": ["min:20", "max:2000"],
-            "testCases": ["empty", "too_short", "too_long"]
+            "constraints": [
+              "min:20",
+              "max:2000"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long"
+            ]
           },
           {
             "name": "priority",
             "type": "enum:LOW|MEDIUM|HIGH",
-            "testCases": ["missing", "invalid_value"]
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
           },
           {
             "name": "status",
@@ -117,7 +146,12 @@
   "api": {
     "errorFormat": {
       "type": "ApiError",
-      "fields": ["correlationId", "code", "message", "fieldErrors"]
+      "fields": [
+        "correlationId",
+        "code",
+        "message",
+        "fieldErrors"
+      ]
     },
     "endpoints": [
       {
@@ -133,9 +167,18 @@
           ]
         },
         "responses": [
-          { "status": 201, "bodySchemaRef": "CreateTicketResponse" },
-          { "status": 400, "bodySchemaRef": "ApiError" },
-          { "status": 500, "bodySchemaRef": "ApiError" }
+          {
+            "status": 201,
+            "bodySchemaRef": "CreateTicketResponse"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError"
+          }
         ],
         "auth": "authenticated"
       }
@@ -146,37 +189,79 @@
       {
         "name": "tickets",
         "classes": [
-          { "name": "TicketController", "responsibility": "REST endpoint mapping" },
-          { "name": "TicketService", "responsibility": "Business logic" },
-          { "name": "TicketNumberGenerator", "responsibility": "Generate ticket number" },
-          { "name": "SupportTicketRepository", "responsibility": "Persistence" },
-          { "name": "GlobalExceptionHandler", "responsibility": "Error handling" }
+          {
+            "name": "TicketController",
+            "responsibility": "REST endpoint mapping"
+          },
+          {
+            "name": "TicketService",
+            "responsibility": "Business logic"
+          },
+          {
+            "name": "TicketNumberGenerator",
+            "responsibility": "Generate ticket number"
+          },
+          {
+            "name": "SupportTicketRepository",
+            "responsibility": "Persistence"
+          },
+          {
+            "name": "GlobalExceptionHandler",
+            "responsibility": "Error handling"
+          }
         ]
       }
     ]
   },
   "frontend": {
-    "routes": ["/tickets/new"],
-    "components": ["TicketCreatePage", "TicketForm"]
+    "routes": [
+      "/tickets/new"
+    ],
+    "components": [
+      "TicketCreatePage",
+      "TicketForm"
+    ]
   },
   "tests": {
-    "unit": ["TicketValidationTest", "TicketServiceTest"],
-    "integration": ["TicketControllerIT"],
+    "unit": [
+      "TicketValidationTest",
+      "TicketServiceTest"
+    ],
+    "integration": [
+      "TicketControllerIT"
+    ],
     "e2e": []
   },
   "traceability": [
     {
       "reqId": "REQ-009",
-      "backendRefs": ["TicketService"],
-      "frontendRefs": ["TicketForm"],
-      "testRefs": ["Feature001SupportTicketGeneratedIT"]
+      "backendRefs": [
+        "TicketService"
+      ],
+      "frontendRefs": [
+        "TicketForm"
+      ],
+      "testRefs": [
+        "Feature001SupportTicketGeneratedIT"
+      ]
     }
   ],
   "generatedTests": {
     "validationMatrix": {
-      "SupportTicket.subject": ["empty", "too_short", "too_long"],
-      "SupportTicket.description": ["empty", "too_short", "too_long"],
-      "SupportTicket.priority": ["missing", "invalid_value"]
+      "SupportTicket.subject": [
+        "empty",
+        "too_short",
+        "too_long"
+      ],
+      "SupportTicket.description": [
+        "empty",
+        "too_short",
+        "too_long"
+      ],
+      "SupportTicket.priority": [
+        "missing",
+        "invalid_value"
+      ]
     }
   }
 }

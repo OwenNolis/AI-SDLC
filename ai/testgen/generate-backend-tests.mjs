@@ -11,37 +11,57 @@ const flowPath = path.join("docs", "test-scenarios", `${feature}.flow.json`);
 const taPath = path.join("docs", "technical-analysis", `${feature}.ta.json`);
 
 const flow = await readJson(flowPath);
-const ta = await readJson(taPath);
+await readJson(taPath); // kept for future TA-driven generation
 
 // Default for your demo feature:
 const endpoint = "/api/tickets";
 
 // Choose scenarios from flow.json (fallback to single scenario)
-const scenarios = Array.isArray(flow.scenarios) && flow.scenarios.length > 0
-  ? flow.scenarios
-  : [{ id: "scenario_1", title: "happy path" }];
+const scenarios =
+  Array.isArray(flow.scenarios) && flow.scenarios.length > 0
+    ? flow.scenarios
+    : [{ id: "scenario_1", title: "happy path", type: "happy-path" }];
 
 const className = `${pascal(feature)}GeneratedIT`;
 
-const testMethods = scenarios.map((sc, idx) => {
-  const id = safeId(sc.id ?? `scenario_${idx + 1}`);
-  const methodName = `${camel(id)}_returns201_andCorrelationId`;
+const testMethods = scenarios
+  .map((sc, idx) => {
+    const id = safeId(sc.id ?? `scenario_${idx + 1}`);
+    const type = String(sc.type ?? "").toLowerCase();
+    const isNegative = type === "validation" || type === "negative";
+    const methodName = `${camel(id)}_${isNegative ? "returns400" : "returns201"}_andCorrelationId`;
 
-  return `
+    const title = String(sc.title ?? "").replace(/\*\//g, "*\\/");
+
+    const payload = isNegative
+      ? `{
+          "subject": "abc",
+          "description": "short",
+          "priority": "HIGH"
+        }`
+      : `{
+          "subject": "Cannot login to portal",
+          "description": "I cannot login since yesterday. Please investigate.",
+          "priority": "HIGH"
+        }`;
+
+    const expectedStatus = isNegative ? "HttpStatus.BAD_REQUEST" : "HttpStatus.CREATED";
+    const bodyAssert = isNegative
+      ? `assertThat(res.getBody()).contains("fieldErrors");`
+      : `assertThat(res.getBody()).contains("ticketNumber");`;
+
+    return `
     /**
      * Traceability:
      * - Feature: ${feature}
-     * - Scenario: ${sc.id ?? "n/a"} - ${String(sc.title ?? "").replace(/\*\//g, "*\\/")}
+     * - Scenario: ${sc.id ?? "n/a"} - ${title}
+     * - Scenario type: ${type || "n/a"}
      * - Source: docs/test-scenarios/${feature}.flow.json
      */
     @Test
     void ${methodName}() {
         String json = """
-        {
-          "subject": "Cannot login to portal",
-          "description": "I cannot login since yesterday. Please investigate.",
-          "priority": "HIGH"
-        }
+        ${payload}
         """;
 
         HttpHeaders headers = new HttpHeaders();
@@ -53,12 +73,13 @@ const testMethods = scenarios.map((sc, idx) => {
             String.class
         );
 
-        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getStatusCode()).isEqualTo(${expectedStatus});
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
-        assertThat(res.getBody()).contains("ticketNumber");
+        ${bodyAssert}
     }
 `;
-}).join("\n");
+  })
+  .join("\n");
 
 const testClass = `package be.ap.student.tickets;
 
@@ -113,8 +134,14 @@ ${testMethods}
 `;
 
 const outPath = path.join(
-  "backend", "src", "test", "java",
-  "be", "ap", "student", "tickets",
+  "backend",
+  "src",
+  "test",
+  "java",
+  "be",
+  "ap",
+  "student",
+  "tickets",
   `${className}.java`
 );
 

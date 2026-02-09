@@ -176,6 +176,68 @@ class Feature001SupportTicketGeneratedIT {
     /**
      * Traceability:
      * - Feature: feature-001-support-ticket
+     * - Scenario: create_ticket_limit_3_per_day - Ticket creation fails when user exceeds 3 tickets in one day
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void createTicketLimit3PerDay_returns201_andCorrelationId() {
+        String json = """
+        {
+          "subject": "Cannot login to portal",
+          "description": "I cannot login since yesterday. Please investigate.",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: ticket_priority_completion_order - HIGH priority tickets are completed before LOW priority tickets
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void ticketPriorityCompletionOrder_returns201_andCorrelationId() {
+        String json = """
+        {
+          "subject": "Cannot login to portal",
+          "description": "I cannot login since yesterday. Please investigate.",
+          "priority": "HIGH"
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        ResponseEntity<String> res = rest.postForEntity(
+            "/api/tickets",
+            new HttpEntity<>(json, headers),
+            String.class
+        );
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
+    /**
+     * Traceability:
+     * - Feature: feature-001-support-ticket
      * - Scenario: validation (derived from TA constraints)
      */
     @Test

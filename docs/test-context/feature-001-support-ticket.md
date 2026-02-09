@@ -15,3 +15,8 @@
 - A user may create at most 3 tickets per calendar day.
 - The 4th attempt must fail.
 - Prevents abuse and accidental duplicate submissions.
+
+## Priority completion order (REQ-010)
+- If a HIGH priority ticket exists, LOW priority tickets must not be completed before that HIGH ticket is completed.
+- Expected behavior: completing LOW while HIGH is still OPEN should be rejected (409/400) with a stable error code.
+- This rule is about workflow/processing order (not ticket creation).

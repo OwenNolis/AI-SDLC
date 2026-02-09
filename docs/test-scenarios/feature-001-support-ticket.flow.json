@@ -29,6 +29,16 @@
       "id": "create_ticket_high_priority_visible_immediately",
       "title": "HIGH priority ticket visible immediately after creation",
       "type": "happy-path"
+    },
+    {
+      "id": "create_ticket_limit_3_per_day",
+      "title": "Ticket creation fails when user exceeds 3 tickets in one day",
+      "type": "validation"
+    },
+    {
+      "id": "ticket_priority_completion_order",
+      "title": "HIGH priority tickets are completed before LOW priority tickets",
+      "type": "happy-path"
     }
   ],
   "flows": [
@@ -105,6 +115,39 @@
               "actor": "system",
               "action": "Reject ticket creation after 3 tickets created in same day",
               "expected": "400 with field error on limit"
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "User exceeds 3 tickets per day",
+          "steps": [
+            {
+              "actor": "system",
+              "action": "Reject ticket creation after 3 tickets created in same day",
+              "expected": "400 with field error on limit"
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "User exceeds 3 tickets per day",
+          "steps": [
+            {
+              "actor": "system",
+              "action": "Reject ticket creation after 3 tickets created in same day",
+              "expected": "400 with field error on limit"
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "LOW completed before HIGH is not allowed",
+          "steps": [
+            {
+              "actor": "system",
+              "action": "Attempt to complete a LOW ticket while a HIGH ticket is still open",
+              "expected": "Operation rejected (409 or 400) with code PRIORITY_ORDER_VIOLATION (or similar)"
             }
           ]
         }
