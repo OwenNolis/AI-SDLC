@@ -2,7 +2,7 @@
   "meta": {
     "featureId": "feature-001-support-ticket",
     "title": "Support Ticket Create",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "createdAt": "2026-02-02"
   },
   "scope": {
@@ -23,11 +23,13 @@
     "Use JPA with relational database.",
     "Correlation id via X-Correlation-Id header or generated.",
     "Priority processing order: HIGH > MEDIUM > LOW (REQ-010)",
-    "Priority processing order: HIGH > MEDIUM > LOW (REQ-010)"
+    "Tickets are processed in the order they are created, with priority influencing completion order.",
+    "User session or token provides user identity for daily limits."
   ],
   "openQuestions": [
     "Link ticket to userId?",
-    "Existing global error response standard?"
+    "Existing global error response standard?",
+    "What is the exact mechanism for enforcing completion order (e.g., API endpoint for completion, or is this a background process)?"
   ],
   "requirements": [
     {
@@ -37,48 +39,63 @@
     },
     {
       "id": "REQ-002",
-      "text": "Subject required min 5 max 120.",
+      "text": "Subject is verplicht (min 5, max 120).",
       "priority": "must"
     },
     {
       "id": "REQ-003",
-      "text": "Description required min 20 max 2000.",
+      "text": "Description is verplicht (min 20, max 2000).",
       "priority": "must"
     },
     {
       "id": "REQ-004",
-      "text": "Priority required LOW/MEDIUM/HIGH.",
+      "text": "Priority is verplicht en één van: LOW, MEDIUM, HIGH.",
       "priority": "must"
     },
     {
       "id": "REQ-005",
-      "text": "Success returns ticketNumber and status OPEN.",
+      "text": "Na succesvol aanmaken krijgt gebruiker ticketNumber + status = OPEN te zien.",
       "priority": "must"
     },
     {
       "id": "REQ-006",
-      "text": "Validation errors return field-specific errors.",
+      "text": "Bij validatiefouten worden veldspecifieke fouten getoond.",
       "priority": "must"
     },
     {
       "id": "REQ-007",
-      "text": "Server errors show generic message with correlation id.",
+      "text": "Server errors tonen generieke foutmelding met correlation id.",
       "priority": "must"
     },
     {
       "id": "REQ-008",
-      "text": "Subject must be unique per day.",
+      "text": "Ticket subject must be unique per day (business constraint).",
       "priority": "must"
     },
     {
       "id": "REQ-009",
-      "text": "User can create at most 3 tickets per day.",
+      "text": "A user can create at most 3 tickets per day.",
       "priority": "must"
     },
     {
       "id": "REQ-010",
       "text": "Tickets with priority HIGH must be completed before tickets with priority LOW.",
       "priority": "must"
+    },
+    {
+      "id": "REQ-011",
+      "text": "A ticket with priority HIGH must always be visible immediately after creation.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-012",
+      "text": "A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-013",
+      "text": "A user can create at most 2 tickets with the priority HIGH.",
+      "priority": "should"
     }
   ],
   "domain": {
@@ -139,6 +156,20 @@
           {
             "name": "createdAt",
             "type": "instant"
+          },
+          {
+            "name": "userId",
+            "type": "string",
+            "constraints": [
+              "required"
+            ]
+          },
+          {
+            "name": "highPriorityCount",
+            "type": "integer",
+            "constraints": [
+              "max:2"
+            ]
           }
         ]
       }
@@ -164,7 +195,9 @@
           "validationRules": [
             "subject min 5 max 120",
             "description min 20 max 2000",
-            "priority in LOW|MEDIUM|HIGH"
+            "priority in LOW|MEDIUM|HIGH",
+            "userId required",
+            "highPriorityCount <= 2"
           ]
         },
         "responses": [
@@ -174,6 +207,10 @@
           },
           {
             "status": 400,
+            "bodySchemaRef": "ApiError"
+          },
+          {
+            "status": 409,
             "bodySchemaRef": "ApiError"
           },
           {
@@ -209,6 +246,14 @@
           {
             "name": "GlobalExceptionHandler",
             "responsibility": "Error handling"
+          },
+          {
+            "name": "UserTicketLimitService",
+            "responsibility": "Enforce daily ticket creation limits per user."
+          },
+          {
+            "name": "PriorityCompletionEnforcer",
+            "responsibility": "Ensures HIGH priority tickets are completed before LOW/MEDIUM."
           }
         ]
       }
@@ -226,7 +271,9 @@
   "tests": {
     "unit": [
       "TicketValidationTest",
-      "TicketServiceTest"
+      "TicketServiceTest",
+      "UserTicketLimitServiceTest",
+      "PriorityCompletionEnforcerTest"
     ],
     "integration": [
       "TicketControllerIT"
@@ -237,7 +284,8 @@
     {
       "reqId": "REQ-009",
       "backendRefs": [
-        "TicketService"
+        "TicketService",
+        "UserTicketLimitService"
       ],
       "frontendRefs": [
         "TicketForm"
@@ -245,6 +293,45 @@
       "testRefs": [
         "Feature001SupportTicketGeneratedIT"
       ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [
+        "TicketService",
+        "PriorityCompletionEnforcer"
+      ],
+      "frontendRefs": [],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-011",
+      "backendRefs": [
+        "TicketService"
+      ],
+      "frontendRefs": [
+        "TicketCreatePage"
+      ],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-012",
+      "backendRefs": [
+        "TicketService",
+        "PriorityCompletionEnforcer"
+      ],
+      "frontendRefs": [],
+      "testRefs": []
+    },
+    {
+      "reqId": "REQ-013",
+      "backendRefs": [
+        "TicketService",
+        "UserTicketLimitService"
+      ],
+      "frontendRefs": [
+        "TicketForm"
+      ],
+      "testRefs": []
     }
   ],
   "generatedTests": {
@@ -262,6 +349,12 @@
       "SupportTicket.priority": [
         "missing",
         "invalid_value"
+      ],
+      "SupportTicket.userId": [
+        "missing"
+      ],
+      "SupportTicket.highPriorityCount": [
+        "exceeds_limit"
       ]
     }
   }

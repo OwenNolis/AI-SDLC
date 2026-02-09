@@ -1,7 +1,7 @@
 {
   "meta": {
     "featureId": "feature-001-support-ticket",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "feature": "feature-001-support-ticket",
   "scenarios": [
@@ -59,6 +59,16 @@
       "id": "br_a_ticket_with_priority_high_must_always_be_completed_before_",
       "title": "Business rule: A ticket with priority HIGH must always be completed before a ticket with priority LOW",
       "type": "validation"
+    },
+    {
+      "id": "create_ticket_limit_2_high_priority_per_user",
+      "title": "Ticket creation fails when user exceeds 2 HIGH priority tickets per day.",
+      "type": "validation"
+    },
+    {
+      "id": "ticket_priority_completion_order_high_vs_medium",
+      "title": "HIGH priority tickets are completed before MEDIUM priority tickets",
+      "type": "happy-path"
     }
   ],
   "flows": [
@@ -140,23 +150,12 @@
         },
         {
           "type": "negative",
-          "name": "User exceeds 3 tickets per day",
+          "name": "User exceeds 2 HIGH priority tickets per day",
           "steps": [
             {
               "actor": "system",
-              "action": "Reject ticket creation after 3 tickets created in same day",
-              "expected": "400 with field error on limit"
-            }
-          ]
-        },
-        {
-          "type": "negative",
-          "name": "User exceeds 3 tickets per day",
-          "steps": [
-            {
-              "actor": "system",
-              "action": "Reject ticket creation after 3 tickets created in same day",
-              "expected": "400 with field error on limit"
+              "action": "Reject ticket creation when user already has 2 HIGH priority tickets today",
+              "expected": "400 with field error on HIGH priority limit"
             }
           ]
         },
@@ -168,6 +167,28 @@
               "actor": "system",
               "action": "Attempt to complete a LOW ticket while a HIGH ticket is still open",
               "expected": "Operation rejected (409 or 400) with code PRIORITY_ORDER_VIOLATION (or similar)"
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "MEDIUM completed before HIGH is not allowed",
+          "steps": [
+            {
+              "actor": "system",
+              "action": "Attempt to complete a MEDIUM ticket while a HIGH ticket is still open",
+              "expected": "Operation rejected (409 or 400) with code PRIORITY_ORDER_VIOLATION (or similar)"
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "name": "HIGH priority ticket visible immediately",
+          "steps": [
+            {
+              "actor": "user",
+              "action": "Create a HIGH priority ticket",
+              "expected": "Ticket is immediately visible in user's ticket list or dashboard."
             }
           ]
         }

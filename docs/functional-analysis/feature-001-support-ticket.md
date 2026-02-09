@@ -50,6 +50,7 @@ Out of scope:
 
 - A ticket with priority HIGH must always be visible immediately after creation.
 - Ticket subject must be unique per day (business constraint).
-- User can only add 3 tickets per day
+- A user can create at most 3 tickets per day
+- A user can create at most 2 tickets with the priority HIGH
 - A ticket with priority HIGH must always be completed before a ticket with priority LOW
 - A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM

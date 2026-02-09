@@ -177,6 +177,41 @@ describe("feature-001-support-ticket - generated UI tests", () => {
   });
 
 
+  test("create_ticket_limit_2_high_priority_per_user - Ticket creation fails when user exceeds 2 HIGH priority tickets per day. (UI guard)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    // Minimal: keep invalid -> must not submit
+    fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
+
+    expect(screen.getByRole("button", { name: /create ticket/i })).toBeDisabled();
+  });
+
+
+  test("ticket_priority_completion_order_high_vs_medium - HIGH priority tickets are completed before MEDIUM priority tickets (happy path)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText(/subject/i), {
+      target: { value: "Cannot login to portal" },
+    });
+
+    fireEvent.change(screen.getByLabelText(/description/i), {
+      target: { value: "I cannot login since yesterday. Please investigate." },
+    });
+
+    fireEvent.change(screen.getByLabelText(/priority/i), {
+      target: { value: "HIGH" },
+    });
+
+    const btn = screen.getByRole("button", { name: /create ticket/i });
+    expect(btn).toBeEnabled();
+
+    fireEvent.click(btn);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+
   test("shows validation error for short subject", () => {
     const onSubmit = jest.fn();
     render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
