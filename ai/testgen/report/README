@@ -1,0 +1,25 @@
+flowchart TD
+  Dev[Developer] -->|edits| FA[FA: docs/functional-analysis/<feature>.md]
+
+  subgraph AI_Pipeline[AI-SDLC Pipeline: ./ai/flow.sh <feature>]
+    FA --> Sync[1) sync-from-fa (LLM Agent)\nGemini/OpenAI]
+    Sync --> TA[TA: docs/technical-analysis/<feature>.ta.json]
+    Sync --> Flow[Flow: docs/test-scenarios/<feature>.flow.json]
+    Sync --> Ctx[Test Context: docs/test-context/<feature>.md]
+
+    TA --> Validate[2) AJV Schema Validation\nai/validator]
+    Flow --> Validate
+
+    Validate -->|OK| Gen[3) Test Generation\nai/testgen]
+    Validate -->|FAIL| Stop1[STOP: Fix JSON/schema issues]
+
+    Gen --> BE[Backend tests generated\nbackend/src/test/...GeneratedIT.java]
+    Gen --> FE[Frontend tests generated\nfrontend/src/ui/__generated__/...test.tsx]
+
+    BE --> RunBE[4) mvn test]
+    FE --> RunFE[5) npm test]
+  end
+
+  RunBE --> Results[Pass/Fail Results]
+  RunFE --> Results
+  Results -->|feedback| Dev

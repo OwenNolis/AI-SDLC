@@ -16,29 +16,29 @@
 - Ticket creation should respond within 500ms under normal load.
 - API responses for validation errors (e.g., duplicate subject, limits exceeded) should be fast.
 
-## Daily ticket creation limit (REQ-009, REQ-016, REQ-022, REQ-027, REQ-032)
+## Daily ticket creation limit (REQ-009)
 
 - A user may create at most 3 tickets per calendar day.
 - The 4th attempt to create any ticket on the same day must fail.
 - This prevents abuse and accidental duplicate submissions.
 
-## High priority ticket creation limit (REQ-013, REQ-017, REQ-023, REQ-028, REQ-033)
+## High priority ticket creation limit (REQ-013)
 
 - A user may create at most 2 HIGH priority tickets per calendar day.
 - The 3rd attempt to create a HIGH priority ticket on the same day must fail.
 
-## Priority completion order (REQ-010, REQ-018, REQ-024, REQ-012, REQ-019, REQ-025, REQ-029, REQ-030)
+## Priority completion order (REQ-010, REQ-012)
 
 - If a HIGH priority ticket exists and is still OPEN, LOW and MEDIUM priority tickets must not be completed before that HIGH ticket is completed.
 - Expected behavior: attempting to complete a LOW or MEDIUM ticket while a HIGH ticket is still OPEN should be rejected (e.g., 409 Conflict or 400 Bad Request) with a stable error code.
 - This rule pertains to the workflow/processing order of tickets, not the creation order.
 
-## Immediate visibility of HIGH priority tickets (REQ-011, REQ-014, REQ-020, REQ-031, REQ-034)
+## Immediate visibility of HIGH priority tickets (REQ-011)
 
 - Tickets with HIGH priority should be immediately visible to the user upon creation, without requiring a page refresh or explicit search.
 - This implies the frontend should update its state promptly upon successful creation.
 
-## Unique subject per day (REQ-008, REQ-015, REQ-021, REQ-026)
+## Unique subject per day (REQ-008)
 
 - Ticket subjects must be unique within the same calendar day for a given user.
 - Attempting to create a ticket with a duplicate subject on the same day should result in an error (e.g., 409 Conflict or 400 Bad Request).

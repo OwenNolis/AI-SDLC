@@ -33,7 +33,14 @@
     "Backend must enforce priority completion order (HIGH before LOW/MEDIUM).",
     "Backend must enforce immediate visibility of HIGH priority tickets.",
     "Backend must enforce that a user can create at most 3 tickets per day.",
-    "Backend must enforce that a user can create at most 2 tickets with the priority HIGH per day."
+    "Backend must enforce that a user can create at most 2 tickets with the priority HIGH per day.",
+    "Backend must ensure tickets with HIGH priority are completed before tickets with LOW priority.",
+    "Backend must ensure tickets with HIGH priority are completed before tickets with MEDIUM priority.",
+    "Backend must enforce that a ticket subject is unique per day.",
+    "Backend must enforce that a user can create at most 3 tickets per day.",
+    "Backend must enforce that a user can create at most 2 tickets with the priority HIGH per day.",
+    "Backend must ensure tickets with HIGH priority are completed before tickets with LOW priority.",
+    "Backend must ensure tickets with HIGH priority are completed before tickets with MEDIUM priority."
   ],
   "openQuestions": [
     "Link ticket to userId?",
@@ -113,111 +120,6 @@
       "id": "REQ-013",
       "text": "A user can create at most 2 tickets with the priority HIGH.",
       "priority": "should"
-    },
-    {
-      "id": "REQ-014",
-      "text": "A ticket with priority HIGH must always be visible immediately after creation.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-015",
-      "text": "Ticket subject must be unique per day (business constraint).",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-016",
-      "text": "A user can create at most 3 tickets per day.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-017",
-      "text": "A user can create at most 2 tickets with the priority HIGH.",
-      "priority": "should"
-    },
-    {
-      "id": "REQ-018",
-      "text": "A ticket with priority HIGH must always be completed before a ticket with priority LOW.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-019",
-      "text": "A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-020",
-      "text": "A ticket with priority HIGH must always be visible immediately after creation.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-021",
-      "text": "Ticket subject must be unique per day (business constraint).",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-022",
-      "text": "A user can create at most 3 tickets per day.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-023",
-      "text": "A user can create at most 2 tickets with the priority HIGH.",
-      "priority": "should"
-    },
-    {
-      "id": "REQ-024",
-      "text": "A ticket with priority HIGH must always be completed before a ticket with priority LOW.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-025",
-      "text": "A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-026",
-      "text": "Ticket subject must be unique per day.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-027",
-      "text": "A user can create at most 3 tickets per day.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-028",
-      "text": "A user can create at most 2 tickets with the priority HIGH.",
-      "priority": "should"
-    },
-    {
-      "id": "REQ-029",
-      "text": "A ticket with priority HIGH must always be completed before a ticket with priority LOW.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-030",
-      "text": "A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-031",
-      "text": "A ticket with priority HIGH must always be visible immediately after creation.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-032",
-      "text": "A user can create at most 3 tickets per day.",
-      "priority": "must"
-    },
-    {
-      "id": "REQ-033",
-      "text": "A user can create at most 2 tickets with the priority HIGH.",
-      "priority": "should"
-    },
-    {
-      "id": "REQ-034",
-      "text": "A ticket with priority HIGH must always be visible immediately after creation.",
-      "priority": "must"
     }
   ],
   "domain": {
@@ -469,217 +371,13 @@
       "testRefs": []
     },
     {
-      "reqId": "REQ-014",
-      "backendRefs": [
-        "TicketService"
-      ],
-      "frontendRefs": [
-        "TicketCreatePage"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-015",
+      "reqId": "REQ-008",
       "backendRefs": [
         "TicketService",
         "DailySubjectUniquenessEnforcer"
       ],
       "frontendRefs": [
         "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-016",
-      "backendRefs": [
-        "TicketService",
-        "UserTicketLimitService"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-017",
-      "backendRefs": [
-        "TicketService",
-        "HighPriorityTicketLimitService"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-018",
-      "backendRefs": [
-        "TicketService",
-        "PriorityCompletionEnforcer"
-      ],
-      "frontendRefs": [],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-019",
-      "backendRefs": [
-        "TicketService",
-        "PriorityCompletionEnforcer"
-      ],
-      "frontendRefs": [],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-020",
-      "backendRefs": [
-        "TicketService"
-      ],
-      "frontendRefs": [
-        "TicketCreatePage"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-021",
-      "backendRefs": [
-        "TicketService",
-        "DailySubjectUniquenessEnforcer"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-022",
-      "backendRefs": [
-        "TicketService",
-        "UserTicketLimitService"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-023",
-      "backendRefs": [
-        "TicketService",
-        "HighPriorityTicketLimitService"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-024",
-      "backendRefs": [
-        "TicketService",
-        "PriorityCompletionEnforcer"
-      ],
-      "frontendRefs": [],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-025",
-      "backendRefs": [
-        "TicketService",
-        "PriorityCompletionEnforcer"
-      ],
-      "frontendRefs": [],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-026",
-      "backendRefs": [
-        "TicketService",
-        "DailySubjectUniquenessEnforcer"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-027",
-      "backendRefs": [
-        "TicketService",
-        "UserTicketLimitService"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-028",
-      "backendRefs": [
-        "TicketService",
-        "HighPriorityTicketLimitService"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-029",
-      "backendRefs": [
-        "TicketService",
-        "PriorityCompletionEnforcer"
-      ],
-      "frontendRefs": [],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-030",
-      "backendRefs": [
-        "TicketService",
-        "PriorityCompletionEnforcer"
-      ],
-      "frontendRefs": [],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-031",
-      "backendRefs": [
-        "TicketService"
-      ],
-      "frontendRefs": [
-        "TicketCreatePage"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-032",
-      "backendRefs": [
-        "TicketService",
-        "UserTicketLimitService"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-033",
-      "backendRefs": [
-        "TicketService",
-        "HighPriorityTicketLimitService"
-      ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
-    },
-    {
-      "reqId": "REQ-034",
-      "backendRefs": [
-        "TicketService"
-      ],
-      "frontendRefs": [
-        "TicketCreatePage"
       ],
       "testRefs": []
     }

@@ -39,42 +39,6 @@ async function mustExist(p, label) {
   }
 }
 
-// --- robust JSON extraction (handles ```json ... ```) ---
-function extractJson(text) {
-  if (!text) return null;
-
-  // remove code fences if present
-  const fence = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (fence?.[1]) return fence[1].trim();
-
-  // otherwise try to locate first JSON object in text
-  const firstBrace = text.indexOf("{");
-  const lastBrace = text.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    return text.slice(firstBrace, lastBrace + 1).trim();
-  }
-
-  return text.trim();
-}
-
-// Accept either a JSON string or object
-function normalizeJsonField(value, label) {
-  if (value == null) {
-    throw new Error(`Missing field '${label}'`);
-  }
-  if (typeof value === "string") {
-    try {
-      return JSON.parse(value);
-    } catch (e) {
-      throw new Error(`Field '${label}' is a string but not valid JSON.`);
-    }
-  }
-  if (typeof value === "object") {
-    return value; // already parsed JSON object
-  }
-  throw new Error(`Field '${label}' must be a JSON string or object.`);
-}
-
 await mustExist(FA, "FA");
 await mustExist(TA, "TA");
 await mustExist(FLOW, "FLOW");
@@ -85,44 +49,56 @@ const taJson = await readJson(TA);
 const flowJson = await readJson(FLOW);
 const ctxMd = (await readFile(CTX).catch(() => Buffer.from(""))).toString("utf8");
 
-// --- Gemini setup ---
+// ---- Gemini setup ----
 const geminiKey = process.env.GEMINI_API_KEY;
 if (!geminiKey) {
-  console.error("Missing GEMINI_API_KEY environment variable.");
+  console.error("Missing GEMINI_API_KEY env var.");
   process.exit(1);
 }
 
-const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
-const genAI = new GoogleGenerativeAI(geminiKey);
+const geminiModel = process.env.GEMINI_MODEL || "models/gemini-2.5-flash-lite";
 
+const genAI = new GoogleGenerativeAI(geminiKey);
 const model = genAI.getGenerativeModel({
-  model: modelName,
+  model: geminiModel,
   generationConfig: {
-    // This helps, but we still parse defensively.
     responseMimeType: "application/json",
-    temperature: 0.2
-  }
+    temperature: 0,
+  },
 });
 
-// --- prompt (same contract as OpenAI version) ---
+// ---- Prompts ----
 const system = `
 You are an SDLC automation agent.
-Task: sync artifacts from Functional Analysis (FA) into Technical Analysis (TA), Flow Test Scenarios (flow.json), and test-context.md.
+
+Task: Sync artifacts from Functional Analysis (FA) into:
+- Technical Analysis (TA JSON) at docs/technical-analysis/<feature>.ta.json
+- Flow test scenarios (flow JSON) at docs/test-scenarios/<feature>.flow.json
+- Test context markdown at docs/test-context/<feature>.md
 
 Hard rules:
-- Keep existing content. Only add/modify what's needed to reflect new/changed business rules and requirements.
-- TA must remain valid against our ta.schema.json (do not invent random top-level keys).
-- Flow must remain valid against our flowtests.schema.json.
-- Do NOT remove existing requirements, flows, variants, or traceability unless they contradict FA.
-- Newly added requirements must follow "REQ-###" (3 digits) and include "priority" (must/should/could).
-- If FA adds a rule not testable with existing endpoints, still reflect it in TA + flow as a scenario/variant that documents the gap/TODO; do not invent endpoints.
+- Do NOT remove existing requirements, flows, variants, traceability unless they contradict FA.
+- Keep IDs stable. Do not duplicate requirements/scenarios for the same rule.
+- TA must remain valid against our ta.schema.json:
+  - Do not invent new top-level keys.
+  - requirements[] items must have id (REQ-###), text, priority (must/should/could).
+- Flow must remain valid against our flowtests.schema.json:
+  - Preserve meta and flows.
+  - If scenarios[] exists in the current flow.json, you may add to it, but do NOT explode duplicates.
+- If a rule is not testable with existing endpoints, add a scenario/variant documenting a TODO; do not invent endpoints.
 
 Output format:
-Return ONLY valid JSON (double quotes) with keys:
+Return ONLY a single JSON object with keys:
 - notes (string)
-- taJson (either a JSON string OR a JSON object)
-- flowJson (either a JSON string OR a JSON object)
+- taJson (string)  -> FULL TA JSON as a string
+- flowJson (string) -> FULL Flow JSON as a string
 - testContextMd (string)
+
+JSON MUST be strict JSON:
+- double quotes only
+- no trailing commas
+- no single quotes
+- no comments
 `;
 
 const user = `
@@ -154,62 +130,141 @@ GOAL
 - Update flow.json scenarios and/or FLOW-001 variants to reflect new rules.
 - Update test-context.md with concise sections per new/changed rule.
 
-Return ONLY JSON.
+Remember: do NOT duplicate requirements/scenarios for the same rule. Keep IDs stable and minimal.
+Return ONLY JSON with keys: notes, taJson, flowJson, testContextMd.
 `;
 
-let text;
-try {
-  const result = await model.generateContent(`${system}\n\n${user}`);
-  text = result?.response?.text?.() ?? "";
-} catch (e) {
-  console.error("Gemini API call failed:", e?.message ?? e);
-  process.exit(1);
+// ---- JSON extraction + repair ----
+function extractLikelyJson(text) {
+  const first = text.indexOf("{");
+  const last = text.lastIndexOf("}");
+  if (first === -1 || last === -1 || last <= first) return text;
+  return text.slice(first, last + 1);
 }
 
-const jsonText = extractJson(text);
+function repairCommonJsonIssues(s) {
+  let t = String(s ?? "");
 
+  // smart quotes -> normal
+  t = t.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+
+  // remove trailing commas
+  t = t.replace(/,\s*([}\]])/g, "$1");
+
+  // common broken enum string values like "negative'"
+  t = t.replace(/"type"\s*:\s*"negative'\s*,/g, '"type": "negative",');
+  t = t.replace(/"type"\s*:\s*"alternate'\s*,/g, '"type": "alternate",');
+  t = t.replace(/"type"\s*:\s*"data'\s*,/g, '"type": "data",');
+  t = t.replace(/"type"\s*:\s*"happy-path'\s*,/g, '"type": "happy-path",');
+  t = t.replace(/"type"\s*:\s*"validation'\s*,/g, '"type": "validation",');
+
+  return t;
+}
+
+function uniqueById(items) {
+  const seen = new Set();
+  const out = [];
+  for (const it of items || []) {
+    const id = String(it?.id ?? "");
+    if (!id) continue;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(it);
+  }
+  return out;
+}
+
+function sanitizeFlow(flow) {
+  if (Array.isArray(flow.scenarios)) {
+    flow.scenarios = uniqueById(flow.scenarios);
+  }
+  if (Array.isArray(flow.flows)) {
+    for (const f of flow.flows) {
+      if (Array.isArray(f.variants)) {
+        const seen = new Set();
+        f.variants = f.variants.filter((v) => {
+          const name = String(v?.name ?? "");
+          if (!name) return true;
+          if (seen.has(name)) return false;
+          seen.add(name);
+          return true;
+        });
+      }
+    }
+  }
+  return flow;
+}
+
+function sanitizeTA(ta) {
+  if (Array.isArray(ta.requirements)) {
+    ta.requirements = uniqueById(ta.requirements);
+  }
+  return ta;
+}
+
+async function geminiCall(prompt) {
+  try {
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  } catch (e) {
+    console.error("Gemini API call failed:", e?.message ?? e);
+    process.exit(1);
+  }
+}
+
+// ---- Run ----
+const prompt = `${system}\n\n${user}`;
+const raw = await geminiCall(prompt);
+
+// Parse outer JSON
 let parsed;
-try {
-  parsed = JSON.parse(jsonText);
-} catch (e) {
-  console.error("Gemini returned non-JSON:");
-  console.error(text);
-  process.exit(1);
+{
+  const candidate = repairCommonJsonIssues(extractLikelyJson(raw));
+  try {
+    parsed = JSON.parse(candidate);
+  } catch {
+    console.error("Gemini returned non-JSON (or unrecoverable JSON):");
+    console.error(raw);
+    process.exit(1);
+  }
 }
 
-// Validate required keys exist
 for (const k of ["notes", "taJson", "flowJson", "testContextMd"]) {
   if (!(k in parsed)) {
-    console.error(`Gemini response missing key '${k}'. Full response:`);
+    console.error(`Gemini response missing key '${k}'.`);
     console.error(JSON.stringify(parsed, null, 2));
     process.exit(1);
   }
 }
 
-// Normalize ta/flow which may be string OR object
+// Parse TA + Flow strings
 let newTa, newFlow;
 try {
-  newTa = normalizeJsonField(parsed.taJson, "taJson");
-} catch (e) {
+  const taStr = repairCommonJsonIssues(extractLikelyJson(String(parsed.taJson)));
+  newTa = JSON.parse(taStr);
+} catch {
   console.error("Invalid taJson returned by Gemini:");
   console.error(parsed.taJson);
-  console.error(String(e?.message ?? e));
   process.exit(1);
 }
 
 try {
-  newFlow = normalizeJsonField(parsed.flowJson, "flowJson");
-} catch (e) {
+  const flowStr = repairCommonJsonIssues(extractLikelyJson(String(parsed.flowJson)));
+  newFlow = JSON.parse(flowStr);
+} catch {
   console.error("Invalid flowJson returned by Gemini:");
   console.error(parsed.flowJson);
-  console.error(String(e?.message ?? e));
   process.exit(1);
 }
 
-// Write outputs
+// sanitize (avoid explosion)
+newTa = sanitizeTA(newTa);
+newFlow = sanitizeFlow(newFlow);
+
+// write outputs
 await writeJson(TA, newTa);
 await writeJson(FLOW, newFlow);
-await writeText(CTX, parsed.testContextMd);
+await writeText(CTX, String(parsed.testContextMd ?? ""));
 
-console.log(`✅ Synced from FA using Gemini (${modelName}).`);
-console.log(parsed.notes);
+console.log(`✅ Synced from FA using Gemini (${geminiModel}).`);
+console.log(String(parsed.notes ?? "").trim());
