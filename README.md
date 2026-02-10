@@ -213,7 +213,7 @@ cd frontend
 npm test
 ```
 
-### 🔬☑️ Volledige testen
+### 🔬 Volledige testen
 
 #### Flow only testing
 ```
@@ -226,6 +226,31 @@ BACKEND_MATRIX=1 ./ai/flow.sh feature-001-support-ticket
 ```
 
 ---
+
+## 🚀 CI/CD & DevOps
+
+Dit project maakt gebruik van een hybride CI/CD-aanpak waarbij **GitHub Actions**, **Jenkins** en **AI-ondersteuning** gecombineerd worden om het volledige Software Development Life Cycle (SDLC) proces te automatiseren.
+
+### Continuous Integration (CI) – GitHub Actions
+
+Voor continue integratie wordt **GitHub Actions** gebruikt.  
+Bij elke `push` of `pull request` naar de `main` branch wordt automatisch de volledige AI-gedreven flow uitgevoerd:
+
+1. Synchronisatie van Functional Analysis (FA) naar:
+   - Technical Analysis (TA)
+   - Flow test scenario’s
+   - Test context
+2. JSON-validatie van TA en Flow via schema’s
+3. Automatische generatie van backend- en frontendtests
+4. Uitvoeren van:
+   - Backend tests (Maven)
+   - Frontend tests (Jest)
+
+Deze flow wordt uitgevoerd via één centraal script:
+
+```
+./ai/flow.sh <feature-id>
+```
 
 ## ✅ Verwachte resultaten
 	•	Werkende end-to-end AI-flow
