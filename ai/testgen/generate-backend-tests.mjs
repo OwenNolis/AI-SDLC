@@ -3,15 +3,20 @@ import { readJson, writeText, pascal, camel, safeId } from "./utils.mjs";
 
 const feature = process.argv[2];
 if (!feature) {
-  console.error("Usage: node ai/testgen/generate-backend-tests.mjs <feature-id>");
+  console.error(
+    "Usage: node ai/testgen/generate-backend-tests.mjs <feature-id> [--matrix]"
+  );
   process.exit(1);
 }
+
+const flags = new Set(process.argv.slice(3));
+const matrixEnabled = flags.has("--matrix");
 
 const flowPath = path.join("docs", "test-scenarios", `${feature}.flow.json`);
 const taPath = path.join("docs", "technical-analysis", `${feature}.ta.json`);
 
 const flow = await readJson(flowPath);
-await readJson(taPath); // keep read for traceability even if unused for now
+const ta = await readJson(taPath);
 
 const endpoint = "/api/tickets";
 
@@ -28,17 +33,27 @@ function escapeJavadoc(s) {
   return String(s ?? "").replace(/\*\//g, "*\\/");
 }
 
-function happyPayloadJavaMapLines(overrides = {}) {
-  const base = {
-    subject: "Cannot login to portal",
-    description: "I cannot login since yesterday. Please investigate.",
-    priority: "HIGH",
-    ...overrides,
-  };
+function parseConstraintNum(constraints, prefix) {
+  // constraints like ["min:5","max:120", ...]
+  if (!Array.isArray(constraints)) return null;
+  const hit = constraints.find((c) => String(c).startsWith(prefix + ":"));
+  if (!hit) return null;
+  const n = Number(String(hit).split(":")[1]);
+  return Number.isFinite(n) ? n : null;
+}
 
-  const entries = Object.entries(base)
+function repeatChar(ch, n) {
+  return Array.from({ length: Math.max(0, n) }, () => ch).join("");
+}
+
+function javaEscapeString(s) {
+  return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function javaMapLinesFromObject(obj) {
+  const entries = Object.entries(obj)
     .filter(([, v]) => v !== undefined)
-    .map(([k, v]) => `payload.put("${k}", "${String(v).replace(/"/g, '\\"')}");`)
+    .map(([k, v]) => `payload.put("${k}", "${javaEscapeString(String(v))}");`)
     .join("\n        ");
 
   return `
@@ -47,16 +62,20 @@ function happyPayloadJavaMapLines(overrides = {}) {
 `;
 }
 
+function happyPayloadObject(overrides = {}) {
+  return {
+    subject: "Cannot login to portal",
+    description: "I cannot login since yesterday. Please investigate.",
+    priority: "HIGH",
+    ...overrides,
+  };
+}
+
 function invalidPayloadFromScenario(sc) {
   const t = normalize(sc.title);
   const id = normalize(sc.id);
 
-  // start from happy then mutate
-  const payload = {
-    subject: "Cannot login to portal",
-    description: "I cannot login since yesterday. Please investigate.",
-    priority: "HIGH",
-  };
+  const payload = happyPayloadObject();
 
   if (t.includes("missing subject") || id.includes("missing_subject")) {
     delete payload.subject;
@@ -70,7 +89,11 @@ function invalidPayloadFromScenario(sc) {
     delete payload.description;
     return payload;
   }
-  if (t.includes("short description") || id.includes("short_description") || t.includes("too short")) {
+  if (
+    t.includes("short description") ||
+    id.includes("short_description") ||
+    (t.includes("description") && t.includes("too short"))
+  ) {
     payload.description = "short";
     return payload;
   }
@@ -79,22 +102,9 @@ function invalidPayloadFromScenario(sc) {
     return payload;
   }
 
-  // generic invalid
   payload.subject = "abc";
   payload.description = "short";
   return payload;
-}
-
-function payloadToJavaMapLines(obj) {
-  const entries = Object.entries(obj)
-    .filter(([, v]) => v !== undefined)
-    .map(([k, v]) => `payload.put("${k}", "${String(v).replace(/"/g, '\\"')}");`)
-    .join("\n        ");
-
-  return `
-        var payload = new java.util.LinkedHashMap<String, Object>();
-        ${entries}
-`;
 }
 
 function isUniqueScenario(sc) {
@@ -112,23 +122,146 @@ function isLimit3Scenario(sc) {
 function isPriorityCompletionOrderScenario(sc) {
   const t = normalize(sc.title);
   const id = normalize(sc.id);
-  return (t.includes("completed before") || (t.includes("priority") && t.includes("completed")) || id.includes("completion_order"));
+  return (
+    t.includes("completed before") ||
+    (t.includes("priority") && t.includes("completed")) ||
+    id.includes("completion_order")
+  );
 }
 
 function expectedErrorCodes(sc) {
   const t = normalize(sc.title);
-  const id = normalize(sc.id);
 
-  // flexible until backend implements exact semantics
   if (isLimit3Scenario(sc)) return [400, 409, 429];
   if (isUniqueScenario(sc)) return [400, 409];
   if (t.includes("priority") && (t.includes("order") || t.includes("before"))) return [400, 409];
+
   return [400, 422, 429];
 }
 
+// ---------- Matrix test generation (TA-driven) ----------
+function collectTaFieldCases(taJson) {
+  const out = [];
+
+  const entities = taJson?.domain?.entities;
+  if (!Array.isArray(entities)) return out;
+
+  for (const e of entities) {
+    const fields = e?.fields;
+    if (!Array.isArray(fields)) continue;
+
+    for (const f of fields) {
+      const testCases = f?.testCases;
+      if (!Array.isArray(testCases) || testCases.length === 0) continue;
+
+      out.push({
+        entity: String(e?.name ?? "Entity"),
+        field: String(f?.name ?? "field"),
+        type: String(f?.type ?? ""),
+        constraints: Array.isArray(f?.constraints) ? f.constraints : [],
+        testCases: testCases.map(String),
+      });
+    }
+  }
+
+  return out;
+}
+
+function buildInvalidPayloadFromTaCase(fieldInfo, tc) {
+  const base = happyPayloadObject();
+
+  const field = fieldInfo.field;
+  const constraints = fieldInfo.constraints || [];
+
+  const min = parseConstraintNum(constraints, "min");
+  const max = parseConstraintNum(constraints, "max");
+
+  if (tc === "missing") {
+    delete base[field];
+    return base;
+  }
+
+  if (tc === "invalid_value") {
+    // for enums
+    base[field] = "INVALID";
+    return base;
+  }
+
+  if (tc === "empty") {
+    // for required strings, empty should be invalid
+    base[field] = "";
+    return base;
+  }
+
+  if (tc === "too_short") {
+    // use min-1 if we know min, else a safe short
+    const n = min && min > 1 ? min - 2 : 3;
+    base[field] = repeatChar("a", Math.max(1, n));
+    return base;
+  }
+
+  if (tc === "too_long") {
+    // use max+1 if we know max, else a safe large
+    const n = max ? max + 1 : 5000;
+    base[field] = repeatChar("a", n);
+    return base;
+  }
+
+  // fallback generic invalid (should still fail)
+  base[field] = "INVALID";
+  return base;
+}
+
+function matrixExpectedCodes(fieldInfo, tc) {
+  // keep flexible until backend stabilizes exact behavior
+  // missing/empty/too_short/too_long/invalid_value => typically 400/422
+  return [400, 422];
+}
+
+function makeMatrixTestMethods(featureId) {
+  const fields = collectTaFieldCases(ta);
+
+  if (fields.length === 0) return "";
+
+  const methods = [];
+
+  for (const f of fields) {
+    for (const tc of f.testCases) {
+      const sid = safeId(`matrix_${f.entity}_${f.field}_${tc}`);
+      const methodName = `${camel(sid)}_rejected`;
+      const title = escapeJavadoc(`${f.entity}.${f.field} -> ${tc}`);
+
+      const invalidPayload = buildInvalidPayloadFromTaCase(f, tc);
+      const codes = matrixExpectedCodes(f, tc);
+
+      methods.push(`
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: ${featureId}
+     * - Source: docs/technical-analysis/${featureId}.ta.json
+     * - Matrix: ${title}
+     */
+    @Test
+    void ${methodName}() {
+${javaMapLinesFromObject(invalidPayload)}
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(${codes.join(", ")});
+        assertThat(res.getBody()).isNotNull();
+    }
+`);
+    }
+  }
+
+  return methods.join("\n");
+}
+
+// ---------- Flow-based tests (existing behavior) ----------
 const className = `${pascal(feature)}GeneratedIT`;
 
-const testMethods = scenarios
+const flowTestMethods = scenarios
   .map((sc, idx) => {
     const sid = safeId(sc.id ?? `scenario_${idx + 1}`);
     const methodBase = camel(sid);
@@ -141,7 +274,7 @@ const testMethods = scenarios
 
       return `
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: ${feature}
      * - Scenario: ${sc.id ?? "n/a"} - ${title}
@@ -149,8 +282,7 @@ const testMethods = scenarios
      */
     @Test
     void ${methodName}() {
-${happyPayloadJavaMapLines()}
-
+${javaMapLinesFromObject(happyPayloadObject())}
         ResponseEntity<String> res = postTicket(payload);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -166,7 +298,7 @@ ${happyPayloadJavaMapLines()}
 
       return `
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: ${feature}
      * - Scenario: ${sc.id ?? "n/a"} - ${title}
@@ -174,8 +306,7 @@ ${happyPayloadJavaMapLines()}
      */
     @Test
     void ${methodName}() {
-${happyPayloadJavaMapLines({ subject: "Password reset not working" })}
-
+${javaMapLinesFromObject(happyPayloadObject({ subject: "Password reset not working" }))}
         ResponseEntity<String> first = postTicket(payload);
         assertThat(first.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(first.getStatusCode().value()).isIn(200, 201);
@@ -194,7 +325,7 @@ ${happyPayloadJavaMapLines({ subject: "Password reset not working" })}
 
       return `
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: ${feature}
      * - Scenario: ${sc.id ?? "n/a"} - ${title}
@@ -232,7 +363,7 @@ ${happyPayloadJavaMapLines({ subject: "Password reset not working" })}
 
       return `
     /**
-     * GENERATED (TODO)
+     * GENERATED (FLOW, TODO)
      * Traceability:
      * - Feature: ${feature}
      * - Scenario: ${sc.id ?? "n/a"} - ${title}
@@ -255,15 +386,14 @@ ${happyPayloadJavaMapLines({ subject: "Password reset not working" })}
 
     return `
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: ${feature}
      * - Scenario: ${sc.id ?? "n/a"} - ${title}
      */
     @Test
     void ${methodName}() {
-${payloadToJavaMapLines(invalid)}
-
+${javaMapLinesFromObject(invalid)}
         ResponseEntity<String> res = postTicket(payload);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getStatusCode().value()).isIn(${codes.join(", ")});
@@ -272,6 +402,23 @@ ${payloadToJavaMapLines(invalid)}
 `;
   })
   .join("\n");
+
+// Matrix tests appended (optional)
+const matrixTestMethods = matrixEnabled
+  ? makeMatrixTestMethods(feature)
+  : "";
+
+// Helpful banner comment
+const matrixBanner = matrixEnabled
+  ? `
+    // ------------------------------------------------------------
+    // TA MATRIX TESTS ENABLED (--matrix)
+    // ------------------------------------------------------------
+`
+  : `
+    // (Tip) Run with --matrix to also generate TA validation-matrix tests:
+    //   node ai/testgen/generate-backend-tests.mjs ${feature} --matrix
+`;
 
 const testClass = `package be.ap.student.tickets;
 
@@ -299,7 +446,9 @@ class ${className} {
         return rest.postForEntity("${endpoint}", req, String.class);
     }
 
-${testMethods}
+${flowTestMethods}
+${matrixBanner}
+${matrixTestMethods}
 }
 `;
 
@@ -316,4 +465,4 @@ const outPath = path.join(
 );
 
 await writeText(outPath, testClass);
-console.log(`✅ Backend tests generated: ${outPath}`);
+console.log(`✅ Backend tests generated: ${outPath}${matrixEnabled ? " (with --matrix)" : ""}`);

@@ -26,7 +26,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: create_ticket_happy_path - User creates a valid support ticket
@@ -40,7 +40,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -50,7 +49,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: create_ticket_missing_subject - Ticket creation fails when subject is missing
@@ -62,7 +61,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getStatusCode().value()).isIn(400, 422, 429);
@@ -71,7 +69,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: create_ticket_invalid_priority - Ticket creation fails when priority is invalid
@@ -84,7 +82,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "INVALID");
 
-
         ResponseEntity<String> res = postTicket(payload);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getStatusCode().value()).isIn(400, 422, 429);
@@ -93,7 +90,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: create_ticket_duplicate_subject_same_day - Ticket creation fails when subject already exists for the same day
@@ -107,7 +104,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> first = postTicket(payload);
         assertThat(first.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(first.getStatusCode().value()).isIn(200, 201);
@@ -120,7 +116,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: create_ticket_high_priority_visible_immediately - HIGH priority ticket visible immediately after creation
@@ -134,7 +130,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -144,7 +139,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: create_ticket_limit_3_per_day - Ticket creation fails when user exceeds 3 tickets in one day
@@ -176,7 +171,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: ticket_priority_completion_order - HIGH priority tickets are completed before LOW priority tickets
@@ -190,7 +185,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -200,7 +194,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: br_a_ticket_with_priority_high_must_always_be_visible_immediate - Business rule: A ticket with priority HIGH must always be visible immediately after creation.
@@ -213,7 +207,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "short");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getStatusCode().value()).isIn(400, 422, 429);
@@ -222,7 +215,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: br_ticket_subject_must_be_unique_per_day_business_constraint - Business rule: Ticket subject must be unique per day (business constraint).
@@ -236,7 +229,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> first = postTicket(payload);
         assertThat(first.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(first.getStatusCode().value()).isIn(200, 201);
@@ -249,7 +241,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: br_user_can_only_add_3_tickets_per_day - Business rule: User can only add 3 tickets per day
@@ -281,7 +273,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED (TODO)
+     * GENERATED (FLOW, TODO)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: br_a_ticket_with_priority_high_must_always_be_completed_before_ - Business rule: A ticket with priority HIGH must always be completed before a ticket with priority LOW
@@ -297,7 +289,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: create_ticket_limit_2_high_priority_per_user - Ticket creation fails when user exceeds 2 HIGH priority tickets per day.
@@ -310,7 +302,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "short");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getStatusCode().value()).isIn(400, 422, 429);
@@ -319,7 +310,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: ticket_priority_completion_order_high_vs_medium - HIGH priority tickets are completed before MEDIUM priority tickets
@@ -333,7 +324,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -343,7 +333,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-014-high-priority-visible-immediately - REQ-014: A ticket with priority HIGH must always be visible immediately after creation.
@@ -357,7 +347,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -367,7 +356,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-015-unique-subject-per-day - REQ-015: Ticket subject must be unique per day.
@@ -381,7 +370,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> first = postTicket(payload);
         assertThat(first.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(first.getStatusCode().value()).isIn(200, 201);
@@ -394,7 +382,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-016-max-3-tickets-per-day - REQ-016: User can create at most 3 tickets per day.
@@ -426,7 +414,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-017-max-2-high-priority-per-day - REQ-017: User can create at most 2 tickets with the priority HIGH.
@@ -439,7 +427,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "short");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getStatusCode().value()).isIn(400, 422, 429);
@@ -448,7 +435,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED (TODO)
+     * GENERATED (FLOW, TODO)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-018-high-priority-completion-before-low - REQ-018: A ticket with priority HIGH must always be completed before a ticket with priority LOW.
@@ -464,7 +451,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED (TODO)
+     * GENERATED (FLOW, TODO)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-019-high-priority-completion-before-medium - REQ-019: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.
@@ -480,7 +467,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-020-high-priority-visible-immediately - REQ-020: A ticket with priority HIGH must always be visible immediately after creation.
@@ -494,7 +481,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -504,7 +490,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-021-unique-subject-per-day - REQ-021: Ticket subject must be unique per day.
@@ -518,7 +504,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> first = postTicket(payload);
         assertThat(first.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(first.getStatusCode().value()).isIn(200, 201);
@@ -531,7 +516,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-022-max-3-tickets-per-day - REQ-022: User can create at most 3 tickets per day.
@@ -563,7 +548,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-023-max-2-high-priority-per-day - REQ-023: User can create at most 2 tickets with the priority HIGH.
@@ -576,7 +561,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "short");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getStatusCode().value()).isIn(400, 422, 429);
@@ -585,7 +569,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED (TODO)
+     * GENERATED (FLOW, TODO)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-024-high-priority-completion-before-low - REQ-024: A ticket with priority HIGH must always be completed before a ticket with priority LOW.
@@ -601,7 +585,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED (TODO)
+     * GENERATED (FLOW, TODO)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-025-high-priority-completion-before-medium - REQ-025: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.
@@ -617,7 +601,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-026-unique-subject-per-day - REQ-026: Ticket subject must be unique per day.
@@ -631,7 +615,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> first = postTicket(payload);
         assertThat(first.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(first.getStatusCode().value()).isIn(200, 201);
@@ -644,7 +627,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-027-max-3-tickets-per-day - REQ-027: User can create at most 3 tickets per day.
@@ -676,7 +659,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-028-max-2-high-priority-per-day - REQ-028: User can create at most 2 tickets with the priority HIGH.
@@ -689,7 +672,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "short");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getStatusCode().value()).isIn(400, 422, 429);
@@ -698,7 +680,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED (TODO)
+     * GENERATED (FLOW, TODO)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-029-high-priority-completion-before-low - REQ-029: A ticket with priority HIGH must always be completed before a ticket with priority LOW.
@@ -714,7 +696,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED (TODO)
+     * GENERATED (FLOW, TODO)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-030-high-priority-completion-before-medium - REQ-030: A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.
@@ -730,7 +712,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-031-high-priority-visible-immediately - REQ-031: A ticket with priority HIGH must always be visible immediately after creation.
@@ -744,7 +726,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -754,7 +735,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-032-max-3-tickets-per-day - REQ-032: User can create at most 3 tickets per day.
@@ -786,7 +767,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-033-max-2-high-priority-per-day - REQ-033: User can create at most 2 tickets with the priority HIGH.
@@ -799,7 +780,6 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "short");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getStatusCode().value()).isIn(400, 422, 429);
@@ -808,7 +788,7 @@ class Feature001SupportTicketGeneratedIT {
 
 
     /**
-     * GENERATED
+     * GENERATED (FLOW)
      * Traceability:
      * - Feature: feature-001-support-ticket
      * - Scenario: REQ-034-high-priority-visible-immediately - REQ-034: A ticket with priority HIGH must always be visible immediately after creation.
@@ -822,12 +802,222 @@ class Feature001SupportTicketGeneratedIT {
         payload.put("description", "I cannot login since yesterday. Please investigate.");
         payload.put("priority", "HIGH");
 
-
         ResponseEntity<String> res = postTicket(payload);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
         assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
+    // ------------------------------------------------------------
+    // TA MATRIX TESTS ENABLED (--matrix)
+    // ------------------------------------------------------------
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.subject -> empty
+     */
+    @Test
+    void matrixSupportTicketSubjectEmpty_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.subject -> too_short
+     */
+    @Test
+    void matrixSupportTicketSubjectTooShort_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "aaa");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.subject -> too_long
+     */
+    @Test
+    void matrixSupportTicketSubjectTooLong_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.subject -> duplicate_per_day
+     */
+    @Test
+    void matrixSupportTicketSubjectDuplicatePerDay_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "INVALID");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.description -> empty
+     */
+    @Test
+    void matrixSupportTicketDescriptionEmpty_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.description -> too_short
+     */
+    @Test
+    void matrixSupportTicketDescriptionTooShort_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "aaaaaaaaaaaaaaaaaa");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.description -> too_long
+     */
+    @Test
+    void matrixSupportTicketDescriptionTooLong_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.priority -> missing
+     */
+    @Test
+    void matrixSupportTicketPriorityMissing_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.priority -> invalid_value
+     */
+    @Test
+    void matrixSupportTicketPriorityInvalidValue_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "INVALID");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
     }
 
 }
