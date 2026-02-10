@@ -213,7 +213,7 @@ cd frontend
 npm test
 ```
 
-### Volledige testen
+### 🔬☑️ Volledige testen
 
 #### Flow only testing
 ```
