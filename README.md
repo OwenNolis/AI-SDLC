@@ -201,13 +201,13 @@ http://localhost:5173
 
 ## 🧪 Tests uitvoeren
 
-### Backend
+### 🖥️ Backend
 ```
 cd backend
 mvn test
 ```
 
-### Frontend
+### 🖥️ Frontend
 ```
 cd frontend
 npm test
@@ -224,3 +224,22 @@ npm test
 ```
 BACKEND_MATRIX=1 ./ai/flow.sh feature-001-support-ticket
 ```
+
+---
+
+## ✅ Verwachte resultaten
+	•	Werkende end-to-end AI-flow
+	•	Volledige traceerbaarheid:
+	•	requirement → analyse → code → tests
+	•	Herbruikbare instructiesets
+	•	Praktische demo’s
+	•	Onderbouwd enablementplan
+
+⸻
+
+## 👤 Auteur
+
+Stageopdracht – AI in de SDLC
+Student: Owen Nolis
+Opleiding: Toegepaste Informatica / AP Hogeschool
+Periode: 02/02/26 - 29/05/26
