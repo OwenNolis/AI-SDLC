@@ -73,11 +73,11 @@ run_step "3) Generate tests" \
 
 # 4) Run backend tests
 run_step "4) Run backend tests (mvn test)" \
-  bash -lc "cd '${ROOT_DIR}/backend' && mvn test"
+  bash -lc "cd '${ROOT_DIR}/backend' && mvn -q -DskipTests dependency:go-offline && mvn test"
 
 # 5) Run frontend tests
 run_step "5) Run frontend tests (npm test)" \
-  bash -lc "cd '${ROOT_DIR}/frontend' && npm test"
+  bash -lc "cd '${ROOT_DIR}/frontend' && npm ci && npm test"
 
 echo ""
 echo "=============================================="
