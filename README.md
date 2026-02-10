@@ -239,7 +239,7 @@ BACKEND_MATRIX=1 ./ai/flow.sh feature-001-support-ticket
 
 ## 👤 Auteur
 
-Stageopdracht – AI in de SDLC
-Student: Owen Nolis
-Opleiding: Toegepaste Informatica / AP Hogeschool
-Periode: 02/02/26 - 29/05/26
+- Stageopdracht – AI in de SDLC
+- Student: Owen Nolis
+- Opleiding: Toegepaste Informatica / AP Hogeschool
+- Periode: 02/02/26 - 29/05/26
