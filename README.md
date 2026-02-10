@@ -178,8 +178,6 @@ Dit document dient als **adviesdocument** voor toekomstige adoptie.
 - Git
 - (Optioneel) Docker
 
----
-
 ### 🖥️ Backend starten
 
 ```bash
@@ -251,6 +249,8 @@ Deze flow wordt uitgevoerd via één centraal script:
 ```
 ./ai/flow.sh <feature-id>
 ```
+
+---
 
 ## ✅ Verwachte resultaten
 	•	Werkende end-to-end AI-flow
