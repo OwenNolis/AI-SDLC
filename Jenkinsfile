@@ -9,9 +9,8 @@ pipeline {
 
   environment {
     FEATURE_ID = "feature-001-support-ticket"
-    // Zet secrets via Jenkins Credentials (NIET in code):
-    // GEMINI_API_KEY = credentials('gemini-api-key')
-    // GEMINI_MODEL  = "gemini-2.5-flash-lite"
+    GEMINI_API_KEY = credentials('gemini-api-key')
+    GEMINI_MODEL  = "gemini-2.5-flash-lite"
   }
 
   stages {

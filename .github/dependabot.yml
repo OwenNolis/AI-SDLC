@@ -1,29 +1,73 @@
 version: 2
 updates:
-  # Frontend (npm)
-  - package-ecosystem: "npm"
-    directory: "/frontend"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    groups:
-      frontend-deps:
-        patterns:
-          - "*"
-
   # Backend (Maven)
   - package-ecosystem: "maven"
     directory: "/backend"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Brussels"
     open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "backend"
     groups:
-      backend-deps:
+      backend-minor-patch:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
-  # (Optioneel) GitHub Actions dependencies
+  # Frontend (npm)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:15"
+      timezone: "Europe/Brussels"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "frontend"
+    groups:
+      frontend-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # AI validator tooling (npm)
+  - package-ecosystem: "npm"
+    directory: "/ai/validator"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:30"
+      timezone: "Europe/Brussels"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "ai"
+    groups:
+      ai-validator-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions versions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
+      day: "monday"
+      time: "06:45"
+      timezone: "Europe/Brussels"
+    labels:
+      - "dependencies"
+      - "ci"
