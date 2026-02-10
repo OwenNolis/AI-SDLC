@@ -7,4 +7,10 @@ if [[ -z "$FEATURE" ]]; then
   exit 1
 fi
 
+# Self-healing dependency install
+if [[ ! -d "ai/agent/node_modules" ]]; then
+  echo "Installing ai/agent dependencies..."
+  (cd ai/agent && npm ci)
+fi
+
 node ai/agent/sync-from-fa.mjs "$FEATURE"

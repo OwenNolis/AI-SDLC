@@ -15,14 +15,12 @@ jobs:
     timeout-minutes: 30
 
     env:
-      # Feature dat je wil runnen in CI (pas aan als je meerdere features wil matrixen)
       FEATURE_ID: feature-001-support-ticket
 
-      # Secrets: nooit hardcoden, nooit printen
+      # Secrets (nooit hardcoden)
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      # Optioneel: model via repo variable (Settings → Variables)
-      # Val je hierop terug als variable niet bestaat.
+      # Optioneel: repo variable (Settings → Variables)
       GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
 
     steps:
@@ -32,10 +30,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          # Jij draait lokaal Node 22.x (zie je logs: Node v22.14.0)
           node-version: "22"
           cache: "npm"
           cache-dependency-path: |
+            ai/agent/package-lock.json
             ai/validator/package-lock.json
             frontend/package-lock.json
 
@@ -46,51 +44,40 @@ jobs:
           java-version: "21"
           cache: "maven"
 
-      - name: Make scripts executable
-        run: |
-          chmod +x ai/flow.sh ai/sync-from-fa.sh ai/generate-tests.sh
+      - name: Install AI agent dependencies
+        run: npm ci
+        working-directory: ai/agent
 
-      # (Optioneel maar handig) snelle uitleg in logs zonder secrets
+      - name: Install validator deps
+        run: npm ci
+        working-directory: ai/validator
+
+      - name: Make scripts executable
+        run: chmod +x ai/flow.sh ai/sync-from-fa.sh ai/generate-tests.sh
+
       - name: Preflight info
         run: |
-          echo "Running AI-SDLC flow for feature: ${FEATURE_ID}"
+          echo "Feature: ${FEATURE_ID}"
           if [ -n "${GEMINI_MODEL}" ]; then
             echo "GEMINI_MODEL=${GEMINI_MODEL}"
           else
-            echo "GEMINI_MODEL not set (flow.sh will use default)."
+            echo "GEMINI_MODEL not set (default will be used)"
           fi
           if [ -z "${GEMINI_API_KEY}" ]; then
-            echo "GEMINI_API_KEY is NOT set in this CI run."
+            echo "❌ GEMINI_API_KEY missing"
+            exit 1
           else
-            echo "GEMINI_API_KEY is set (value hidden)."
+            echo "✅ GEMINI_API_KEY is set (hidden)"
           fi
 
-      # === OPTIE 1 (strikt “exact flow”) ===
-      # Deze stap faalt als GEMINI_API_KEY ontbreekt (zoals jouw flow.sh lokaal ook doet).
-      - name: Run one-command flow (sync → validate → generate → tests)
+      - name: Run one-command AI-SDLC flow
         run: ./ai/flow.sh "${FEATURE_ID}"
 
-      # === OPTIE 2 (als je CI wil laten slagen zonder LLM) ===
-      # Comment OPTIE 1 uit en uncomment hieronder:
-      #
-      # - name: Run flow with optional sync
-      #   run: |
-      #     if [ -z "${GEMINI_API_KEY}" ]; then
-      #       echo "No GEMINI_API_KEY available -> skipping sync step, running validate/generate/tests only."
-      #       npm --prefix ai/validator run validate
-      #       ./ai/generate-tests.sh "${FEATURE_ID}"
-      #       (cd backend && mvn test)
-      #       (cd frontend && npm test)
-      #     else
-      #       ./ai/flow.sh "${FEATURE_ID}"
-      #     fi
-
-      # (Optioneel) artifacts bewaren (handig voor report / debugging)
-      - name: Upload generated tests as artifacts
+      - name: Upload generated artifacts
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: generated-tests-and-artifacts
+          name: ai-sdlc-artifacts
           path: |
             backend/src/test/java/**/Feature001SupportTicketGeneratedIT.java
             frontend/src/ui/__generated__/**
