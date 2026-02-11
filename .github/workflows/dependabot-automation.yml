@@ -41,10 +41,12 @@ jobs:
 
           MODEL="${GEMINI_MODEL:-models/gemini-2.5-flash-lite}"
 
+          # Korte diff summary (safe)
           DIFF_SUMMARY="$(gh api -H "Accept: application/vnd.github+json" \
             "/repos/${GITHUB_REPOSITORY}/compare/${BASE_REF}...${HEAD_SHA}" \
             --jq '.files[] | "\(.filename) (+\(.additions)/-\(.deletions))"' 2>/dev/null | head -n 40 || true)"
 
+          # ✅ PROMPT = Versie 2 (flush-left)
           PROMPT="$(cat <<'EOF'
             You are a senior backend/frontend engineer reviewing a Dependabot dependency update PR.
 
@@ -89,12 +91,14 @@ jobs:
             REVIEW="AI review failed to produce output. Final recommendation: HOLD"
           fi
 
+          # Decision extraction
           DECISION="APPROVE"
           echo "$REVIEW" | grep -qi "Final recommendation: HOLD" && DECISION="HOLD"
           echo "$REVIEW" | grep -qiE "\bHOLD\b" && DECISION="HOLD"
 
           echo "decision=$DECISION" >> "$GITHUB_OUTPUT"
 
+          # Comment on PR (always)
           {
             echo "## 🤖 AI Review (Gemini)"
             echo
@@ -113,6 +117,7 @@ jobs:
         run: |
           gh pr review --approve "$PR_URL"
 
+      # ✅ CI gating = Versie 1 logging (meer uitleg)
       - name: Check CI status checks are green (required for auto-merge)
         id: ci_green
         env:
@@ -136,7 +141,7 @@ jobs:
           # Require ALL checks SUCCESS
           if echo "$STATES" | grep -qv '^SUCCESS$'; then
             echo "ok=false" >> "$GITHUB_OUTPUT"
-            echo "CI is not fully green yet."
+            echo "❌ CI is not fully green yet."
           else
             echo "ok=true" >> "$GITHUB_OUTPUT"
             echo "✅ CI is green (all checks SUCCESS)."
