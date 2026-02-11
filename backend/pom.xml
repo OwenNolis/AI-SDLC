@@ -52,14 +52,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Testing (JUnit 5, Mockito, AssertJ, Spring Test) -->
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>7.12.0</version>
-            <scope>test</scope>
-        </dependency>
-
         <!-- JdbcTemplate -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
