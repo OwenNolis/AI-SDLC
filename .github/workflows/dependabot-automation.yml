@@ -2,10 +2,13 @@ name: Dependabot automation
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: write
   pull-requests: write
+  checks: read
+  statuses: read
 
 jobs:
   dependabot:
@@ -13,31 +16,147 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
 
     steps:
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Fetch Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Optioneel: label op basis van metadata (voorbeeld: production deps)
-      - name: Label production dependencies
-        if: steps.metadata.outputs.dependency-type == 'direct:production'
-        run: gh pr edit "$PR_URL" --add-label "production"
+      - name: AI review (Gemini) -> decision
+        id: ai_review
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          MODEL="${GEMINI_MODEL:-models/gemini-2.5-flash-lite}"
+
+          DIFF_SUMMARY="$(gh api -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/compare/${BASE_REF}...${HEAD_SHA}" \
+            --jq '.files[] | "\(.filename) (+\(.additions)/-\(.deletions))"' 2>/dev/null | head -n 40 || true)"
+
+          PROMPT="$(cat <<'EOF'
+            You are a senior backend/frontend engineer reviewing a Dependabot dependency update PR.
+
+            Write a short structured review in Markdown with these sections:
+
+            1) Summary
+            2) Risk assessment (LOW / MEDIUM / HIGH)
+            3) Breaking-change suspicion (YES/NO + why)
+            4) Verification steps (what to run)
+            5) Final recommendation: APPROVE or HOLD
+
+            Be strict. If unsure: HOLD.
+            EOF
+            )"
+
+          REQUEST_JSON="$(jq -n \
+            --arg prompt "$PROMPT" \
+            --arg title "$PR_TITLE" \
+            --arg body "${PR_BODY:-}" \
+            --arg diff "$DIFF_SUMMARY" \
+            '{
+              contents: [{
+                parts: [{
+                  text: ($prompt
+                    + "\n\nContext:\n"
+                    + "Title: " + $title + "\n\n"
+                    + "PR body:\n" + $body + "\n\n"
+                    + "Diff summary:\n" + $diff + "\n")
+                }]
+              }]
+            }'
+          )"
+
+          RESPONSE="$(curl -sS \
+            -H "Content-Type: application/json" \
+            -H "x-goog-api-key: ${GEMINI_API_KEY}" \
+            "https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateContent" \
+            -d "$REQUEST_JSON")"
+
+          REVIEW="$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // ""')"
+          if [ -z "$REVIEW" ]; then
+            REVIEW="AI review failed to produce output. Final recommendation: HOLD"
+          fi
+
+          DECISION="APPROVE"
+          echo "$REVIEW" | grep -qi "Final recommendation: HOLD" && DECISION="HOLD"
+          echo "$REVIEW" | grep -qiE "\bHOLD\b" && DECISION="HOLD"
+
+          echo "decision=$DECISION" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## 🤖 AI Review (Gemini)"
+            echo
+            echo "$REVIEW"
+            echo
+            echo "**Decision:** \`$DECISION\`"
+          } > ai-review.md
+
+          gh pr comment "$PR_URL" --body-file ai-review.md
+
+      - name: Auto-approve (only if AI APPROVE)
+        if: steps.ai_review.outputs.decision == 'APPROVE'
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr review --approve "$PR_URL"
 
-      # Auto-approve (optioneel)
-      - name: Auto-approve
-        run: gh pr review --approve "$PR_URL"
+      - name: Check CI status checks are green (required for auto-merge)
+        id: ci_green
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
 
-      # Auto-merge: enkel patch-updates (veiliger)
-      - name: Enable auto-merge for patch updates
-        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr merge --auto --merge "$PR_URL"
+          # statusCheckRollup includes GitHub Actions checks etc.
+          STATES="$(gh pr view "$PR_URL" --json statusCheckRollup --jq '.statusCheckRollup[].state' || true)"
+
+          if [ -z "$STATES" ]; then
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "No status checks found yet."
+            exit 0
+          fi
+
+          echo "States:"
+          echo "$STATES" | sort -u
+
+          # Require ALL checks SUCCESS
+          if echo "$STATES" | grep -qv '^SUCCESS$'; then
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "CI is not fully green yet."
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            echo "✅ CI is green (all checks SUCCESS)."
+          fi
+
+      - name: Enable auto-merge (PATCH only, CI green, and NO AI HOLD)
+        if: >
+          steps.ai_review.outputs.decision == 'APPROVE' &&
+          steps.ci_green.outputs.ok == 'true' &&
+          steps.metadata.outputs.update-type == 'version-update:semver-patch'
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --auto --merge "$PR_URL"
+
+      - name: Safety note (when HOLD)
+        if: steps.ai_review.outputs.decision == 'HOLD'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "$PR_URL" --body "🛑 **AI decision = HOLD** → auto-merge is disabled for this PR (even if it's a patch)."
