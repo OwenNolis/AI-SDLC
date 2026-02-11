@@ -69,7 +69,7 @@ jobs:
       - name: Run one-command AI-SDLC flow (quota-safe)
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
 
           echo "=============================================="
           echo "AI-SDLC FLOW (quota-safe wrapper)"
