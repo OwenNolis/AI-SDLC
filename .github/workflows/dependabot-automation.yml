@@ -45,20 +45,20 @@ jobs:
             "/repos/${GITHUB_REPOSITORY}/compare/${BASE_REF}...${HEAD_SHA}" \
             --jq '.files[] | "\(.filename) (+\(.additions)/-\(.deletions))"' 2>/dev/null | head -n 40 || true)"
 
-          PROMPT="$(cat <<'EOF'
-            You are a senior backend/frontend engineer reviewing a Dependabot dependency update PR.
+          # SAFE heredoc: closing EOF MUST be at col 1
+          read -r -d '' PROMPT <<'EOF'
+          You are a senior backend/frontend engineer reviewing a Dependabot dependency update PR.
 
-            Write a short structured review in Markdown with these sections:
+          Write a short structured review in Markdown with these sections:
 
-            1) Summary
-            2) Risk assessment (LOW / MEDIUM / HIGH)
-            3) Breaking-change suspicion (YES/NO + why)
-            4) Verification steps (what to run)
-            5) Final recommendation: APPROVE or HOLD
+          1) Summary
+          2) Risk assessment (LOW / MEDIUM / HIGH)
+          3) Breaking-change suspicion (YES/NO + why)
+          4) Verification steps (what to run)
+          5) Final recommendation: APPROVE or HOLD
 
-            Be strict. If unsure: HOLD.
-            EOF
-            )"
+          Be strict. If unsure: HOLD.
+          EOF
 
           REQUEST_JSON="$(jq -n \
             --arg prompt "$PROMPT" \
@@ -121,7 +121,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          # statusCheckRollup includes GitHub Actions checks etc.
           STATES="$(gh pr view "$PR_URL" --json statusCheckRollup --jq '.statusCheckRollup[].state' || true)"
 
           if [ -z "$STATES" ]; then
@@ -133,10 +132,9 @@ jobs:
           echo "States:"
           echo "$STATES" | sort -u
 
-          # Require ALL checks SUCCESS
           if echo "$STATES" | grep -qv '^SUCCESS$'; then
             echo "ok=false" >> "$GITHUB_OUTPUT"
-            echo "CI is not fully green yet."
+            echo "❌ CI is not fully green yet."
           else
             echo "ok=true" >> "$GITHUB_OUTPUT"
             echo "✅ CI is green (all checks SUCCESS)."
