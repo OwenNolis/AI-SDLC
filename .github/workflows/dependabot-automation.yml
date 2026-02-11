@@ -89,7 +89,19 @@ jobs:
           echo "Gemini HTTP status: $HTTP_CODE"
 
           DECISION="HOLD"
-          REVIEW="Gemini API call failed (HTTP $HTTP_CODE). Final recommendation: HOLD"
+            REVIEW="Gemini API call failed (HTTP $HTTP_CODE). Falling back to metadata policy."
+
+            # Fallback policy when Gemini fails:
+            # - PATCH => APPROVE
+            # - MINOR/MAJOR => HOLD
+            if [ "$HTTP_CODE" != "200" ]; then
+                if [ "${{ steps.metadata.outputs.update-type }}" = "version-update:semver-patch" ]; then
+                    DECISION="APPROVE"
+                    REVIEW="$REVIEW\n\nFallback: semver-patch => APPROVE (auto-merge allowed)."
+                else
+                    REVIEW="$REVIEW\n\nFallback: non-patch => HOLD (manual review required)."
+                fi
+            fi
 
           if [ "$HTTP_CODE" = "200" ]; then
             REVIEW="$(jq -r '.candidates[0].content.parts[0].text // ""' gemini.json)"
