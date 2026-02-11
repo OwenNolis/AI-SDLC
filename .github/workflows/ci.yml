@@ -66,8 +66,36 @@ jobs:
             echo "✅ GEMINI_API_KEY is set (hidden)"
           fi
 
-      - name: Run one-command AI-SDLC flow
-        run: ./ai/flow.sh "${FEATURE_ID}"
+      - name: Run one-command AI-SDLC flow (quota-safe)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "=============================================="
+          echo "AI-SDLC FLOW (quota-safe wrapper)"
+          echo "Feature: ${FEATURE_ID}"
+          echo "Repo:    ${GITHUB_WORKSPACE}"
+          echo "=============================================="
+
+          # We capture output so we can detect quota (429) and not fail CI.
+          set +e
+          ./ai/flow.sh "${FEATURE_ID}" 2>&1 | tee flow.log
+          EXIT_CODE="${PIPESTATUS[0]}"
+          set -e
+
+          if [ "$EXIT_CODE" -eq 0 ]; then
+            echo "✅ flow.sh succeeded"
+            exit 0
+          fi
+
+          # If quota exceeded -> do NOT fail CI
+          if grep -q "429 Too Many Requests" flow.log; then
+            echo "⚠️ Gemini quota hit (429). Not failing CI for this run."
+            exit 0
+          fi
+
+          echo "❌ flow.sh failed (exit code ${EXIT_CODE}). Failing CI."
+          exit "$EXIT_CODE"
 
       - name: Upload generated artifacts
         if: always()
@@ -75,6 +103,7 @@ jobs:
         with:
           name: ai-sdlc-artifacts
           path: |
+            flow.log
             backend/src/test/java/**/Feature001SupportTicketGeneratedIT.java
             frontend/src/ui/__generated__/**
             docs/technical-analysis/**
