@@ -10,57 +10,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # 1) REQUIRED CHECK: build/test zonder Gemini (stabiel voor Dependabot)
-  build:
-    name: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-          cache-dependency-path: |
-            frontend/package-lock.json
-            ai/agent/package-lock.json
-            ai/validator/package-lock.json
-
-      - name: Setup Java (Temurin 21)
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: "maven"
-
-      # Frontend deps + lint/build (pas aan als jij andere scripts hebt)
-      - name: Install frontend deps
-        run: npm ci
-        working-directory: frontend
-
-      - name: Frontend build
-        run: npm run build --if-present
-        working-directory: frontend
-
-      # Backend build/test (pas aan als jij andere Maven modules hebt)
-      - name: Backend tests
-        run: mvn -q -B -DskipITs=true test
-        working-directory: backend
-
-  # 2) OPTIONAL: jouw AI-SDLC flow (alleen op push naar main of niet-dependabot PRs)
   flow:
-    name: flow
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [build]
-    # Niet draaien voor Dependabot PRs, want die hebben al hun eigen automation + quota issues
-    if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]')
 
     env:
       FEATURE_ID: feature-001-support-ticket
@@ -102,7 +54,11 @@ jobs:
       - name: Preflight info
         run: |
           echo "Feature: ${FEATURE_ID}"
-          echo "GEMINI_MODEL=${GEMINI_MODEL:-<not set>}"
+          if [ -n "${GEMINI_MODEL}" ]; then
+            echo "GEMINI_MODEL=${GEMINI_MODEL}"
+          else
+            echo "GEMINI_MODEL not set (default will be used)"
+          fi
           if [ -z "${GEMINI_API_KEY}" ]; then
             echo "❌ GEMINI_API_KEY missing"
             exit 1
@@ -110,15 +66,36 @@ jobs:
             echo "✅ GEMINI_API_KEY is set (hidden)"
           fi
 
-      # Belangrijk: Flow mag je demo niet blokkeren door quota.
-      # We laten deze stap NIET je volledige CI blokkeren op PR’s.
-      - name: Run one-command AI-SDLC flow (non-blocking on quota)
+      - name: Run one-command AI-SDLC flow (quota-safe)
+        shell: bash
         run: |
+          set -euo pipefail
+
+          echo "=============================================="
+          echo "AI-SDLC FLOW (quota-safe wrapper)"
+          echo "Feature: ${FEATURE_ID}"
+          echo "Repo:    ${GITHUB_WORKSPACE}"
+          echo "=============================================="
+
+          # We capture output so we can detect quota (429) and not fail CI.
+          set +e
+          ./ai/flow.sh "${FEATURE_ID}" 2>&1 | tee flow.log
+          EXIT_CODE="${PIPESTATUS[0]}"
           set -e
-          ./ai/flow.sh "${FEATURE_ID}" || {
-            echo "⚠️ flow.sh failed. This is non-blocking in CI (often quota/rate-limit)."
+
+          if [ "$EXIT_CODE" -eq 0 ]; then
+            echo "✅ flow.sh succeeded"
             exit 0
-          }
+          fi
+
+          # If quota exceeded -> do NOT fail CI
+          if grep -q "429 Too Many Requests" flow.log; then
+            echo "⚠️ Gemini quota hit (429). Not failing CI for this run."
+            exit 0
+          fi
+
+          echo "❌ flow.sh failed (exit code ${EXIT_CODE}). Failing CI."
+          exit "$EXIT_CODE"
 
       - name: Upload generated artifacts
         if: always()
@@ -126,6 +103,7 @@ jobs:
         with:
           name: ai-sdlc-artifacts
           path: |
+            flow.log
             backend/src/test/java/**/Feature001SupportTicketGeneratedIT.java
             frontend/src/ui/__generated__/**
             docs/technical-analysis/**

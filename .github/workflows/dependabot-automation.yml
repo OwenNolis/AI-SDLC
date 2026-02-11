@@ -16,11 +16,10 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
 
     steps:
-      - name: Install jq + python deps
+      - name: Install jq
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
-          python -m pip install --upgrade pip requests
 
       - name: Fetch Dependabot metadata
         id: metadata
@@ -42,108 +41,79 @@ jobs:
         run: |
           set -euo pipefail
 
-          python - <<'PY'
-          import os, json, subprocess, textwrap
-          import requests
+          MODEL="${GEMINI_MODEL:-models/gemini-2.5-flash-lite}"
 
-          def run(cmd):
-            return subprocess.check_output(cmd, text=True).strip()
+          echo "==> Dependabot AI review"
+          echo "PR:    $PR_URL"
+          echo "Base:  $BASE_REF"
+          echo "Head:  $HEAD_SHA"
+          echo "Model: $MODEL"
+          echo
 
-          pr_url   = os.environ["PR_URL"]
-          title    = os.environ.get("PR_TITLE","")
-          body     = os.environ.get("PR_BODY","") or ""
-          base_ref = os.environ.get("BASE_REF","")
-          head_sha = os.environ.get("HEAD_SHA","")
+          DIFF_SUMMARY="$(gh api -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/compare/${BASE_REF}...${HEAD_SHA}" \
+            --jq '.files[] | "\(.filename) (+\(.additions)/-\(.deletions))"' 2>/dev/null | head -n 40 || true)"
 
-          model = os.environ.get("GEMINI_MODEL") or "models/gemini-2.5-flash-lite"
-          api_key = os.environ.get("GEMINI_API_KEY","")
+          echo "Diff summary (first lines):"
+          echo "$DIFF_SUMMARY" | head -n 10 || true
+          echo
 
-          # Diff summary via GitHub API (via gh)
-          diff_summary = ""
-          try:
-            repo = os.environ["GITHUB_REPOSITORY"]
-            diff_summary = run([
-              "gh","api","-H","Accept: application/vnd.github+json",
-              f"/repos/{repo}/compare/{base_ref}...{head_sha}",
-              "--jq", '.files[] | "\\(.filename) (+\\(.additions)/-\\(.deletions))"'
-            ])
-            diff_summary = "\n".join(diff_summary.splitlines()[:40])
-          except Exception:
-            diff_summary = "(diff summary unavailable)"
+          # ✅ PROMPT flush-left, zonder heredoc (dus geen YAML/bashtools conflicts)
+          PROMPT=$'You are a senior backend/frontend engineer reviewing a Dependabot dependency update PR.\n\nWrite a short structured review in Markdown with these sections:\n\n1) Summary\n2) Risk assessment (LOW / MEDIUM / HIGH)\n3) Breaking-change suspicion (YES/NO + why)\n4) Verification steps (what to run)\n5) Final recommendation: APPROVE or HOLD\n\nBe strict. If unsure: HOLD.\n'
 
-          prompt = """You are a senior backend/frontend engineer reviewing a Dependabot dependency update PR.
+          REQUEST_JSON="$(jq -n \
+            --arg prompt "$PROMPT" \
+            --arg title "$PR_TITLE" \
+            --arg body "${PR_BODY:-}" \
+            --arg diff "$DIFF_SUMMARY" \
+            '{
+              contents: [{
+                parts: [{
+                  text: ($prompt
+                    + "\n\nContext:\n"
+                    + "Title: " + $title + "\n\n"
+                    + "PR body:\n" + $body + "\n\n"
+                    + "Diff summary:\n" + $diff + "\n")
+                }]
+              }]
+            }'
+          )"
 
-          Write a short structured review in Markdown with these sections:
+          # Call Gemini, maar workflow mag NIET falen bij quota/HTTP issues.
+          HTTP_CODE="$(curl -sS -o gemini.json -w "%{http_code}" \
+            -H "Content-Type: application/json" \
+            -H "x-goog-api-key: ${GEMINI_API_KEY}" \
+            "https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateContent" \
+            -d "$REQUEST_JSON" || true)"
 
-          1) Summary
-          2) Risk assessment (LOW / MEDIUM / HIGH)
-          3) Breaking-change suspicion (YES/NO + why)
-          4) Verification steps (what to run)
-          5) Final recommendation: APPROVE or HOLD
+          echo "Gemini HTTP status: $HTTP_CODE"
 
-          Be strict. If unsure: HOLD.
-          """
+          DECISION="HOLD"
+          REVIEW="Gemini API call failed (HTTP $HTTP_CODE). Final recommendation: HOLD"
 
-          # Build request body for Gemini
-          text = (
-            prompt.strip()
-            + "\n\nContext:\n"
-            + f"Title: {title}\n\n"
-            + "PR body:\n" + body + "\n\n"
-            + "Diff summary:\n" + diff_summary + "\n"
-          )
+          if [ "$HTTP_CODE" = "200" ]; then
+            REVIEW="$(jq -r '.candidates[0].content.parts[0].text // ""' gemini.json)"
+            if [ -z "$REVIEW" ]; then
+              REVIEW="AI review failed to produce output. Final recommendation: HOLD"
+              DECISION="HOLD"
+            else
+              DECISION="APPROVE"
+              echo "$REVIEW" | grep -qi "Final recommendation: HOLD" && DECISION="HOLD"
+              echo "$REVIEW" | grep -qiE "\bHOLD\b" && DECISION="HOLD"
+            fi
+          fi
 
-          decision = "HOLD"
-          review_text = "AI review skipped. Final recommendation: HOLD"
+          echo "decision=$DECISION" >> "$GITHUB_OUTPUT"
 
-          if not api_key:
-            review_text = "GEMINI_API_KEY missing. Final recommendation: HOLD"
-          else:
-            url = f"https://generativelanguage.googleapis.com/v1beta/{model}:generateContent"
-            payload = {
-              "contents": [{"parts": [{"text": text}]}]
-            }
-            headers = {
-              "Content-Type": "application/json",
-              "x-goog-api-key": api_key
-            }
+          {
+            echo "## 🤖 AI Review (Gemini)"
+            echo
+            echo "$REVIEW"
+            echo
+            echo "**Decision:** \`$DECISION\`"
+          } > ai-review.md
 
-            try:
-              r = requests.post(url, headers=headers, data=json.dumps(payload), timeout=25)
-              if r.status_code != 200:
-                # Non-blocking: HOLD + comment, but do not fail
-                review_text = f"Gemini API error (HTTP {r.status_code}). Final recommendation: HOLD\n\nResponse: {r.text[:800]}"
-              else:
-                data = r.json()
-                review_text = (
-                  data.get("candidates", [{}])[0]
-                    .get("content", {})
-                    .get("parts", [{}])[0]
-                    .get("text", "")
-                ).strip() or "AI review empty. Final recommendation: HOLD"
-
-                # Decision parse
-                decision = "APPROVE"
-                low = review_text.lower()
-                if "final recommendation: hold" in low or "\nhold" in low or " hold" in low:
-                  decision = "HOLD"
-
-            except Exception as e:
-              review_text = f"Gemini call failed ({e}). Final recommendation: HOLD"
-
-          # Write outputs for next steps
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
-            f.write(f"decision={decision}\n")
-
-          # Comment on PR (always, but don't fail if comment fails)
-          md = "## 🤖 AI Review (Gemini)\n\n" + review_text + f"\n\n**Decision:** `{decision}`\n"
-          open("ai-review.md","w",encoding="utf-8").write(md)
-
-          try:
-            subprocess.check_call(["gh","pr","comment", pr_url, "--body-file","ai-review.md"])
-          except Exception:
-            pass
-          PY
+          gh pr comment "$PR_URL" --body-file ai-review.md || true
 
       - name: Auto-approve (only if AI APPROVE)
         if: steps.ai_review.outputs.decision == 'APPROVE'
@@ -160,6 +130,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          echo "==> Checking PR statusCheckRollup states"
           STATES="$(gh pr view "$PR_URL" --json statusCheckRollup --jq '.statusCheckRollup[].state' || true)"
 
           if [ -z "$STATES" ]; then
