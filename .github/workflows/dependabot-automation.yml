@@ -17,7 +17,9 @@ jobs:
 
     steps:
       - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
 
       - name: Fetch Dependabot metadata
         id: metadata
@@ -25,7 +27,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: AI review (Gemini) -> decision
+      - name: AI review (Gemini) -> decision (non-blocking)
         id: ai_review
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -41,24 +43,23 @@ jobs:
 
           MODEL="${GEMINI_MODEL:-models/gemini-2.5-flash-lite}"
 
+          echo "==> Dependabot AI review"
+          echo "PR:    $PR_URL"
+          echo "Base:  $BASE_REF"
+          echo "Head:  $HEAD_SHA"
+          echo "Model: $MODEL"
+          echo
+
           DIFF_SUMMARY="$(gh api -H "Accept: application/vnd.github+json" \
             "/repos/${GITHUB_REPOSITORY}/compare/${BASE_REF}...${HEAD_SHA}" \
             --jq '.files[] | "\(.filename) (+\(.additions)/-\(.deletions))"' 2>/dev/null | head -n 40 || true)"
 
-          # SAFE heredoc: closing EOF MUST be at col 1
-          read -r -d '' PROMPT <<'EOF'
-          You are a senior backend/frontend engineer reviewing a Dependabot dependency update PR.
+          echo "Diff summary (first lines):"
+          echo "$DIFF_SUMMARY" | head -n 10 || true
+          echo
 
-          Write a short structured review in Markdown with these sections:
-
-          1) Summary
-          2) Risk assessment (LOW / MEDIUM / HIGH)
-          3) Breaking-change suspicion (YES/NO + why)
-          4) Verification steps (what to run)
-          5) Final recommendation: APPROVE or HOLD
-
-          Be strict. If unsure: HOLD.
-          EOF
+          # ✅ PROMPT flush-left, zonder heredoc (dus geen YAML/bashtools conflicts)
+          PROMPT=$'You are a senior backend/frontend engineer reviewing a Dependabot dependency update PR.\n\nWrite a short structured review in Markdown with these sections:\n\n1) Summary\n2) Risk assessment (LOW / MEDIUM / HIGH)\n3) Breaking-change suspicion (YES/NO + why)\n4) Verification steps (what to run)\n5) Final recommendation: APPROVE or HOLD\n\nBe strict. If unsure: HOLD.\n'
 
           REQUEST_JSON="$(jq -n \
             --arg prompt "$PROMPT" \
@@ -78,20 +79,29 @@ jobs:
             }'
           )"
 
-          RESPONSE="$(curl -sS \
+          # Call Gemini, maar workflow mag NIET falen bij quota/HTTP issues.
+          HTTP_CODE="$(curl -sS -o gemini.json -w "%{http_code}" \
             -H "Content-Type: application/json" \
             -H "x-goog-api-key: ${GEMINI_API_KEY}" \
             "https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateContent" \
-            -d "$REQUEST_JSON")"
+            -d "$REQUEST_JSON" || true)"
 
-          REVIEW="$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // ""')"
-          if [ -z "$REVIEW" ]; then
-            REVIEW="AI review failed to produce output. Final recommendation: HOLD"
+          echo "Gemini HTTP status: $HTTP_CODE"
+
+          DECISION="HOLD"
+          REVIEW="Gemini API call failed (HTTP $HTTP_CODE). Final recommendation: HOLD"
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            REVIEW="$(jq -r '.candidates[0].content.parts[0].text // ""' gemini.json)"
+            if [ -z "$REVIEW" ]; then
+              REVIEW="AI review failed to produce output. Final recommendation: HOLD"
+              DECISION="HOLD"
+            else
+              DECISION="APPROVE"
+              echo "$REVIEW" | grep -qi "Final recommendation: HOLD" && DECISION="HOLD"
+              echo "$REVIEW" | grep -qiE "\bHOLD\b" && DECISION="HOLD"
+            fi
           fi
-
-          DECISION="APPROVE"
-          echo "$REVIEW" | grep -qi "Final recommendation: HOLD" && DECISION="HOLD"
-          echo "$REVIEW" | grep -qiE "\bHOLD\b" && DECISION="HOLD"
 
           echo "decision=$DECISION" >> "$GITHUB_OUTPUT"
 
@@ -103,15 +113,14 @@ jobs:
             echo "**Decision:** \`$DECISION\`"
           } > ai-review.md
 
-          gh pr comment "$PR_URL" --body-file ai-review.md
+          gh pr comment "$PR_URL" --body-file ai-review.md || true
 
       - name: Auto-approve (only if AI APPROVE)
         if: steps.ai_review.outputs.decision == 'APPROVE'
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr review --approve "$PR_URL"
+        run: gh pr review --approve "$PR_URL" || true
 
       - name: Check CI status checks are green (required for auto-merge)
         id: ci_green
@@ -121,6 +130,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          echo "==> Checking PR statusCheckRollup states"
           STATES="$(gh pr view "$PR_URL" --json statusCheckRollup --jq '.statusCheckRollup[].state' || true)"
 
           if [ -z "$STATES" ]; then
@@ -148,13 +158,11 @@ jobs:
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr merge --auto --merge "$PR_URL"
+        run: gh pr merge --auto --merge "$PR_URL" || true
 
       - name: Safety note (when HOLD)
         if: steps.ai_review.outputs.decision == 'HOLD'
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr comment "$PR_URL" --body "🛑 **AI decision = HOLD** → auto-merge is disabled for this PR (even if it's a patch)."
+        run: gh pr comment "$PR_URL" --body "🛑 **AI decision = HOLD** → auto-merge is disabled for this PR (even if it's a patch)." || true
