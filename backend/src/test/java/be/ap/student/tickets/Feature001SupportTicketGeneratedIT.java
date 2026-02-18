@@ -810,8 +810,214 @@ class Feature001SupportTicketGeneratedIT {
     }
 
 
-    // (Tip) Run with --matrix to also generate TA validation-matrix tests:
-    //   node ai/testgen/generate-backend-tests.mjs feature-001-support-ticket --matrix
+    // ------------------------------------------------------------
+    // TA MATRIX TESTS ENABLED (--matrix)
+    // ------------------------------------------------------------
 
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.subject -> empty
+     */
+    @Test
+    void matrixSupportTicketSubjectEmpty_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.subject -> too_short
+     */
+    @Test
+    void matrixSupportTicketSubjectTooShort_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "aaa");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.subject -> too_long
+     */
+    @Test
+    void matrixSupportTicketSubjectTooLong_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.subject -> duplicate_per_day
+     */
+    @Test
+    void matrixSupportTicketSubjectDuplicatePerDay_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "INVALID");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.description -> empty
+     */
+    @Test
+    void matrixSupportTicketDescriptionEmpty_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.description -> too_short
+     */
+    @Test
+    void matrixSupportTicketDescriptionTooShort_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "aaaaaaaaaaaaaaaaaa");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.description -> too_long
+     */
+    @Test
+    void matrixSupportTicketDescriptionTooLong_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.priority -> missing
+     */
+    @Test
+    void matrixSupportTicketPriorityMissing_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
+
+
+    /**
+     * GENERATED (TA MATRIX)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Source: docs/technical-analysis/feature-001-support-ticket.ta.json
+     * - Matrix: SupportTicket.priority -> invalid_value
+     */
+    @Test
+    void matrixSupportTicketPriorityInvalidValue_rejected() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "INVALID");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getStatusCode().value()).isIn(400, 422);
+        assertThat(res.getBody()).isNotNull();
+    }
 
 }
