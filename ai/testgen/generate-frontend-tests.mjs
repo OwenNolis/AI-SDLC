@@ -71,7 +71,8 @@ const content = `/**
  * - Source: docs/test-scenarios/${feature}.flow.json
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import { fireEvent } from "@testing-library/dom";
 import { TicketForm } from "../TicketForm";
 
 describe("${feature} - generated UI tests", () => {
