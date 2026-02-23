@@ -29,20 +29,20 @@ updates:
     labels:
       - "dependencies"
       - "frontend"
-    # Temporarily disabled grouping to test PR limits
-    # groups:
-    #   frontend-minor-patch:
-    #     patterns:
-    #       - "*"
-    #     update-types:
-    #       - "minor"
-    #       - "patch"
-    #   frontend-major:
-    #     patterns:
-    #       - "react*"
-    #       - "@types/*"
-    #     update-types:
-    #       - "major"
+    # Temporarily disable grouping to test PR limits
+    groups:
+      frontend-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      frontend-major:
+        patterns:
+          - "react*"
+          - "@types/*"
+        update-types:
+          - "major
 
   # AI validator tooling (npm)
   - package-ecosystem: "npm"
