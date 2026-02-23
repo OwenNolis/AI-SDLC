@@ -42,7 +42,7 @@ updates:
           - "react*"
           - "@types/*"
         update-types:
-          - "major
+          - "major"
 
   # AI validator tooling (npm)
   - package-ecosystem: "npm"
