@@ -5,8 +5,8 @@
  * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
  */
 
-import { render } from "@testing-library/react";
-import { screen, fireEvent } from "@testing-library/dom";
+import { render, screen } from "@testing-library/react";
+import { fireEvent } from "@testing-library/dom";
 import { TicketForm } from "../TicketForm";
 
 describe("feature-001-support-ticket - generated UI tests", () => {
