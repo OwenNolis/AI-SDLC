@@ -36,6 +36,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      frontend-major:
+        patterns:
+          - "react*"
+          - "@types/*"
+        update-types:
+          - "major"
 
   # AI validator tooling (npm)
   - package-ecosystem: "npm"
