@@ -76,8 +76,9 @@ run_step "4) Run backend tests (mvn test)" \
   bash -lc "cd '${ROOT_DIR}/backend' && mvn -q -DskipTests dependency:go-offline && mvn test"
 
 # 5) Run frontend tests
+# Handle peer dependency conflicts
 run_step "5) Run frontend tests (npm test)" \
-  bash -lc "cd '${ROOT_DIR}/frontend' && npm ci && npm test"
+  bash -lc "cd '${ROOT_DIR}/frontend' && npm install --legacy-peer-deps && npm test"
 
 echo ""
 echo "=============================================="
