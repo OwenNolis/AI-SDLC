@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/dom";
 import { TicketForm } from "./TicketForm";
 
 test("submit disabled when invalid", () => {
