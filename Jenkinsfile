@@ -10,7 +10,7 @@ pipeline {
   environment {
     FEATURE_ID = "feature-001-support-ticket"
     GEMINI_API_KEY = credentials('gemini-api-key')
-    GEMINI_MODEL  = "gemini-2.5-flash-lite"
+    GEMINI_MODEL  = "models/gemini-1.5-flash"
   }
 
   stages {
