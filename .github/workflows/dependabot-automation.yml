@@ -41,7 +41,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          MODEL="${GEMINI_MODEL:-gemini-1.5-flash}"
+          MODEL="${GEMINI_MODEL:-gemini-1.5-flash-latest}"
 
           echo "==> Dependabot AI review"
           echo "PR:    $PR_URL"
