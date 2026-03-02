@@ -56,7 +56,7 @@ if (!geminiKey) {
   process.exit(1);
 }
 
-const geminiModel = process.env.GEMINI_MODEL || "gemini-2.0-flash-exp";
+const geminiModel = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
 
 const genAI = new GoogleGenerativeAI(geminiKey);
 const model = genAI.getGenerativeModel({
