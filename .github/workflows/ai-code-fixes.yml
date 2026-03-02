@@ -1,0 +1,251 @@
+name: AI Code Fixes
+
+on:
+  push:
+    branches: [main, develop, feature/*]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch: # Allow manual triggering
+
+concurrency:
+  group: ai-fixes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ai-code-fixes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    # Only run if not a bot commit (avoid infinite loops)
+    if: ${{ !contains(github.event.head_commit.message, '[ai-fix]') }}
+
+    env:
+      FEATURE_ID: feature-001-support-ticket
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            frontend/package-lock.json
+            ai/agent/package-lock.json
+            ai/validator/package-lock.json
+
+      - name: Setup Java (Temurin 21)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "maven"
+
+      - name: Install AI agent dependencies
+        run: |
+          cd ai/agent && npm ci
+          cd ../validator && npm ci
+
+      - name: Make scripts executable
+        run: |
+          chmod +x ai/flow.sh
+          chmod +x ai/generate-tests.sh
+          chmod +x .github/scripts/ai-fix-utils.sh
+
+      - name: Run SDLC Flow (Attempt 1)
+        id: sdlc_flow_attempt1
+        run: |
+          set +e  # Don't exit on error
+          ./ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output.log
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Analyze Errors and Prepare Fix Context
+        if: steps.sdlc_flow_attempt1.outputs.exit_code != '0'
+        id: analyze_errors
+        run: |
+          echo "SDLC Flow failed, analyzing errors..."
+          
+          # Use our helper script to extract errors
+          source .github/scripts/ai-fix-utils.sh
+          .github/scripts/ai-fix-utils.sh extract-errors flow_output.log error_analysis.md
+          
+          # Check if we have substantial errors to work with
+          if [ -s error_analysis.md ]; then
+            echo "has_errors=true" >> $GITHUB_OUTPUT
+            echo "Errors found and documented"
+          else
+            echo "has_errors=false" >> $GITHUB_OUTPUT
+            echo "No clear errors to analyze"
+          fi
+
+      - name: Install GitHub CLI Extensions
+        if: steps.analyze_errors.outputs.has_errors == 'true'
+        run: |
+          # Install GitHub Copilot CLI if available
+          gh extension install github/gh-copilot || echo "Copilot CLI not available, will use alternative approach"
+
+      - name: Generate AI Fix Suggestions
+        if: steps.analyze_errors.outputs.has_errors == 'true'
+        id: ai_fixes
+        run: |
+          echo "Generating AI fix suggestions..."
+          
+          # Create a comprehensive context for AI
+          cat > fix_context.md << 'EOF'
+          # AI-SDLC Code Fixing Context
+          
+          ## Repository Structure
+          This is an AI-driven SDLC project with:
+          - Backend: Spring Boot 4.x with Maven
+          - Frontend: React with Vite, TypeScript, Jest
+          - AI Tools: Node.js scripts for test generation
+          
+          ## Current Error Analysis
+          EOF
+          
+          cat error_analysis.md >> fix_context.md
+          
+          echo "" >> fix_context.md
+          echo "## Recent Changes" >> fix_context.md
+          git log --oneline -5 >> fix_context.md
+          
+          # Use our helper script for better suggestions
+          source .github/scripts/ai-fix-utils.sh
+          .github/scripts/ai-fix-utils.sh generate-fixes error_analysis.md ai_suggestions.md
+          
+          # Try GitHub Copilot as enhancement if available
+          if gh copilot --version >/dev/null 2>&1; then
+            echo "Enhancing with GitHub Copilot suggestions..."
+            echo "" >> ai_suggestions.md
+            echo "## 🧠 Enhanced AI Suggestions" >> ai_suggestions.md
+            gh copilot suggest -t shell "Based on the errors above, suggest specific file changes to fix the SDLC flow issues" < fix_context.md >> ai_suggestions.md || true
+          fi
+          
+          echo "fix_suggestions_created=true" >> $GITHUB_OUTPUT
+
+      - name: Apply Automated Fixes
+        if: steps.ai_fixes.outputs.fix_suggestions_created == 'true'
+        id: apply_fixes
+        run: |
+          echo "Applying automated fixes based on AI suggestions..."
+          
+          # Use our helper script for intelligent fix application
+          source .github/scripts/ai-fix-utils.sh
+          
+          if .github/scripts/ai-fix-utils.sh apply-fixes flow_output.log; then
+            echo "fixes_applied=true" >> $GITHUB_OUTPUT
+            echo "Applied automated fixes using helper script"
+          else
+            echo "fixes_applied=false" >> $GITHUB_OUTPUT
+            echo "No automated fixes applied"
+          fi
+
+      - name: Test Fixes (Attempt 2)
+        if: steps.apply_fixes.outputs.fixes_applied == 'true'
+        id: test_fixes
+        run: |
+          echo "Testing applied fixes..."
+          set +e
+          ./ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output_fixed.log
+          exit_code=$?
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          
+          if [ $exit_code -eq 0 ]; then
+            echo "✅ Fixes successful! SDLC flow now passes."
+            echo "fixes_successful=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Fixes didn't resolve all issues."
+            echo "fixes_successful=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Fix Pull Request
+        if: steps.apply_fixes.outputs.fixes_applied == 'true'
+        run: |
+          # Configure git
+          git config user.name "AI Code Fixer"
+          git config user.email "ai-fixer@github-actions"
+          
+          # Check if there are changes to commit
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          # Create a new branch
+          timestamp=$(date +%Y%m%d-%H%M%S)
+          branch_name="ai-fix/auto-fixes-${timestamp}"
+          git checkout -b "$branch_name"
+          
+          # Commit changes
+          git add -A
+          
+          # Create detailed commit message
+          commit_msg="[ai-fix] Automated code fixes for SDLC flow issues"
+          if [ "${{ steps.test_fixes.outputs.fixes_successful }}" = "true" ]; then
+            commit_msg="$commit_msg - ✅ Verified working"
+          else
+            commit_msg="$commit_msg - ⚠️ Partial fix"
+          fi
+          
+          git commit -m "$commit_msg"
+          git push origin "$branch_name"
+          
+          # Create PR with detailed description
+          cat > pr_body.md << 'EOF'
+          ## 🤖 Automated AI Code Fixes
+          
+          This PR contains automated fixes generated by the AI Code Fixes workflow.
+          
+          ### Original Errors
+          ```
+          EOF
+          head -20 error_analysis.md >> pr_body.md
+          echo '```' >> pr_body.md
+          
+          echo "" >> pr_body.md
+          echo "### AI Suggestions Applied" >> pr_body.md
+          echo '```' >> pr_body.md
+          cat ai_suggestions.md >> pr_body.md
+          echo '```' >> pr_body.md
+          
+          echo "" >> pr_body.md
+          if [ "${{ steps.test_fixes.outputs.fixes_successful }}" = "true" ]; then
+            echo "### ✅ Status: Fixes Verified" >> pr_body.md
+            echo "The SDLC flow now passes successfully with these changes." >> pr_body.md
+          else
+            echo "### ⚠️ Status: Partial Fix" >> pr_body.md
+            echo "These fixes address some issues but the SDLC flow may still need manual attention." >> pr_body.md
+          fi
+          
+          echo "" >> pr_body.md
+          echo "### Files Modified" >> pr_body.md
+          git diff --name-only HEAD~1 >> pr_body.md
+          
+          # Create the PR
+          gh pr create \
+            --title "🤖 Automated AI Code Fixes - $(date +%Y-%m-%d)" \
+            --body-file pr_body.md \
+            --label "ai-generated,automated-fix" \
+            --assignee "${{ github.actor }}"
+
+      - name: Upload Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-fix-analysis-${{ github.run_number }}
+          path: |
+            flow_output.log
+            flow_output_fixed.log
+            error_analysis.md
+            ai_suggestions.md
+            fix_context.md
+          retention-days: 30
