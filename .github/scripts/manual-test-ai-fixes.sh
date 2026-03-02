@@ -137,8 +137,15 @@ analyze_errors() {
         return 1
     fi
     
+    # Handle relative paths from project root
+    if [ ! -f "$log_file" ] && [ -f "../../$log_file" ]; then
+        log_file="../../$log_file"
+    fi
+    
     if [ ! -f "$log_file" ]; then
         log_error "Log file not found: $log_file"
+        log_info "Current directory: $(pwd)"
+        log_info "Looking for: $log_file"
         return 1
     fi
     
@@ -152,7 +159,7 @@ analyze_errors() {
         echo "=== ERROR ANALYSIS ==="
         cat manual_error_analysis.md
         echo ""
-        echo "Analysis saved to: manual_error_analysis.md"
+        echo "Analysis saved to: $(pwd)/manual_error_analysis.md"
     else
         log_warning "No errors found or analysis failed"
     fi
@@ -204,14 +211,24 @@ apply_fixes() {
         return 1
     fi
     
+    # Handle relative paths from project root  
+    if [ ! -f "$log_file" ] && [ -f "../../$log_file" ]; then
+        log_file="../../$log_file"
+    fi
+    
     if [ ! -f "$log_file" ]; then
         log_error "Log file not found: $log_file"
+        log_info "Current directory: $(pwd)"
+        log_info "Looking for: $log_file"
         return 1
     fi
     
     log_info "Applying automated fixes based on $log_file..."
     
-    source ./ai-fix-utils.sh
+    # Change to project root for fixes to work correctly
+    cd ../../
+    
+    source .github/scripts/ai-fix-utils.sh
     
     if apply_all_fixes "$log_file"; then
         log_success "Automated fixes applied successfully"
@@ -220,6 +237,9 @@ apply_fixes() {
         echo "- backend/src/test/**/*.java (Spring Boot fixes)"
         echo "- frontend/src/**/*.test.tsx (React Testing Library fixes)"
         echo "- frontend/package.json and node_modules (npm fixes)"
+        echo ""
+        echo "Check git status to see actual changes:"
+        git status --porcelain 2>/dev/null || echo "No git repository or no changes"
     else
         log_warning "No automated fixes were applied"
         echo "This could mean:"
@@ -227,6 +247,9 @@ apply_fixes() {
         echo "- The errors require manual intervention"
         echo "- The fix logic needs to be updated"
     fi
+    
+    # Return to scripts directory
+    cd .github/scripts/
 }
 
 # Validate workflow syntax
