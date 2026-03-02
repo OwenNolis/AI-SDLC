@@ -63,9 +63,10 @@ jobs:
       - name: Run SDLC Flow (Attempt 1)
         id: sdlc_flow_attempt1
         run: |
-          set +e  # Don't exit on error
           ./ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output.log
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          exit_code=$?
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          exit 0  # Always succeed this step so the workflow continues
         continue-on-error: true
 
       - name: Analyze Errors and Prepare Fix Context
