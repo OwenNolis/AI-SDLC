@@ -70,10 +70,19 @@ jobs:
         continue-on-error: true
 
       - name: Analyze Errors and Prepare Fix Context
-        if: steps.sdlc_flow_attempt1.outputs.exit_code != '0'
+        if: steps.sdlc_flow_attempt1.outputs.exit_code != '0' || contains(steps.sdlc_flow_attempt1.outputs.*, 'BUILD FAILURE')
         id: analyze_errors
         run: |
           echo "SDLC Flow failed, analyzing errors..."
+          echo "Exit code: ${{ steps.sdlc_flow_attempt1.outputs.exit_code }}"
+          
+          # Check if flow_output.log contains build failures
+          if grep -q "BUILD FAILURE\|COMPILATION ERROR\|Error:" flow_output.log; then
+            echo "Build failures detected in logs"
+          else
+            echo "No clear build failures found"
+            exit 0
+          fi
           
           # Use our helper script to extract errors
           source .github/scripts/ai-fix-utils.sh
