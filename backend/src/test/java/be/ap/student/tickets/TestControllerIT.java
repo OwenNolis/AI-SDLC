@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import be.ap.student.config.RestTemplateConfig;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.junit.jupiter.api.Test;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -29,9 +30,12 @@ public class TestControllerIT {
     @Autowired
     private RestTemplate restTemplate;
     
+    @LocalServerPort
+    private int port;
+    
     @Test
     public void testEndpoint() {
-        String result = restTemplate.getForObject("/api/test", String.class);
+        String result = restTemplate.getForObject("http://localhost:" + port + "/api/test", String.class);
         // Test should now pass with correct imports
     }
 }
