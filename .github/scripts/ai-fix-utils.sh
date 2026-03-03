@@ -204,28 +204,13 @@ EOF
 EOF
     fi
 
-# Update imports in test files
-find frontend/src -name "*.test.tsx" -exec sed -i 's/import { render, screen, fireEvent } from "@testing-library\/react"/import { render, screen } from "@testing-library\/react";\nimport { fireEvent } from "@testing-library\/dom"/g' {} \;
-```
-
-EOF
-    fi
-
     # Check for ESLint/npm conflicts
     if grep -q "ERESOLVE\|peer dep.*conflict\|npm ERR.*ERESOLVE" "$error_file"; then
         cat >> "$suggestion_file" << 'EOF'
-## 🔧 NPM Dependency Conflict Fix
-
-**Issue**: ESLint peer dependency conflicts
-
-**Fix Commands**:
-```bash
-# Use legacy peer deps resolution
-cd frontend && npm install --legacy-peer-deps
-
-# Or clear cache and reinstall
-cd frontend && rm -rf node_modules package-lock.json && npm install --legacy-peer-deps
-```
+### NPM Dependency Conflict Fix
+- **Problem**: ESLint peer dependency conflicts
+- **Solution**: Use legacy peer deps resolution
+- **Action**: Run `cd frontend && npm install --legacy-peer-deps`
 
 EOF
     fi
@@ -233,23 +218,13 @@ EOF
     # Check for Java compilation issues
     if grep -q "cannot find symbol\|package.*does not exist\|BUILD FAILURE" "$error_file"; then
         cat >> "$suggestion_file" << 'EOF'
-## 🔧 Java Compilation Fix
-
-**Issue**: Missing imports or dependencies
-
-**Fix Commands**:
-```bash
-# Clean and rebuild
-cd backend && mvn clean compile test-compile
-
-# Update test generation template if needed
-# Check ai/testgen/generate-backend-tests.mjs for correct imports
-```
+### Java Compilation Fix
+- **Problem**: Missing imports or dependencies
+- **Solution**: Clean and rebuild with proper dependencies
+- **Action**: Run `cd backend && mvn clean compile test-compile`
 
 EOF
     fi
-
-    log_success "Fix suggestions generated in $suggestion_file"
 }
 
 # AI-powered error analysis and fixing
