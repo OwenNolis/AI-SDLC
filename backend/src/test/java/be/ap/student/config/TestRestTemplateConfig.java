@@ -3,13 +3,11 @@ package be.ap.student.config;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 
-@TestConfiguration 
+@TestConfiguration
 public class TestRestTemplateConfig {
     
     @Bean
-    @Primary
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
