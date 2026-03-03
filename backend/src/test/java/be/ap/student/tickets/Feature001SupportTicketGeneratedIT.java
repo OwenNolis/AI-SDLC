@@ -3,11 +3,9 @@ package be.ap.student.tickets;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.http.*;
 
 import java.util.Map;
@@ -15,12 +13,11 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestRestTemplateConfig.class)
-@AutoConfigureRestTemplate
+@AutoConfigureTestRestTemplate
 class Feature001SupportTicketGeneratedIT {
 
     @Autowired
-    private RestTemplate rest;
+    private TestRestTemplate rest;
 
     private ResponseEntity<String> postTicket(Map<String, Object> payload) {
         HttpHeaders headers = new HttpHeaders();
