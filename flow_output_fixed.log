@@ -80,8 +80,8 @@ All AI artifacts validated successfully.
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.357 s
-[INFO] Finished at: 2026-03-03T11:10:38Z
+[INFO] Total time:  2.276 s
+[INFO] Finished at: 2026-03-03T11:19:57Z
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure
 [ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/config/TestRestTemplateConfig.java:[14,17] cannot find symbol
