@@ -228,22 +228,41 @@ package be.ap.student.config;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 @TestConfiguration
 public class TestRestTemplateConfig {
     
     @Bean
-    public TestRestTemplate testRestTemplate(@LocalServerPort int port) {
-        TestRestTemplate template = new TestRestTemplate();
-        template.setRootUri("http://localhost:" + port);
-        return template;
+    public TestRestTemplate testRestTemplate() {
+        return new TestRestTemplate();
     }
 }
 EOF
         
         # Add @Import annotation to test files that use TestRestTemplate
         find backend/src/test -name "*.java" -exec grep -l "TestRestTemplate" {} \; | while read file; do
+            # Remove wrong @AutoConfigureTestRestTemplate annotation if present
+            if grep -q "@AutoConfigureTestRestTemplate" "$file"; then
+                log_info "Removing incorrect @AutoConfigureTestRestTemplate from $file"
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                    sed -i '.bak' '/@AutoConfigureTestRestTemplate/d' "$file"
+                    rm -f "${file}.bak"
+                else
+                    sed -i '/@AutoConfigureTestRestTemplate/d' "$file"
+                fi
+            fi
+            
+            # Remove wrong import for AutoConfigureTestRestTemplate
+            if grep -q "import.*AutoConfigureTestRestTemplate" "$file"; then
+                log_info "Removing incorrect AutoConfigureTestRestTemplate import from $file"
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                    sed -i '.bak' '/import.*AutoConfigureTestRestTemplate/d' "$file"
+                    rm -f "${file}.bak"
+                else
+                    sed -i '/import.*AutoConfigureTestRestTemplate/d' "$file"
+                fi
+            fi
+            
             # Skip if already has @Import with TestRestTemplateConfig
             if ! grep -q "@Import.*TestRestTemplateConfig" "$file"; then
                 log_info "Adding @Import(TestRestTemplateConfig.class) to $file"
