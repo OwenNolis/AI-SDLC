@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.http.*;
 
 import java.util.Map;
@@ -14,7 +12,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestRestTemplateConfig.class)
+@AutoConfigureTestRestTemplate
 class Feature001SupportTicketGeneratedIT {
 
     @Autowired
