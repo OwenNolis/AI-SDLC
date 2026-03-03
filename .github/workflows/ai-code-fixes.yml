@@ -70,17 +70,18 @@ jobs:
         continue-on-error: true
 
       - name: Analyze Errors and Prepare Fix Context
-        if: steps.sdlc_flow_attempt1.outputs.exit_code != '0' || contains(steps.sdlc_flow_attempt1.outputs.*, 'BUILD FAILURE')
+        if: always()
         id: analyze_errors
         run: |
-          echo "SDLC Flow failed, analyzing errors..."
+          echo "Checking for SDLC Flow failures..."
           echo "Exit code: ${{ steps.sdlc_flow_attempt1.outputs.exit_code }}"
           
           # Check if flow_output.log contains build failures
-          if grep -q "BUILD FAILURE\|COMPILATION ERROR\|Error:" flow_output.log; then
-            echo "Build failures detected in logs"
+          if [ -f flow_output.log ] && grep -q "BUILD FAILURE\|COMPILATION ERROR\|Error:" flow_output.log; then
+            echo "Build failures detected in logs - proceeding with analysis"
           else
-            echo "No clear build failures found"
+            echo "No build failures found - skipping AI analysis"
+            echo "has_errors=false" >> $GITHUB_OUTPUT
             exit 0
           fi
           
