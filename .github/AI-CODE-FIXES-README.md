@@ -13,9 +13,11 @@ The AI-Powered Code Fixes feature provides automated detection, analysis, and re
 ## 🚀 Quick Start
 
 ### Automatic Setup (Recommended)
+
 The feature automatically activates when your SDLC flow fails. No manual intervention required.
 
 ### Manual Testing
+
 ```bash
 # Run complete demo
 .github/scripts/manual-test-ai-fixes.sh demo
@@ -46,18 +48,21 @@ The feature automatically activates when your SDLC flow fails. No manual interve
 ## 🔧 Supported Fix Types
 
 ### ✅ Spring Boot 4.x Issues
+
 - **TestRestTemplate Import Changes**
-  - Detects: `org.springframework.boot.test.web.client.TestRestTemplate` 
+  - Detects: `org.springframework.boot.test.web.client.TestRestTemplate`
   - Fixes: Updates to `org.springframework.boot.resttestclient.TestRestTemplate`
   - Adds: `@AutoConfigureTestRestTemplate` annotations
 
 ### ✅ React Testing Library v16+ Issues  
+
 - **Import Restructuring**
   - Detects: Combined imports causing module errors
   - Fixes: Separates `render/screen` from `fireEvent` imports
   - Installs: Missing `@testing-library/dom` dependency
 
 ### ✅ NPM Dependency Conflicts
+
 - **ESLint Peer Dependencies**
   - Detects: ERESOLVE errors and peer dependency conflicts
   - Fixes: Uses `--legacy-peer-deps` flag
@@ -66,32 +71,42 @@ The feature automatically activates when your SDLC flow fails. No manual interve
 ## 🎯 How It Works
 
 ### 1. Error Detection
+
 When your SDLC flow (`./ai/flow.sh`) fails, the workflow:
+
 - Captures all error output
 - Categorizes errors by type (Maven, npm, AI flow)
 - Creates detailed error analysis
 
 ### 2. AI Analysis
+
 The system generates fix suggestions using:
+
 - **Pattern Matching**: Known error signatures
 - **GitHub Copilot**: Enhanced suggestions (if available)
 - **Context Analysis**: Repository structure and recent changes
 
 ### 3. Automated Fixes
+
 For supported error types, the system:
+
 - Updates file imports and dependencies
 - Modifies configuration files
 - Installs missing packages
 - Applies annotations and decorators
 
 ### 4. Verification
+
 After applying fixes:
+
 - Re-runs the SDLC flow
 - Validates that errors are resolved
 - Creates detailed success/failure reports
 
 ### 5. Pull Request Creation
+
 If fixes are applied:
+
 - Creates a new branch with timestamp
 - Commits changes with descriptive messages
 - Opens PR with full error analysis and fix details
@@ -135,16 +150,19 @@ SKIP_IF_BOT_COMMIT=true
 ## 🛡️ Safety Features
 
 ### Loop Prevention
+
 - Skips commits with `[ai-fix]` message
 - Won't run on bot-generated commits
 - Limits concurrent workflow executions
 
 ### Smart Detection
+
 - Only applies fixes for detected error patterns
 - Validates fixes before creating PRs
 - Provides detailed change explanations
 
 ### Review Process
+
 - All PRs require manual review by default
 - Includes comprehensive change documentation
 - Shows before/after comparisons
@@ -152,18 +170,21 @@ SKIP_IF_BOT_COMMIT=true
 ## 🧪 Testing
 
 ### Unit Tests
+
 ```bash
 cd .github/scripts
 ./test-ai-fixes.sh
 ```
 
 ### End-to-End Tests  
+
 ```bash
 cd .github/scripts
 ./e2e-test-ai-fixes.sh
 ```
 
 ### Manual Testing
+
 ```bash
 # Complete feature demo
 ./manual-test-ai-fixes.sh demo
@@ -177,7 +198,9 @@ cd .github/scripts
 ## 📈 Monitoring & Metrics
 
 ### Workflow Artifacts
+
 Each run produces:
+
 - `flow_output.log` - Original SDLC output
 - `flow_output_fixed.log` - Post-fix SDLC output  
 - `error_analysis.md` - Categorized error analysis
@@ -185,6 +208,7 @@ Each run produces:
 - `fix_context.md` - Complete AI context
 
 ### Success Metrics
+
 - ✅ **Fix Success Rate**: Fixes that resolve all errors
 - ⚠️ **Partial Fix Rate**: Fixes that resolve some errors
 - 📊 **Error Categories**: Most common error types
@@ -195,21 +219,25 @@ Each run produces:
 ### Common Issues
 
 **Workflow Not Triggering**
+
 - Check branch protection rules
 - Verify GitHub Actions permissions
 - Ensure not pushing bot commits
 
 **Fixes Not Applied**
+
 - Review error patterns in logs
 - Check if errors match supported types
 - Validate script permissions
 
 **PRs Not Created**
+
 - Verify `GITHUB_TOKEN` permissions
 - Check branch protection rules
 - Review git configuration
 
 ### Debug Commands
+
 ```bash
 # Check workflow status
 gh workflow list
@@ -225,11 +253,13 @@ gh run view [RUN_ID] --log
 ## 🚢 Deployment
 
 ### Prerequisites
+
 - GitHub repository with Actions enabled
 - Existing SDLC flow (`./ai/flow.sh`)
 - Required secrets: `GITHUB_TOKEN`, `GEMINI_API_KEY`
 
 ### Installation
+
 1. **Copy Files**: Add all workflow and script files to your repository
 2. **Set Permissions**: Ensure scripts are executable
 3. **Configure Secrets**: Add required API keys
@@ -237,6 +267,7 @@ gh run view [RUN_ID] --log
 5. **Deploy**: Commit and push to activate
 
 ### Production Checklist
+
 - [ ] All tests passing
 - [ ] Configuration reviewed
 - [ ] Permissions validated
@@ -246,6 +277,7 @@ gh run view [RUN_ID] --log
 ## 🤝 Contributing
 
 ### Adding New Fix Types
+
 1. **Error Pattern**: Add detection logic in `ai-fix-utils.sh`
 2. **Fix Logic**: Implement automated fix function
 3. **Suggestions**: Add to fix suggestions generator
@@ -253,6 +285,7 @@ gh run view [RUN_ID] --log
 5. **Documentation**: Update this README
 
 ### Example: Adding New Error Type
+
 ```bash
 # 1. Add error detection
 extract_new_error_type() {
@@ -279,11 +312,13 @@ apply_all_fixes() {
 ## 📚 Additional Resources
 
 ### Related Documentation
+
 - [GitHub Actions Workflow Documentation](.github/workflows/README.md)
 - [AI Fix Utilities Documentation](.github/scripts/ai-fix-utils.sh)
 - [SDLC Flow Documentation](../ai/README.md)
 
 ### External Resources
+
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [GitHub Copilot CLI](https://cli.github.com/manual/gh_copilot)
 - [Spring Boot Migration Guide](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide)
@@ -292,6 +327,7 @@ apply_all_fixes() {
 ## 📋 Changelog
 
 ### v1.0.0 (2026-03-02)
+
 - ✨ Initial release
 - ✅ Spring Boot 4.x TestRestTemplate fixes
 - ✅ React Testing Library v16+ import fixes
