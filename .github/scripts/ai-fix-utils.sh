@@ -207,14 +207,16 @@ apply_spring_boot_fixes() {
         find backend/src/test -name "*.java" -exec grep -l "TestRestTemplate" {} \; | while read file; do
             log_info "Updating imports in $file"
             if [[ "$OSTYPE" == "darwin"* ]]; then
-                # macOS sed requires -i with backup extension
-                sed -i '.bak' 's/org\.springframework\.boot\.test\.web\.client\.TestRestTemplate/org.springframework.boot.resttestclient.TestRestTemplate/g' "$file"
-                sed -i '.bak' 's/org\.springframework\.boot\.test\.web\.client/org.springframework.boot.resttestclient/g' "$file"
+                # macOS sed requires -i with backup extension - Replace TestRestTemplate with RestTemplate
+                sed -i '.bak' 's/org\.springframework\.boot\.test\.web\.client\.TestRestTemplate/org.springframework.web.client.RestTemplate/g' "$file"
+                sed -i '.bak' 's/org\.springframework\.boot\.resttestclient\.TestRestTemplate/org.springframework.web.client.RestTemplate/g' "$file"
+                sed -i '.bak' 's/TestRestTemplate/RestTemplate/g' "$file"
                 rm -f "${file}.bak"
             else
-                # Linux sed
-                sed -i 's/org\.springframework\.boot\.test\.web\.client\.TestRestTemplate/org.springframework.boot.resttestclient.TestRestTemplate/g' "$file"
-                sed -i 's/org\.springframework\.boot\.test\.web\.client/org.springframework.boot.resttestclient/g' "$file"
+                # Linux sed - Replace TestRestTemplate with RestTemplate
+                sed -i 's/org\.springframework\.boot\.test\.web\.client\.TestRestTemplate/org.springframework.web.client.RestTemplate/g' "$file"
+                sed -i 's/org\.springframework\.boot\.resttestclient\.TestRestTemplate/org.springframework.web.client.RestTemplate/g' "$file"
+                sed -i 's/TestRestTemplate/RestTemplate/g' "$file"
             fi
         done
         
@@ -226,21 +228,24 @@ apply_spring_boot_fixes() {
 package be.ap.student.config;
 
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 @TestConfiguration
 public class TestRestTemplateConfig {
     
     @Bean
-    public TestRestTemplate testRestTemplate() {
-        return new TestRestTemplate();
+    public RestTemplate restTemplate(@LocalServerPort int port) {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setUriTemplateHandler(new org.springframework.web.util.DefaultUriBuilderFactory("http://localhost:" + port));
+        return restTemplate;
     }
 }
 EOF
         
-        # Add @Import annotation to test files that use TestRestTemplate
-        find backend/src/test -name "*.java" -exec grep -l "TestRestTemplate" {} \; | while read file; do
+        # Add @Import annotation to test files that use RestTemplate
+        find backend/src/test -name "*.java" -exec grep -l "RestTemplate" {} \; | while read file; do
             # Remove wrong @AutoConfigureTestRestTemplate annotation if present
             if grep -q "@AutoConfigureTestRestTemplate" "$file"; then
                 log_info "Removing incorrect @AutoConfigureTestRestTemplate from $file"

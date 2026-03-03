@@ -3,7 +3,7 @@ package be.ap.student.tickets;
 import be.ap.student.tickets.dto.CreateTicketRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import be.ap.student.config.TestRestTemplateConfig;
@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TicketControllerIT {
 
     @Autowired
-    private TestRestTemplate rest;
+    private RestTemplate restTemplate;
 
     @Test
     void createTicket_returns201() {
@@ -25,7 +25,7 @@ class TicketControllerIT {
         req.setDescription("I cannot login since yesterday. Please investigate.");
         req.setPriority("HIGH");
 
-        ResponseEntity<String> res = rest.postForEntity("/api/tickets", req, String.class);
+        ResponseEntity<String> res = restTemplate.postForEntity("/api/tickets", req, String.class);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
@@ -39,7 +39,7 @@ class TicketControllerIT {
         req.setDescription("short"); // too short
         req.setPriority("HIGH");
 
-        ResponseEntity<String> res = rest.postForEntity("/api/tickets", req, String.class);
+        ResponseEntity<String> res = restTemplate.postForEntity("/api/tickets", req, String.class);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(res.getBody()).isNotNull();
