@@ -49,6 +49,12 @@ jobs:
           java-version: "21"
           cache: "maven"
 
+      - name: Install Dependencies
+        run: |
+          # Install jq for JSON parsing in AI scripts
+          sudo apt-get update
+          sudo apt-get install -y jq
+          
       - name: Install AI agent dependencies
         run: |
           cd ai/agent && npm ci

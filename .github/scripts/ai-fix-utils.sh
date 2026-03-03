@@ -79,74 +79,130 @@ extract_ai_flow_errors() {
     echo "" >> "$output_file"
 }
 
-# Generate context-aware fix suggestions
+# Generate AI-powered fix suggestions
 generate_fix_suggestions() {
     local error_file="$1"
     local suggestion_file="$2"
     
-    log_info "Generating AI fix suggestions..."
+    log_info "Generating AI-powered fix suggestions..."
     
+    # Initialize the suggestion file
     cat > "$suggestion_file" << 'EOF'
 # 🤖 AI-Generated Fix Suggestions
 
-Based on the error analysis, here are specific fixes for your AI-SDLC project:
+Based on error analysis using advanced AI, here are specific fixes for your AI-SDLC project:
 
 EOF
 
-    # Check for Spring Boot TestRestTemplate issues
-    if grep -q "TestRestTemplate\|spring-boot-test-web-client\|cannot find symbol.*TestRestTemplate" "$error_file"; then
+    # Read error content for AI analysis
+    local error_content=$(cat "$error_file" | head -100)  # Limit for token constraints
+    
+    # Generate AI-powered suggestions
+    if [ -n "$GEMINI_API_KEY" ]; then
+        cat > /tmp/suggestion_prompt.txt << EOF
+You are an expert software engineer. Analyze these compilation/build errors and provide actionable fix suggestions.
+
+ERRORS:
+$error_content
+
+CONTEXT:
+- Spring Boot 4.x project with Maven
+- React TypeScript frontend with Vite
+- Integration tests using RestTemplate/TestRestTemplate
+- Node.js AI test generation scripts
+
+TASK: Generate specific, actionable fix suggestions with:
+1. Root cause analysis
+2. Exact commands to run
+3. Code snippets to add/modify
+4. File paths and line numbers where applicable
+
+Format as clear, executable steps. Be specific and practical.
+EOF
+
+        local ai_suggestions=$(curl -s -X POST \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=$GEMINI_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d "{
+                \"contents\": [
+                    {
+                        \"parts\": [
+                            {
+                                \"text\": \"$(cat /tmp/suggestion_prompt.txt | sed 's/"/\\"/g' | tr '\n' '\\n')\"
+                            }
+                        ]
+                    }
+                ],
+                \"generationConfig\": {
+                    \"temperature\": 0.2,
+                    \"maxOutputTokens\": 3072
+                }
+            }" | jq -r '.candidates[0].content.parts[0].text' 2>/dev/null)
+        
+        if [ -n "$ai_suggestions" ] && [ "$ai_suggestions" != "null" ]; then
+            echo "" >> "$suggestion_file"
+            echo "## 🧠 AI Analysis & Suggestions" >> "$suggestion_file"
+            echo "" >> "$suggestion_file"
+            echo "$ai_suggestions" >> "$suggestion_file"
+            log_success "AI-powered suggestions generated"
+        else
+            log_warning "AI suggestion generation failed, using fallback"
+            generate_fallback_suggestions "$error_file" "$suggestion_file"
+        fi
+        
+        rm -f /tmp/suggestion_prompt.txt
+    else
+        log_warning "GEMINI_API_KEY not set, using pattern-based suggestions"
+        generate_fallback_suggestions "$error_file" "$suggestion_file"
+    fi
+    
+    log_success "Fix suggestions generated in $suggestion_file"
+}
+
+# Fallback function for when AI is not available
+generate_fallback_suggestions() {
+    local error_file="$1" 
+    local suggestion_file="$2"
+    
+    cat >> "$suggestion_file" << 'EOF'
+## 🔧 Pattern-Based Fix Suggestions
+
+Based on common error patterns detected:
+
+EOF
+
+    # Spring Boot issues
+    if grep -q "TestRestTemplate\|cannot find symbol.*RestTemplate\|RestTemplateConfig" "$error_file"; then
         cat >> "$suggestion_file" << 'EOF'
-## 🔧 Spring Boot 4.x TestRestTemplate Fix
-
-**Issue**: TestRestTemplate dependency injection fails in Spring Boot 4.x
-
-**Fix**: Create proper TestConfiguration and use @Import annotation
-
-**Steps**:
-1. Create TestRestTemplateConfig.java:
-```java
-@TestConfiguration
-public class TestRestTemplateConfig {
-    @Bean
-    public TestRestTemplate testRestTemplate(@LocalServerPort int port) {
-        TestRestTemplate template = new TestRestTemplate();
-        template.setRootUri("http://localhost:" + port);
-        return template;
-    }
-}
-```
-
-2. Add @Import to test classes:
-```java
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestRestTemplateConfig.class)
-public class YourTest {
-    @Autowired
-    private TestRestTemplate restTemplate;
-    // ...
-}
-```
-
-**Fix Commands**:
-```bash
-# Update imports in Java test files
-find backend/src/test -name "*.java" -exec sed -i 's/org\.springframework\.boot\.test\.web\.client\.TestRestTemplate/org.springframework.boot.resttestclient.TestRestTemplate/g' {} \;
-```
+### Spring Boot RestTemplate Issues
+- **Problem**: Missing RestTemplate configuration or incorrect imports
+- **Solution**: Create proper TestConfiguration class and fix imports
+- **Action**: The automated fixer will create TestRestTemplateConfig.java and update imports
 
 EOF
     fi
 
-    # Check for React Testing Library issues
-    if grep -q "testing-library.*does not exist\|screen.*fireEvent\|Cannot find module.*testing-library" "$error_file"; then
+    # React Testing Library issues  
+    if grep -q "testing-library.*does not exist\|fireEvent.*screen" "$error_file"; then
         cat >> "$suggestion_file" << 'EOF'
-## 🔧 React Testing Library v16+ Fix
+### React Testing Library Issues
+- **Problem**: Missing dependencies or incorrect imports
+- **Solution**: Install @testing-library/dom and update imports
+- **Action**: Run `cd frontend && npm install --save-dev @testing-library/dom`
 
-**Issue**: Breaking changes in React Testing Library v16+
+EOF
+    fi
 
-**Fix Commands**:
-```bash
-# Install missing dependency
-cd frontend && npm install --save-dev @testing-library/dom
+    # Maven compilation issues
+    if grep -q "BUILD FAILURE\|compilation failure" "$error_file"; then
+        cat >> "$suggestion_file" << 'EOF'
+### Maven Compilation Issues
+- **Problem**: Java compilation errors
+- **Solution**: Clean rebuild and fix imports
+- **Action**: Run `cd backend && mvn clean compile test-compile`
+
+EOF
+    fi
 
 # Update imports in test files
 find frontend/src -name "*.test.tsx" -exec sed -i 's/import { render, screen, fireEvent } from "@testing-library\/react"/import { render, screen } from "@testing-library\/react";\nimport { fireEvent } from "@testing-library\/dom"/g' {} \;
@@ -196,110 +252,263 @@ EOF
     log_success "Fix suggestions generated in $suggestion_file"
 }
 
-# Apply automated fixes based on error patterns
+# AI-powered error analysis and fixing
+analyze_errors_with_ai() {
+    local error_file="$1"
+    local analysis_file="$2"
+    
+    log_info "Analyzing errors with Gemini AI..."
+    
+    # Prepare error context for AI analysis
+    local error_content=$(cat "$error_file" | head -200)  # Limit to avoid token limits
+    
+    # Create AI prompt for error analysis
+    cat > /tmp/ai_error_prompt.txt << EOF
+You are an expert software engineer analyzing compilation and build errors. 
+
+TASK: Analyze the following errors and provide specific, actionable fixes.
+
+ERRORS:
+$error_content
+
+REQUIREMENTS:
+1. Identify the root cause of each error
+2. Provide specific code changes needed
+3. Include file paths and exact code modifications
+4. Focus on practical, working solutions
+5. Consider Spring Boot 4+, React Testing Library best practices
+
+FORMAT your response as JSON:
+{
+  "analysis": "Brief summary of issues found",
+  "fixes": [
+    {
+      "file": "relative/path/to/file",
+      "issue": "Description of the problem",
+      "action": "create|modify|delete",
+      "content": "Exact code content or modification"
+    }
+  ]
+}
+EOF
+
+    # Call Gemini API for error analysis
+    if [ -n "$GEMINI_API_KEY" ]; then
+        local gemini_response=$(curl -s -X POST \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=$GEMINI_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d "{
+                \"contents\": [
+                    {
+                        \"parts\": [
+                            {
+                                \"text\": \"$(cat /tmp/ai_error_prompt.txt | sed 's/"/\\"/g' | tr '\n' '\\n')\"
+                            }
+                        ]
+                    }
+                ],
+                \"generationConfig\": {
+                    \"temperature\": 0.1,
+                    \"maxOutputTokens\": 4096
+                }
+            }")
+        
+        # Extract text from Gemini response
+        local ai_analysis=$(echo "$gemini_response" | jq -r '.candidates[0].content.parts[0].text' 2>/dev/null || echo "")
+        
+        if [ -n "$ai_analysis" ] && [ "$ai_analysis" != "null" ]; then
+            echo "$ai_analysis" > "$analysis_file"
+            log_success "AI analysis completed"
+            return 0
+        else
+            log_warning "Gemini API call failed or returned empty response"
+        fi
+    else
+        log_warning "GEMINI_API_KEY not set, skipping AI analysis"
+    fi
+    
+    # Fallback analysis if AI fails
+    cat > "$analysis_file" << 'EOF'
+{
+  "analysis": "Fallback analysis - compilation errors detected",
+  "fixes": [
+    {
+      "file": "backend/src/test/java/be/ap/student/config/TestRestTemplateConfig.java",
+      "issue": "Missing RestTemplate configuration class",
+      "action": "create",
+      "content": "package be.ap.student.config;\n\nimport org.springframework.boot.test.context.TestConfiguration;\nimport org.springframework.web.client.RestTemplate;\nimport org.springframework.context.annotation.Bean;\n\n@TestConfiguration\npublic class TestRestTemplateConfig {\n    \n    @Bean\n    public RestTemplate restTemplate() {\n        return new RestTemplate();\n    }\n}"
+    }
+  ]
+}
+EOF
+    
+    rm -f /tmp/ai_error_prompt.txt
+}
+
+apply_ai_fixes() {
+    local analysis_file="$1"
+    
+    log_info "Applying AI-generated fixes..."
+    
+    # Parse JSON and apply fixes
+    if [ -f "$analysis_file" ]; then
+        local fixes_count=$(jq -r '.fixes | length' "$analysis_file" 2>/dev/null || echo "0")
+        
+        if [ "$fixes_count" -gt 0 ]; then
+            for i in $(seq 0 $((fixes_count - 1))); do
+                local file=$(jq -r ".fixes[$i].file" "$analysis_file" 2>/dev/null || echo "")
+                local issue=$(jq -r ".fixes[$i].issue" "$analysis_file" 2>/dev/null || echo "")
+                local action=$(jq -r ".fixes[$i].action" "$analysis_file" 2>/dev/null || echo "")
+                local content=$(jq -r ".fixes[$i].content" "$analysis_file" 2>/dev/null || echo "")
+                
+                if [ -n "$file" ] && [ -n "$action" ]; then
+                    log_info "Fixing: $issue in $file"
+                    
+                    case "$action" in
+                        "create")
+                            mkdir -p "$(dirname "$file")"
+                            echo -e "$content" > "$file"
+                            log_success "Created $file"
+                            ;;
+                        "modify")
+                            if [ -f "$file" ]; then
+                                # Use GitHub Copilot CLI for intelligent modifications if available
+                                if command -v gh >/dev/null 2>&1 && command -v copilot >/dev/null 2>&1; then
+                                    log_info "Using GitHub Copilot for intelligent file modification"
+                                    echo "$content" | copilot suggest --file "$file" || {
+                                        echo -e "$content" > "$file"
+                                        log_success "Modified $file (fallback)"
+                                    }
+                                else
+                                    echo -e "$content" > "$file"
+                                    log_success "Modified $file"
+                                fi
+                            else
+                                log_warning "File $file does not exist, cannot modify"
+                            fi
+                            ;;
+                        "delete")
+                            if [ -f "$file" ]; then
+                                rm "$file"
+                                log_success "Deleted $file"
+                            else
+                                log_warning "File $file does not exist, cannot delete"
+                            fi
+                            ;;
+                    esac
+                fi
+            done
+            
+            # Clean up duplicate imports and annotations using AI if possible
+            cleanup_duplicate_imports
+            
+            log_success "Applied $fixes_count AI-generated fixes"
+            return 0
+        else
+            log_warning "No fixes found in AI analysis"
+            return 1
+        fi
+    else
+        log_error "Analysis file not found: $analysis_file"
+        return 1
+    fi
+}
+
+cleanup_duplicate_imports() {
+    log_info "Cleaning up duplicate imports and annotations..."
+    
+    # Find Java files with potential duplicate imports
+    find backend/src/test -name "*.java" | while read file; do
+        if grep -q "RestTemplateConfig" "$file"; then
+            # Use AI to clean up the file if possible
+            if [ -n "$GEMINI_API_KEY" ]; then
+                local file_content=$(cat "$file")
+                
+                cat > /tmp/cleanup_prompt.txt << EOF
+Clean up this Java file by:
+1. Remove all duplicate import statements
+2. Remove duplicate @Import annotations (keep only one)  
+3. Fix incorrect RestTemplateConfig references to TestRestTemplateConfig
+4. Ensure proper Spring Boot test configuration
+
+FILE CONTENT:
+$file_content
+
+Return ONLY the cleaned up Java code, no explanation.
+EOF
+
+                local cleaned_content=$(curl -s -X POST \
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=$GEMINI_API_KEY" \
+                    -H 'Content-Type: application/json' \
+                    -d "{
+                        \"contents\": [
+                            {
+                                \"parts\": [
+                                    {
+                                        \"text\": \"$(cat /tmp/cleanup_prompt.txt | sed 's/"/\\"/g' | tr '\n' '\\n')\"
+                                    }
+                                ]
+                            }
+                        ],
+                        \"generationConfig\": {
+                            \"temperature\": 0.1,
+                            \"maxOutputTokens\": 2048
+                        }
+                    }" | jq -r '.candidates[0].content.parts[0].text' 2>/dev/null)
+                
+                if [ -n "$cleaned_content" ] && [ "$cleaned_content" != "null" ]; then
+                    echo "$cleaned_content" > "$file"
+                    log_success "AI-cleaned $file"
+                else
+                    # Fallback cleanup
+                    simple_cleanup_file "$file"
+                fi
+                
+                rm -f /tmp/cleanup_prompt.txt
+            else
+                # Simple pattern-based cleanup
+                simple_cleanup_file "$file"
+            fi
+        fi
+    done
+}
+
+simple_cleanup_file() {
+    local file="$1"
+    
+    # Simple deduplication
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # Remove duplicate import lines (macOS)
+        sed -i '.bak' '/import.*RestTemplateConfig/!b; N; /\n.*RestTemplateConfig/d; P; D' "$file"
+        # Remove duplicate @Import annotations
+        sed -i '.bak' '/@Import.*RestTemplateConfig/!b; N; /\n.*@Import.*RestTemplateConfig/d; P; D' "$file"
+        # Fix wrong class references
+        sed -i '.bak' 's/be\.ap\.student\.config\.RestTemplateConfig/be.ap.student.config.TestRestTemplateConfig/g' "$file"
+        rm -f "${file}.bak"
+    else
+        # Linux versions
+        sed -i '/import.*RestTemplateConfig/!b; N; /\n.*RestTemplateConfig/d; P; D' "$file"
+        sed -i '/@Import.*RestTemplateConfig/!b; N; /\n.*@Import.*RestTemplateConfig/d; P; D' "$file"
+        sed -i 's/be\.ap\.student\.config\.RestTemplateConfig/be.ap.student.config.TestRestTemplateConfig/g' "$file"
+    fi
+    
+    log_success "Simple cleanup applied to $file"
+}
+
+# Legacy function maintained for backward compatibility but now calls AI-powered version
 apply_spring_boot_fixes() {
     local log_file="$1"
     
-    if grep -q "TestRestTemplate\|spring-boot-test-web-client" "$log_file"; then
-        log_info "Applying Spring Boot TestRestTemplate fixes..."
-        
-        # Update imports in Java files - handle both macOS and Linux sed
-        find backend/src/test -name "*.java" -exec grep -l "TestRestTemplate" {} \; | while read file; do
-            log_info "Updating imports in $file"
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                # macOS sed requires -i with backup extension - Replace TestRestTemplate with RestTemplate
-                sed -i '.bak' 's/org\.springframework\.boot\.test\.web\.client\.TestRestTemplate/org.springframework.web.client.RestTemplate/g' "$file"
-                sed -i '.bak' 's/org\.springframework\.boot\.resttestclient\.TestRestTemplate/org.springframework.web.client.RestTemplate/g' "$file"
-                sed -i '.bak' 's/TestRestTemplate/RestTemplate/g' "$file"
-                rm -f "${file}.bak"
-            else
-                # Linux sed - Replace TestRestTemplate with RestTemplate
-                sed -i 's/org\.springframework\.boot\.test\.web\.client\.TestRestTemplate/org.springframework.web.client.RestTemplate/g' "$file"
-                sed -i 's/org\.springframework\.boot\.resttestclient\.TestRestTemplate/org.springframework.web.client.RestTemplate/g' "$file"
-                sed -i 's/TestRestTemplate/RestTemplate/g' "$file"
-            fi
-        done
-        
-        # Create proper TestRestTemplate configuration class for Spring Boot 4+
-        local config_file="backend/src/test/java/be/ap/student/config/TestRestTemplateConfig.java"
-        mkdir -p "$(dirname "$config_file")"
-        
-        cat > "$config_file" << 'EOF'
-package be.ap.student.config;
-
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.context.annotation.Bean;
-
-@TestConfiguration
-public class TestRestTemplateConfig {
+    log_info "Using AI-powered error analysis and fixing..."
     
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-}
-EOF
-        
-        # Add @Import annotation to test files that use RestTemplate
-        find backend/src/test -name "*.java" -exec grep -l "RestTemplate" {} \; | while read file; do
-            # Remove wrong @AutoConfigureTestRestTemplate annotation if present
-            if grep -q "@AutoConfigureTestRestTemplate" "$file"; then
-                log_info "Removing incorrect @AutoConfigureTestRestTemplate from $file"
-                if [[ "$OSTYPE" == "darwin"* ]]; then
-                    sed -i '.bak' '/@AutoConfigureTestRestTemplate/d' "$file"
-                    rm -f "${file}.bak"
-                else
-                    sed -i '/@AutoConfigureTestRestTemplate/d' "$file"
-                fi
-            fi
-            
-            # Remove wrong import for AutoConfigureTestRestTemplate
-            if grep -q "import.*AutoConfigureTestRestTemplate" "$file"; then
-                log_info "Removing incorrect AutoConfigureTestRestTemplate import from $file"
-                if [[ "$OSTYPE" == "darwin"* ]]; then
-                    sed -i '.bak' '/import.*AutoConfigureTestRestTemplate/d' "$file"
-                    rm -f "${file}.bak"
-                else
-                    sed -i '/import.*AutoConfigureTestRestTemplate/d' "$file"
-                fi
-            fi
-            
-            # Skip if already has @Import with TestRestTemplateConfig
-            if ! grep -q "@Import.*TestRestTemplateConfig" "$file"; then
-                log_info "Adding @Import(TestRestTemplateConfig.class) to $file"
-                
-                # Add import statement
-                if grep -q "^import.*SpringBootTest" "$file"; then
-                    if [[ "$OSTYPE" == "darwin"* ]]; then
-                        sed -i '.bak' '/^import.*SpringBootTest/a\
-import org.springframework.context.annotation.Import;\
-import be.ap.student.config.TestRestTemplateConfig;
-' "$file"
-                        rm -f "${file}.bak"
-                    else
-                        sed -i '/^import.*SpringBootTest/a import org.springframework.context.annotation.Import;\nimport be.ap.student.config.TestRestTemplateConfig;' "$file"
-                    fi
-                fi
-                
-                # Add @Import annotation after @SpringBootTest
-                if grep -q "^@SpringBootTest" "$file"; then
-                    if [[ "$OSTYPE" == "darwin"* ]]; then
-                        sed -i '.bak' '/^@SpringBootTest/a\
-@Import(TestRestTemplateConfig.class)
-' "$file"
-                        rm -f "${file}.bak"
-                    else
-                        sed -i '/^@SpringBootTest/a @Import(TestRestTemplateConfig.class)' "$file"
-                    fi
-                fi
-            fi
-        done
-        
-        log_success "Spring Boot fixes applied"
-        return 0
-    fi
-    return 1
+    # Use AI to analyze and fix errors
+    analyze_errors_with_ai "$log_file" "/tmp/ai_analysis.json"
+    apply_ai_fixes "/tmp/ai_analysis.json"
+    
+    # Cleanup
+    rm -f /tmp/ai_analysis.json
+    
+    return 0
 }
 
 apply_react_testing_fixes() {
