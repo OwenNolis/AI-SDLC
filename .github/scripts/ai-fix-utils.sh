@@ -98,19 +98,39 @@ EOF
         cat >> "$suggestion_file" << 'EOF'
 ## 🔧 Spring Boot 4.x TestRestTemplate Fix
 
-**Issue**: TestRestTemplate moved to new package in Spring Boot 4.x
+**Issue**: TestRestTemplate dependency injection fails in Spring Boot 4.x
+
+**Fix**: Create proper TestConfiguration and use @Import annotation
+
+**Steps**:
+1. Create TestRestTemplateConfig.java:
+```java
+@TestConfiguration
+public class TestRestTemplateConfig {
+    @Bean
+    public TestRestTemplate testRestTemplate(@LocalServerPort int port) {
+        TestRestTemplate template = new TestRestTemplate();
+        template.setRootUri("http://localhost:" + port);
+        return template;
+    }
+}
+```
+
+2. Add @Import to test classes:
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(TestRestTemplateConfig.class)
+public class YourTest {
+    @Autowired
+    private TestRestTemplate restTemplate;
+    // ...
+}
+```
 
 **Fix Commands**:
 ```bash
 # Update imports in Java test files
 find backend/src/test -name "*.java" -exec sed -i 's/org\.springframework\.boot\.test\.web\.client\.TestRestTemplate/org.springframework.boot.resttestclient.TestRestTemplate/g' {} \;
-
-# Add missing dependency to pom.xml
-# <dependency>
-#   <groupId>org.springframework.boot</groupId>
-#   <artifactId>spring-boot-resttestclient</artifactId>
-#   <scope>test</scope>
-# </dependency>
 ```
 
 EOF
@@ -198,27 +218,59 @@ apply_spring_boot_fixes() {
             fi
         done
         
-        # Add @AutoConfigureTestRestTemplate annotation if missing
-        find backend/src/test -name "*IT.java" -exec grep -L "@AutoConfigureTestRestTemplate" {} \; | while read file; do
-            log_info "Adding @AutoConfigureTestRestTemplate to $file"
-            if grep -q "^import.*SpringBootTest" "$file"; then
-                if [[ "$OSTYPE" == "darwin"* ]]; then
-                    sed -i '.bak' '/^import.*SpringBootTest/a\
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
+        # Create proper TestRestTemplate configuration class for Spring Boot 4+
+        local config_file="backend/src/test/java/be/ap/student/config/TestRestTemplateConfig.java"
+        mkdir -p "$(dirname "$config_file")"
+        
+        cat > "$config_file" << 'EOF'
+package be.ap.student.config;
+
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.web.server.LocalServerPort;
+
+@TestConfiguration
+public class TestRestTemplateConfig {
+    
+    @Bean
+    public TestRestTemplate testRestTemplate(@LocalServerPort int port) {
+        TestRestTemplate template = new TestRestTemplate();
+        template.setRootUri("http://localhost:" + port);
+        return template;
+    }
+}
+EOF
+        
+        # Add @Import annotation to test files that use TestRestTemplate
+        find backend/src/test -name "*.java" -exec grep -l "TestRestTemplate" {} \; | while read file; do
+            # Skip if already has @Import with TestRestTemplateConfig
+            if ! grep -q "@Import.*TestRestTemplateConfig" "$file"; then
+                log_info "Adding @Import(TestRestTemplateConfig.class) to $file"
+                
+                # Add import statement
+                if grep -q "^import.*SpringBootTest" "$file"; then
+                    if [[ "$OSTYPE" == "darwin"* ]]; then
+                        sed -i '.bak' '/^import.*SpringBootTest/a\
+import org.springframework.context.annotation.Import;\
+import be.ap.student.config.TestRestTemplateConfig;
 ' "$file"
-                    rm -f "${file}.bak"
-                else
-                    sed -i '/^import.*SpringBootTest/a import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;' "$file"
+                        rm -f "${file}.bak"
+                    else
+                        sed -i '/^import.*SpringBootTest/a import org.springframework.context.annotation.Import;\nimport be.ap.student.config.TestRestTemplateConfig;' "$file"
+                    fi
                 fi
-            fi
-            if grep -q "^@SpringBootTest" "$file"; then
-                if [[ "$OSTYPE" == "darwin"* ]]; then
-                    sed -i '.bak' '/^@SpringBootTest/a\
-@AutoConfigureTestRestTemplate
+                
+                # Add @Import annotation after @SpringBootTest
+                if grep -q "^@SpringBootTest" "$file"; then
+                    if [[ "$OSTYPE" == "darwin"* ]]; then
+                        sed -i '.bak' '/^@SpringBootTest/a\
+@Import(TestRestTemplateConfig.class)
 ' "$file"
-                    rm -f "${file}.bak"
-                else
-                    sed -i '/^@SpringBootTest/a @AutoConfigureTestRestTemplate' "$file"
+                        rm -f "${file}.bak"
+                    else
+                        sed -i '/^@SpringBootTest/a @Import(TestRestTemplateConfig.class)' "$file"
+                    fi
                 fi
             fi
         done
