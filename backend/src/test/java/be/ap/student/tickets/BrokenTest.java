@@ -1,7 +1,7 @@
 package be.ap.student.tickets;
 
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate; // OLD IMPORT - WILL FAIL
+import org.springframework.boot.resttestclient.TestRestTemplate; // OLD IMPORT - WILL FAIL
 import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Test;
 
