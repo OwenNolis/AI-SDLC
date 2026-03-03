@@ -19,12 +19,15 @@ import org.springframework.context.annotation.Import;
 import be.ap.student.config.RestTemplateConfig;
 import org.springframework.context.annotation.Import;
 import be.ap.student.config.RestTemplateConfig;
+import org.springframework.context.annotation.Import;
+import be.ap.student.config.RestTemplateConfig;
 import org.springframework.http.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestRestTemplateConfig.class)
+@Import(RestTemplateConfig.class)
 @Import(RestTemplateConfig.class)
 @Import(RestTemplateConfig.class)
 @Import(RestTemplateConfig.class)

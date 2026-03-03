@@ -949,10 +949,295 @@ This is an AI-driven SDLC project with:
 
 ## AI Flow Errors
 
+## Maven Compilation Errors
+221-[INFO] -------------------------------------------------------------
+222-[INFO] ------------------------------------------------------------------------
+223:[INFO] BUILD FAILURE
+224-[INFO] ------------------------------------------------------------------------
+225-[INFO] Total time:  3.443 s
+226-[INFO] Finished at: 2026-03-03T14:06:54Z
+227-[INFO] ------------------------------------------------------------------------
+228-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure: Compilation failure: 
+75-[INFO] -------------------------------------------------------------
+76:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[7,28] cannot find symbol
+77-  symbol:   class RestTemplateConfig
+78-  location: package be.ap.student.config
+79:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[9,28] cannot find symbol
+80-  symbol:   class RestTemplateConfig
+81-  location: package be.ap.student.config
+82:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[11,28] cannot find symbol
+83-  symbol:   class RestTemplateConfig
+84-  location: package be.ap.student.config
+85:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[13,28] cannot find symbol
+86-  symbol:   class RestTemplateConfig
+87-  location: package be.ap.student.config
+88:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[15,28] cannot find symbol
+89-  symbol:   class RestTemplateConfig
+90-  location: package be.ap.student.config
+91:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[17,28] cannot find symbol
+92-  symbol:   class RestTemplateConfig
+93-  location: package be.ap.student.config
+94:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[7,28] cannot find symbol
+95-  symbol:   class RestTemplateConfig
+96-  location: package be.ap.student.config
+97:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[9,28] cannot find symbol
+98-  symbol:   class RestTemplateConfig
+99-  location: package be.ap.student.config
+100:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[11,28] cannot find symbol
+101-  symbol:   class RestTemplateConfig
+102-  location: package be.ap.student.config
+103:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[13,28] cannot find symbol
+104-  symbol:   class RestTemplateConfig
+105-  location: package be.ap.student.config
+106:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[15,28] cannot find symbol
+107-  symbol:   class RestTemplateConfig
+108-  location: package be.ap.student.config
+109:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[17,28] cannot find symbol
+110-  symbol:   class RestTemplateConfig
+111-  location: package be.ap.student.config
+112:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[7,28] cannot find symbol
+113-  symbol:   class RestTemplateConfig
+114-  location: package be.ap.student.config
+115:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[9,28] cannot find symbol
+116-  symbol:   class RestTemplateConfig
+117-  location: package be.ap.student.config
+118:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[11,28] cannot find symbol
+119-  symbol:   class RestTemplateConfig
+120-  location: package be.ap.student.config
+121:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[13,28] cannot find symbol
+122-  symbol:   class RestTemplateConfig
+123-  location: package be.ap.student.config
+124:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[15,28] cannot find symbol
+125-  symbol:   class RestTemplateConfig
+126-  location: package be.ap.student.config
+127:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[17,28] cannot find symbol
+128-  symbol:   class RestTemplateConfig
+129-  location: package be.ap.student.config
+130:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[11,28] cannot find symbol
+131-  symbol:   class RestTemplateConfig
+132-  location: package be.ap.student.config
+133:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[13,28] cannot find symbol
+134-  symbol:   class RestTemplateConfig
+135-  location: package be.ap.student.config
+136:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[15,28] cannot find symbol
+137-  symbol:   class RestTemplateConfig
+138-  location: package be.ap.student.config
+139:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[17,28] cannot find symbol
+140-  symbol:   class RestTemplateConfig
+141-  location: package be.ap.student.config
+142:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[19,28] cannot find symbol
+143-  symbol:   class RestTemplateConfig
+144-  location: package be.ap.student.config
+145:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[21,28] cannot find symbol
+146-  symbol:   class RestTemplateConfig
+147-  location: package be.ap.student.config
+148:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[24,9] cannot find symbol
+149-  symbol: class RestTemplateConfig
+150:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[25,9] cannot find symbol
+151-  symbol: class RestTemplateConfig
+152:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[26,9] cannot find symbol
+153-  symbol: class RestTemplateConfig
+154:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[27,9] cannot find symbol
+155-  symbol: class RestTemplateConfig
+156:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[28,9] cannot find symbol
+157-  symbol: class RestTemplateConfig
+158:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[29,9] cannot find symbol
+159-  symbol: class RestTemplateConfig
+160-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[24,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+161-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[25,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+--
+165-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+166:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[24,9] cannot find symbol
+167-  symbol: class RestTemplateConfig
+168:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[25,9] cannot find symbol
+169-  symbol: class RestTemplateConfig
+170:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[26,9] cannot find symbol
+171-  symbol: class RestTemplateConfig
+172:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[27,9] cannot find symbol
+173-  symbol: class RestTemplateConfig
+174:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[28,9] cannot find symbol
+175-  symbol: class RestTemplateConfig
+176:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[29,9] cannot find symbol
+177-  symbol: class RestTemplateConfig
+178-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[24,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+179-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[25,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+--
+183-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+184:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[25,9] cannot find symbol
+185-  symbol: class RestTemplateConfig
+186:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[26,9] cannot find symbol
+187-  symbol: class RestTemplateConfig
+188:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[27,9] cannot find symbol
+189-  symbol: class RestTemplateConfig
+190:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[28,9] cannot find symbol
+191-  symbol: class RestTemplateConfig
+192:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[29,9] cannot find symbol
+193-  symbol: class RestTemplateConfig
+194:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[30,9] cannot find symbol
+195-  symbol: class RestTemplateConfig
+196-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[25,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+197-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[26,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+--
+201-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+202:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[28,9] cannot find symbol
+203-  symbol: class RestTemplateConfig
+204:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[29,9] cannot find symbol
+205-  symbol: class RestTemplateConfig
+206:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[30,9] cannot find symbol
+207-  symbol: class RestTemplateConfig
+208:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[31,9] cannot find symbol
+209-  symbol: class RestTemplateConfig
+210:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[32,9] cannot find symbol
+211-  symbol: class RestTemplateConfig
+212:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[33,9] cannot find symbol
+213-  symbol: class RestTemplateConfig
+214-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[28,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+215-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+--
+228-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure: Compilation failure: 
+229:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[7,28] cannot find symbol
+230-[ERROR]   symbol:   class RestTemplateConfig
+231-[ERROR]   location: package be.ap.student.config
+232:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[9,28] cannot find symbol
+233-[ERROR]   symbol:   class RestTemplateConfig
+234-[ERROR]   location: package be.ap.student.config
+235:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[11,28] cannot find symbol
+236-[ERROR]   symbol:   class RestTemplateConfig
+237-[ERROR]   location: package be.ap.student.config
+238:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[13,28] cannot find symbol
+239-[ERROR]   symbol:   class RestTemplateConfig
+240-[ERROR]   location: package be.ap.student.config
+241:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[15,28] cannot find symbol
+242-[ERROR]   symbol:   class RestTemplateConfig
+243-[ERROR]   location: package be.ap.student.config
+244:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[17,28] cannot find symbol
+245-[ERROR]   symbol:   class RestTemplateConfig
+246-[ERROR]   location: package be.ap.student.config
+247:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[7,28] cannot find symbol
+248-[ERROR]   symbol:   class RestTemplateConfig
+249-[ERROR]   location: package be.ap.student.config
+250:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[9,28] cannot find symbol
+251-[ERROR]   symbol:   class RestTemplateConfig
+252-[ERROR]   location: package be.ap.student.config
+253:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[11,28] cannot find symbol
+254-[ERROR]   symbol:   class RestTemplateConfig
+255-[ERROR]   location: package be.ap.student.config
+256:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[13,28] cannot find symbol
+257-[ERROR]   symbol:   class RestTemplateConfig
+258-[ERROR]   location: package be.ap.student.config
+259:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[15,28] cannot find symbol
+260-[ERROR]   symbol:   class RestTemplateConfig
+261-[ERROR]   location: package be.ap.student.config
+262:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[17,28] cannot find symbol
+263-[ERROR]   symbol:   class RestTemplateConfig
+264-[ERROR]   location: package be.ap.student.config
+265:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[7,28] cannot find symbol
+266-[ERROR]   symbol:   class RestTemplateConfig
+267-[ERROR]   location: package be.ap.student.config
+268:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[9,28] cannot find symbol
+269-[ERROR]   symbol:   class RestTemplateConfig
+270-[ERROR]   location: package be.ap.student.config
+271:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[11,28] cannot find symbol
+272-[ERROR]   symbol:   class RestTemplateConfig
+273-[ERROR]   location: package be.ap.student.config
+274:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[13,28] cannot find symbol
+275-[ERROR]   symbol:   class RestTemplateConfig
+276-[ERROR]   location: package be.ap.student.config
+277:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[15,28] cannot find symbol
+278-[ERROR]   symbol:   class RestTemplateConfig
+279-[ERROR]   location: package be.ap.student.config
+280:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[17,28] cannot find symbol
+281-[ERROR]   symbol:   class RestTemplateConfig
+282-[ERROR]   location: package be.ap.student.config
+283:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[11,28] cannot find symbol
+284-[ERROR]   symbol:   class RestTemplateConfig
+285-[ERROR]   location: package be.ap.student.config
+286:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[13,28] cannot find symbol
+287-[ERROR]   symbol:   class RestTemplateConfig
+288-[ERROR]   location: package be.ap.student.config
+289:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[15,28] cannot find symbol
+290-[ERROR]   symbol:   class RestTemplateConfig
+291-[ERROR]   location: package be.ap.student.config
+292:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[17,28] cannot find symbol
+293-[ERROR]   symbol:   class RestTemplateConfig
+294-[ERROR]   location: package be.ap.student.config
+295:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[19,28] cannot find symbol
+296-[ERROR]   symbol:   class RestTemplateConfig
+297-[ERROR]   location: package be.ap.student.config
+298:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[21,28] cannot find symbol
+299-[ERROR]   symbol:   class RestTemplateConfig
+300-[ERROR]   location: package be.ap.student.config
+301:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[24,9] cannot find symbol
+302-[ERROR]   symbol: class RestTemplateConfig
+303:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[25,9] cannot find symbol
+304-[ERROR]   symbol: class RestTemplateConfig
+305:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[26,9] cannot find symbol
+306-[ERROR]   symbol: class RestTemplateConfig
+307:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[27,9] cannot find symbol
+308-[ERROR]   symbol: class RestTemplateConfig
+309:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[28,9] cannot find symbol
+310-[ERROR]   symbol: class RestTemplateConfig
+311:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[29,9] cannot find symbol
+312-[ERROR]   symbol: class RestTemplateConfig
+313-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[24,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+314-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[25,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+--
+318-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+319:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[24,9] cannot find symbol
+320-[ERROR]   symbol: class RestTemplateConfig
+321:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[25,9] cannot find symbol
+322-[ERROR]   symbol: class RestTemplateConfig
+323:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[26,9] cannot find symbol
+324-[ERROR]   symbol: class RestTemplateConfig
+325:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[27,9] cannot find symbol
+326-[ERROR]   symbol: class RestTemplateConfig
+327:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[28,9] cannot find symbol
+328-[ERROR]   symbol: class RestTemplateConfig
+329:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[29,9] cannot find symbol
+330-[ERROR]   symbol: class RestTemplateConfig
+331-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[24,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+332-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[25,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+--
+336-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+337:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[25,9] cannot find symbol
+338-[ERROR]   symbol: class RestTemplateConfig
+339:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[26,9] cannot find symbol
+340-[ERROR]   symbol: class RestTemplateConfig
+341:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[27,9] cannot find symbol
+342-[ERROR]   symbol: class RestTemplateConfig
+343:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[28,9] cannot find symbol
+344-[ERROR]   symbol: class RestTemplateConfig
+345:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[29,9] cannot find symbol
+346-[ERROR]   symbol: class RestTemplateConfig
+347:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[30,9] cannot find symbol
+348-[ERROR]   symbol: class RestTemplateConfig
+349-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[25,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+350-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[26,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+--
+354-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+355:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[28,9] cannot find symbol
+356-[ERROR]   symbol: class RestTemplateConfig
+357:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[29,9] cannot find symbol
+358-[ERROR]   symbol: class RestTemplateConfig
+359:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[30,9] cannot find symbol
+360-[ERROR]   symbol: class RestTemplateConfig
+361:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[31,9] cannot find symbol
+362-[ERROR]   symbol: class RestTemplateConfig
+363:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[32,9] cannot find symbol
+364-[ERROR]   symbol: class RestTemplateConfig
+365:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[33,9] cannot find symbol
+366-[ERROR]   symbol: class RestTemplateConfig
+367-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[28,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+368-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+
+## NPM/Frontend Errors
+
+## AI Flow Errors
+
 
 ## Recent Changes
+d55722d Merge pull request #69 from OwenNolis/ai-fix/auto-fixes-20260303-140432
+5ed76b2 [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
 7cea2ec Merge 8e2b9342310bcd91d6fefc60bf8a77a4570b3941 into 0cc2faf928eb7ee21ec0cb3c9bed4678f3cd966f
 8e2b934 Merge branch 'main' into ai-fix/auto-fixes-20260303-135720
 0cc2faf [ai-fix] Complete RestTemplate solution: simple config + @LocalServerPort in tests for absolute URLs
-61cbdda [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
-68ccbf8 Merge pull request #67 from OwenNolis/ai-fix/auto-fixes-20260303-135107
