@@ -77,8 +77,8 @@ All AI artifacts validated successfully.
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running be.ap.student.tickets.BrokenTest
-09:28:49.688 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [be.ap.student.tickets.BrokenTest]: BrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-09:28:49.777 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.BrokenTest
+09:31:35.309 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [be.ap.student.tickets.BrokenTest]: BrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+09:31:35.407 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.BrokenTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -89,21 +89,21 @@ All AI artifacts validated successfully.
 
  :: Spring Boot ::                (v4.0.3)
 
-2026-03-03T09:28:50.146Z  INFO 3310 --- [           main] be.ap.student.tickets.BrokenTest         : Starting BrokenTest using Java 21.0.10 with PID 3310 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
-2026-03-03T09:28:50.148Z  INFO 3310 --- [           main] be.ap.student.tickets.BrokenTest         : No active profile set, falling back to 1 default profile: "default"
-2026-03-03T09:28:50.746Z  INFO 3310 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-03T09:28:50.794Z  INFO 3310 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 39 ms. Found 1 JPA repository interface.
-2026-03-03T09:28:51.180Z  INFO 3310 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
-2026-03-03T09:28:51.198Z  INFO 3310 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-03-03T09:28:51.198Z  INFO 3310 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
-2026-03-03T09:28:51.244Z  INFO 3310 --- [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1074 ms
-2026-03-03T09:28:51.334Z  INFO 3310 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-03-03T09:28:51.456Z  INFO 3310 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:demo user=SA
-2026-03-03T09:28:51.457Z  INFO 3310 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-03-03T09:28:51.539Z  INFO 3310 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
-2026-03-03T09:28:51.578Z  INFO 3310 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.4.Final
-2026-03-03T09:28:51.906Z  INFO 3310 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-03-03T09:28:51.966Z  INFO 3310 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+2026-03-03T09:31:35.793Z  INFO 3344 --- [           main] be.ap.student.tickets.BrokenTest         : Starting BrokenTest using Java 21.0.10 with PID 3344 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
+2026-03-03T09:31:35.794Z  INFO 3344 --- [           main] be.ap.student.tickets.BrokenTest         : No active profile set, falling back to 1 default profile: "default"
+2026-03-03T09:31:36.399Z  INFO 3344 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-03T09:31:36.447Z  INFO 3344 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 38 ms. Found 1 JPA repository interface.
+2026-03-03T09:31:36.837Z  INFO 3344 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-03-03T09:31:36.856Z  INFO 3344 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-03T09:31:36.857Z  INFO 3344 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-03T09:31:36.899Z  INFO 3344 --- [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1072 ms
+2026-03-03T09:31:36.983Z  INFO 3344 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-03-03T09:31:37.103Z  INFO 3344 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:demo user=SA
+2026-03-03T09:31:37.104Z  INFO 3344 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-03-03T09:31:37.186Z  INFO 3344 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-03-03T09:31:37.224Z  INFO 3344 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.4.Final
+2026-03-03T09:31:37.570Z  INFO 3344 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-03T09:31:37.651Z  INFO 3344 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
 	Database JDBC URL [jdbc:h2:mem:demo]
 	Database driver: H2 JDBC Driver
 	Database dialect: H2Dialect
@@ -115,13 +115,13 @@ All AI artifacts validated successfully.
 	Pool: DataSourceConnectionProvider
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-03-03T09:28:52.605Z  INFO 3310 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-03-03T09:28:52.610Z  INFO 3310 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-03-03T09:28:52.679Z  INFO 3310 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-03-03T09:28:52.779Z  WARN 3310 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-03-03T09:28:53.084Z  INFO 3310 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 44615 (http) with context path '/'
-2026-03-03T09:28:53.091Z  INFO 3310 --- [           main] be.ap.student.tickets.BrokenTest         : Started BrokenTest in 3.198 seconds (process running for 4.205)
-2026-03-03T09:28:53.095Z  WARN 3310 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener] to prepare test instance [be.ap.student.tickets.BrokenTest@4163f505]
+2026-03-03T09:31:38.380Z  INFO 3344 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-03-03T09:31:38.387Z  INFO 3344 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-03T09:31:38.469Z  INFO 3344 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-03T09:31:38.590Z  WARN 3344 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-03T09:31:38.895Z  INFO 3344 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 33513 (http) with context path '/'
+2026-03-03T09:31:38.905Z  INFO 3344 --- [           main] be.ap.student.tickets.BrokenTest         : Started BrokenTest in 3.359 seconds (process running for 4.39)
+2026-03-03T09:31:38.910Z  WARN 3344 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener] to prepare test instance [be.ap.student.tickets.BrokenTest@4163f505]
 
 org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.BrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.boot.resttestclient.TestRestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767) ~[spring-beans-7.0.5.jar:7.0.5]
@@ -220,8 +220,8 @@ Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No q
 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:764) ~[spring-beans-7.0.5.jar:7.0.5]
 	... 88 common frames omitted
 
-[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 3.597 s <<< FAILURE! -- in be.ap.student.tickets.BrokenTest
-[ERROR] be.ap.student.tickets.BrokenTest.testWillFail -- Time elapsed: 0.009 s <<< ERROR!
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 3.807 s <<< FAILURE! -- in be.ap.student.tickets.BrokenTest
+[ERROR] be.ap.student.tickets.BrokenTest.testWillFail -- Time elapsed: 0.008 s <<< ERROR!
 org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.BrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.boot.resttestclient.TestRestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767)
 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:748)
@@ -255,8 +255,8 @@ Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No q
 	... 23 more
 
 [INFO] Running be.ap.student.tickets.TestControllerIT
-2026-03-03T09:28:53.139Z  INFO 3310 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.TestControllerIT]: TestControllerIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-03T09:28:53.147Z  INFO 3310 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.TestControllerIT
+2026-03-03T09:31:38.950Z  INFO 3344 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.TestControllerIT]: TestControllerIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-03T09:31:38.959Z  INFO 3344 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.TestControllerIT
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -267,11 +267,11 @@ Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No q
 
  :: Spring Boot ::                (v4.0.3)
 
-2026-03-03T09:28:53.205Z  INFO 3310 --- [           main] be.ap.student.tickets.TestControllerIT   : Starting TestControllerIT using Java 21.0.10 with PID 3310 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
-2026-03-03T09:28:53.205Z  INFO 3310 --- [           main] be.ap.student.tickets.TestControllerIT   : No active profile set, falling back to 1 default profile: "default"
-2026-03-03T09:28:53.385Z  INFO 3310 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-03T09:28:53.394Z  INFO 3310 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 7 ms. Found 1 JPA repository interface.
-2026-03-03T09:28:53.407Z  WARN 3310 --- [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: java.lang.IllegalStateException: Error processing condition on org.springframework.boot.resttestclient.autoconfigure.TestRestTemplateTestAutoConfiguration.testRestTemplate
+2026-03-03T09:31:39.022Z  INFO 3344 --- [           main] be.ap.student.tickets.TestControllerIT   : Starting TestControllerIT using Java 21.0.10 with PID 3344 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
+2026-03-03T09:31:39.023Z  INFO 3344 --- [           main] be.ap.student.tickets.TestControllerIT   : No active profile set, falling back to 1 default profile: "default"
+2026-03-03T09:31:39.181Z  INFO 3344 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-03T09:31:39.190Z  INFO 3344 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 7 ms. Found 1 JPA repository interface.
+2026-03-03T09:31:39.201Z  WARN 3344 --- [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: java.lang.IllegalStateException: Error processing condition on org.springframework.boot.resttestclient.autoconfigure.TestRestTemplateTestAutoConfiguration.testRestTemplate
 
 
 
@@ -825,10 +825,10 @@ Unconditional classes:
 
 
 
-2026-03-03T09:28:53.426Z  INFO 3310 --- [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
+2026-03-03T09:31:39.210Z  INFO 3344 --- [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
 
 Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2026-03-03T09:28:53.437Z ERROR 3310 --- [           main] o.s.boot.SpringApplication               : Application run failed
+2026-03-03T09:31:39.221Z ERROR 3344 --- [           main] o.s.boot.SpringApplication               : Application run failed
 
 java.lang.IllegalStateException: Error processing condition on org.springframework.boot.resttestclient.autoconfigure.TestRestTemplateTestAutoConfiguration.testRestTemplate
 	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:60) ~[spring-boot-autoconfigure-4.0.3.jar:4.0.3]
@@ -973,7 +973,7 @@ Caused by: java.lang.ClassNotFoundException: org.springframework.boot.restclient
 	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526) ~[na:na]
 	... 123 common frames omitted
 
-2026-03-03T09:28:53.442Z  WARN 3310 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener] to prepare test instance [be.ap.student.tickets.TestControllerIT@621a7d83]
+2026-03-03T09:31:39.238Z  WARN 3344 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener] to prepare test instance [be.ap.student.tickets.TestControllerIT@621a7d83]
 
 java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@551fefe8 testClass = be.ap.student.tickets.TestControllerIT, locations = [], classes = [be.ap.student.BackendApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true", "server.port=0"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@1c55f277, [ImportsContextCustomizer@6affa355 key = [org.springframework.boot.resttestclient.autoconfigure.TestRestTemplateTestAutoConfiguration]], org.springframework.boot.test.context.PropertyMappingContextCustomizer@0, org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@24bdb479, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@6e4de19b, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@18518ccf, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@6681c33], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
 	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.lambda$loadContext$0(DefaultCacheAwareContextLoaderDelegate.java:195) ~[spring-test-7.0.5.jar:7.0.5]
@@ -1121,7 +1121,7 @@ Caused by: java.lang.ClassNotFoundException: org.springframework.boot.restclient
 	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526) ~[na:na]
 	... 123 common frames omitted
 
-[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.315 s <<< FAILURE! -- in be.ap.student.tickets.TestControllerIT
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.301 s <<< FAILURE! -- in be.ap.student.tickets.TestControllerIT
 [ERROR] be.ap.student.tickets.TestControllerIT.testEndpoint -- Time elapsed: 0.005 s <<< ERROR!
 java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@551fefe8 testClass = be.ap.student.tickets.TestControllerIT, locations = [], classes = [be.ap.student.BackendApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true", "server.port=0"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@1c55f277, [ImportsContextCustomizer@6affa355 key = [org.springframework.boot.resttestclient.autoconfigure.TestRestTemplateTestAutoConfiguration]], org.springframework.boot.test.context.PropertyMappingContextCustomizer@0, org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@24bdb479, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@6e4de19b, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@18518ccf, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@6681c33], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
 	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.lambda$loadContext$0(DefaultCacheAwareContextLoaderDelegate.java:195)
@@ -1205,9 +1205,9 @@ Caused by: java.lang.ClassNotFoundException: org.springframework.boot.restclient
 	... 58 more
 
 [INFO] Running be.ap.student.tickets.PersistentBrokenTest
-2026-03-03T09:28:53.454Z  INFO 3310 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.PersistentBrokenTest]: PersistentBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-03T09:28:53.456Z  INFO 3310 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.PersistentBrokenTest
-2026-03-03T09:28:53.459Z  WARN 3310 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener] to prepare test instance [be.ap.student.tickets.PersistentBrokenTest@3cdafb82]
+2026-03-03T09:31:39.252Z  INFO 3344 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.PersistentBrokenTest]: PersistentBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-03T09:31:39.253Z  INFO 3344 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.PersistentBrokenTest
+2026-03-03T09:31:39.256Z  WARN 3344 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener] to prepare test instance [be.ap.student.tickets.PersistentBrokenTest@3cdafb82]
 
 org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.PersistentBrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.boot.resttestclient.TestRestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767) ~[spring-beans-7.0.5.jar:7.0.5]
@@ -1306,8 +1306,8 @@ Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No q
 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:764) ~[spring-beans-7.0.5.jar:7.0.5]
 	... 88 common frames omitted
 
-[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.015 s <<< FAILURE! -- in be.ap.student.tickets.PersistentBrokenTest
-[ERROR] be.ap.student.tickets.PersistentBrokenTest.testWillFailDueToBadImport -- Time elapsed: 0.005 s <<< ERROR!
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.010 s <<< FAILURE! -- in be.ap.student.tickets.PersistentBrokenTest
+[ERROR] be.ap.student.tickets.PersistentBrokenTest.testWillFailDueToBadImport -- Time elapsed: 0.002 s <<< ERROR!
 org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.PersistentBrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.boot.resttestclient.TestRestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767)
 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:748)
@@ -1353,8 +1353,8 @@ Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No q
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  7.339 s
-[INFO] Finished at: 2026-03-03T09:28:53Z
+[INFO] Total time:  7.406 s
+[INFO] Finished at: 2026-03-03T09:31:39Z
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project backend: 
 [ERROR] 
