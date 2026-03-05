@@ -239,52 +239,38 @@ analyze_errors_with_ai() {
     
     # Create AI prompt for error analysis
     cat > /tmp/ai_error_prompt.txt << 'EOF'
-You are an expert Spring Boot engineer analyzing compilation and build errors. 
+You are an expert Java/Spring Boot engineer analyzing compilation and build errors.
 
 TASK: Analyze the following errors and provide specific, actionable fixes.
 
 ERRORS:
 $error_content
 
-CONTEXT: This is a Spring Boot application with RestTemplate dependency injection issues in test files.
+CONTEXT: This is a Spring Boot application. Analyze ALL types of errors: compilation errors, missing methods, dependency issues, etc.
 
-CRITICAL SPRING BOOT PATTERNS:
-- For RestTemplate dependency injection in tests, you need:
-  1. A @TestConfiguration class with @Bean RestTemplate method
-  2. Test classes must have @Import(ConfigClassName.class) annotation at CLASS LEVEL
-  3. Do NOT add duplicate import statements
-  4. Do NOT add multiple @Import annotations
+COMMON ERROR PATTERNS:
+1. COMPILATION ERRORS ("cannot find symbol"):
+   - Remove calls to non-existent methods
+   - Remove unused variables
+   - Fix method signatures
 
-EXAMPLE CORRECT TEST CLASS STRUCTURE:
-```java
-package com.example;
+2. DEPENDENCY INJECTION ERRORS:
+   - For RestTemplate in tests: Create @TestConfiguration with @Bean RestTemplate
+   - Add @Import(ConfigClass.class) at class level
+   - Do NOT add duplicate imports
 
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestTemplate;
-import com.example.config.TestRestTemplateConfig;
-import org.junit.jupiter.api.Test;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestRestTemplateConfig.class)
-public class MyTest {
-    @Autowired
-    private RestTemplate restTemplate;
-    
-    @Test
-    public void testMethod() {
-        // test code
-    }
-}
-```
+3. IMPORT/PACKAGE ERRORS:
+   - Fix package declarations
+   - Add missing imports
+   - Remove unused imports
 
 REQUIREMENTS:
-1. Identify RestTemplate dependency injection errors
-2. Ensure TestRestTemplateConfig.java exists with @TestConfiguration and RestTemplate @Bean
-3. Add @Import(TestRestTemplateConfig.class) annotation at CLASS LEVEL in test files
-4. Remove duplicate imports and fix package references
-5. Provide complete, valid Java class content
+1. Identify the specific error type (compilation, dependency, etc.)
+2. For "cannot find symbol" errors: Remove or fix the problematic code
+3. For dependency injection: Create proper configuration classes
+4. Do NOT add duplicate imports or annotations
+5. Provide ONLY the necessary changes - don't rewrite entire files unless needed
+6. For simple errors like undefined methods: just remove the problematic line
 
 FORMAT your response as JSON:
 {
@@ -377,22 +363,34 @@ apply_ai_fixes() {
                     
                     case "$action" in
                         "create")
-                            mkdir -p "$(dirname "$file")"
-                            echo -e "$content" > "$file"
-                            log_success "Created $file"
+                            # Check if file already exists to avoid conflicts
+                            if [ -f "$file" ]; then
+                                log_warning "File $file already exists, skipping creation"
+                            else
+                                mkdir -p "$(dirname "$file")"
+                                echo -e "$content" > "$file"
+                                log_success "Created $file"
+                            fi
                             ;;
                         "modify")
                             if [ -f "$file" ]; then
-                                # Use GitHub Copilot CLI for intelligent modifications if available
-                                if command -v gh >/dev/null 2>&1 && command -v copilot >/dev/null 2>&1; then
-                                    log_info "Using GitHub Copilot for intelligent file modification"
-                                    echo "$content" | copilot suggest --file "$file" || {
-                                        echo -e "$content" > "$file"
-                                        log_success "Modified $file (fallback)"
-                                    }
+                                # Check for duplicate imports/annotations before modifying
+                                if echo "$content" | grep -q "@Import" && grep -q "@Import" "$file"; then
+                                    log_warning "File $file already has @Import annotation, skipping to avoid duplicates"
+                                elif echo "$content" | grep -q "import.*TestRestTemplateConfig" && grep -q "import.*TestRestTemplateConfig" "$file"; then
+                                    log_warning "File $file already has TestRestTemplateConfig import, skipping to avoid duplicates"
                                 else
-                                    echo -e "$content" > "$file"
-                                    log_success "Modified $file"
+                                    # Use GitHub Copilot CLI for intelligent modifications if available
+                                    if command -v gh >/dev/null 2>&1 && command -v copilot >/dev/null 2>&1; then
+                                        log_info "Using GitHub Copilot for intelligent file modification"
+                                        echo "$content" | copilot suggest --file "$file" || {
+                                            echo -e "$content" > "$file"
+                                            log_success "Modified $file (fallback)"
+                                        }
+                                    else
+                                        echo -e "$content" > "$file"
+                                        log_success "Modified $file"
+                                    fi
                                 fi
                             else
                                 log_warning "File $file does not exist, cannot modify"
