@@ -1,28 +1,19 @@
 package be.ap.student.tickets.controller;
 
-// Test 2: Missing imports should trigger AI fixes
-import java.util.List;
-// Missing: import org.springframework.web.bind.annotation.*;
-// Missing: import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/test-errors")
+@RequestMapping("/api/test-error")
 public class TestErrorController {
-    
-    // Test: Using annotations without proper imports
-    @GetMapping("/missing-imports")
-    public ResponseEntity<List<String>> testMissingImports() {
-        // Test: Using undefined class
-        UndefinedClass obj = new UndefinedClass();
-        return ResponseEntity.ok(List.of("test"));
+
+    @GetMapping
+    public ResponseEntity<String> getTest() {
+        return ResponseEntity.ok("Test endpoint working");
     }
-    
-    // Test: Wrong annotation usage
-    @PostMapping("/syntax-error")
-    public String testSyntaxError(
-        // Missing @RequestBody annotation
-        String invalidParam
-    ) {
-        return "error test";
+
+    @PostMapping
+    public ResponseEntity<String> postTest(@RequestBody String request) {
+        return ResponseEntity.ok("Test post endpoint working");
     }
 }
