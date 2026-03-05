@@ -237,8 +237,8 @@ analyze_errors_with_ai() {
     # Prepare error context for AI analysis
     local error_content=$(cat "$error_file" | head -200)  # Limit to avoid token limits
     
-    # Create AI prompt for error analysis
-    cat > /tmp/ai_error_prompt.txt << 'EOF'
+    # Create the AI prompt without sed substitution to avoid escaping issues
+    cat > /tmp/ai_error_prompt.txt << EOF
 You are an expert Java/Spring Boot engineer analyzing compilation and build errors.
 
 TASK: Analyze the following errors and provide specific, actionable fixes as JSON.
@@ -291,9 +291,6 @@ CRITICAL: Return ONLY valid JSON in this exact format:
   ]
 }
 EOF
-
-    # Replace the error content placeholder
-    sed -i.bak "s/\$error_content/${error_content//\//\\/}/" /tmp/ai_error_prompt.txt
 
     # Call Gemini API for error analysis
     if [ -n "$GEMINI_API_KEY" ]; then
@@ -498,8 +495,10 @@ $file_content
 Return ONLY the cleaned up, complete Java class code with proper Spring Boot annotations. No explanation or markdown formatting.
 EOF
 
-                # Replace the file content placeholder
-                sed -i.bak "s/\$file_content/${file_content//\//\\/}/" /tmp/cleanup_prompt.txt
+                # Replace the file content placeholder - fix sed escaping
+                local escaped_file_content=$(echo "$file_content" | sed 's/[[\.*^$()+?{|]/\\&/g' | tr '\n' '\\n')
+                sed -i.bak "s/\$file_content/$escaped_file_content/" /tmp/cleanup_prompt.txt
+                rm -f /tmp/cleanup_prompt.txt.bak
 
                 local cleaned_content=$(curl -s -X POST \
                     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=$GEMINI_API_KEY" \
@@ -551,11 +550,15 @@ simple_cleanup_file() {
         rm -f "${file}.bak"
     else
         # Linux versions
-        # Simple cleanup - remove problematic sed commands that are causing errors
+        # Simple cleanup - only fix class name references safely
         if grep -q "RestTemplateConfig" "$file" 2>/dev/null; then
-            # Only apply cleanup if the file actually contains RestTemplateConfig references
-            sed -i.bak 's/be\.ap\.student\.config\.RestTemplateConfig/be.ap.student.config.TestRestTemplateConfig/g' "$file" 2>/dev/null || true
-            rm -f "$file.bak" 2>/dev/null || true
+            # Only apply simple class name substitution
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i.bak 's/be\.ap\.student\.config\.RestTemplateConfig/be.ap.student.config.TestRestTemplateConfig/g' "$file" 2>/dev/null || true
+                rm -f "${file}.bak" 2>/dev/null || true  
+            else
+                sed -i 's/be\.ap\.student\.config\.RestTemplateConfig/be.ap.student.config.TestRestTemplateConfig/g' "$file" 2>/dev/null || true
+            fi
         fi
     fi
     
