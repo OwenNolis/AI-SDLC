@@ -32,6 +32,31 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Load Environment Variables
+        run: |
+          if [ -f .env ]; then
+            echo "Loading .env file..."
+            # Load .env into GitHub Actions environment
+            while IFS= read -r line; do
+              if [[ $line =~ ^[^#]*= ]]; then
+                echo "$line" >> $GITHUB_ENV
+                echo "Loaded: $(echo $line | cut -d= -f1)"
+              fi
+            done < .env
+          else
+            echo "No .env file found"
+          fi
+          
+          # Override with GitHub secrets if they exist (secrets take precedence)
+          if [ -n "${{ secrets.GEMINI_API_KEY }}" ]; then
+            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
+            echo "Using GEMINI_API_KEY from GitHub secrets"
+          elif [ -n "${GEMINI_API_KEY:-}" ]; then
+            echo "Using GEMINI_API_KEY from .env file"
+          else
+            echo "⚠️ No GEMINI_API_KEY found in either .env or secrets"
+          fi
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
