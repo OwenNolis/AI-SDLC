@@ -1573,10 +1573,35 @@ This is an AI-driven SDLC project with:
 
 ## AI Flow Errors
 
+## Maven Compilation Errors
+73-[INFO] -------------------------------------------------------------
+74-[INFO] ------------------------------------------------------------------------
+75:[INFO] BUILD FAILURE
+76-[INFO] ------------------------------------------------------------------------
+77-[INFO] Total time:  3.927 s
+78-[INFO] Finished at: 2026-03-05T10:13:29Z
+79-[INFO] ------------------------------------------------------------------------
+80-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure
+68-[INFO] -------------------------------------------------------------
+69:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,29] cannot find symbol
+70-  symbol:   method nonExistentMethod(java.lang.String)
+71-  location: class be.ap.student.tickets.controller.TicketController
+72-[INFO] 1 error
+--
+80-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure
+81:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,29] cannot find symbol
+82-[ERROR]   symbol:   method nonExistentMethod(java.lang.String)
+83-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
+84-[ERROR] 
+
+## NPM/Frontend Errors
+
+## AI Flow Errors
+
 
 ## Recent Changes
+9cfd64a Test AI Code Fixes workflow - introduce compilation error
+720e348 Fix AI Code Fixes workflow shell script errors and add missing /api/test endpoint
+ca81553 Merge pull request #77 from OwenNolis/ai-fix/auto-fixes-20260305-090620
+cc858a2 [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
 27d2005 Fixes for ai flow
-9caab55 Merge pull request #75 from OwenNolis/ai-fix/auto-fixes-20260305-082544
-52df32d [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
-0d5a5c0 🔧 Fix syntax errors in ai-fix-utils.sh
-7f8f294 🤖 Implement AI-powered error analysis and fixing
