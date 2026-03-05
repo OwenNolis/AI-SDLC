@@ -1598,10 +1598,41 @@ This is an AI-driven SDLC project with:
 
 ## AI Flow Errors
 
+## Maven Compilation Errors
+77-[INFO] -------------------------------------------------------------
+78-[INFO] ------------------------------------------------------------------------
+79:[INFO] BUILD FAILURE
+80-[INFO] ------------------------------------------------------------------------
+81-[INFO] Total time:  2.321 s
+82-[INFO] Finished at: 2026-03-05T11:57:15Z
+83-[INFO] ------------------------------------------------------------------------
+84-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
+68-[INFO] -------------------------------------------------------------
+69:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
+70-  symbol:   method undefinedMethod1(java.lang.String)
+71-  location: class be.ap.student.tickets.controller.TicketController
+72:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
+73-  symbol:   method undefinedMethod2()
+74-  location: class be.ap.student.tickets.controller.TicketController
+75-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
+--
+84-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
+85:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
+86-[ERROR]   symbol:   method undefinedMethod1(java.lang.String)
+87-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
+88:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
+89-[ERROR]   symbol:   method undefinedMethod2()
+90-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
+91-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
+
+## NPM/Frontend Errors
+
+## AI Flow Errors
+
 
 ## Recent Changes
-e9c216e Major fixes to AI Code Fixes workflow: - Load GEMINI_API_KEY from .env file in GitHub Actions - Expand AI analysis to handle ALL error types (not just RestTemplate) - Fix fallback logic to detect multiple method name patterns - Remove problematic sed commands causing errors - Improve error pattern matching and file path extraction
-42e93b6 Test AI workflow again - introduce anotherNonExistentMethod error
-8a5178d Fix AI Code Fixes workflow - now actually applies code fixes and removes nonExistentMethod error
-f017d34 Fix AI Code Fixes workflow to handle general compilation errors and prevent duplicate imports
-9cfd64a Test AI Code Fixes workflow - introduce compilation error
+2e753fc Test 1: Multiple compilation errors - undefined methods and wrong types
+836fc41 Merge pull request #81 from OwenNolis/ai-fix/auto-fixes-20260305-105151
+898893d Merge branch 'main' into ai-fix/auto-fixes-20260305-105151
+a8cc2c4 AI Code Fixes workflow fully working - actual code fixes applied
+1be9a4c [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working

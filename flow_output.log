@@ -66,22 +66,29 @@ All AI artifacts validated successfully.
 [INFO] -------------------------------------------------------------
 [ERROR] COMPILATION ERROR : 
 [INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,26] cannot find symbol
-  symbol:   method anotherNonExistentMethod(java.lang.String)
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
+  symbol:   method undefinedMethod1(java.lang.String)
   location: class be.ap.student.tickets.controller.TicketController
-[INFO] 1 error
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
+  symbol:   method undefinedMethod2()
+  location: class be.ap.student.tickets.controller.TicketController
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
+[INFO] 3 errors 
 [INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.314 s
-[INFO] Finished at: 2026-03-05T10:51:20Z
+[INFO] Total time:  2.321 s
+[INFO] Finished at: 2026-03-05T11:57:15Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,26] cannot find symbol
-[ERROR]   symbol:   method anotherNonExistentMethod(java.lang.String)
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
+[ERROR]   symbol:   method undefinedMethod1(java.lang.String)
 [ERROR]   location: class be.ap.student.tickets.controller.TicketController
-[ERROR] 
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
+[ERROR]   symbol:   method undefinedMethod2()
+[ERROR]   location: class be.ap.student.tickets.controller.TicketController
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
