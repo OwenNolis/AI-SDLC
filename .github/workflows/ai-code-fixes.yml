@@ -230,11 +230,23 @@ jobs:
           exit_code=$?
           echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
           
-          if [ $exit_code -eq 0 ]; then
-            echo "✅ Fixes successful! SDLC flow now passes."
+          # Double-check compilation success by running maven compile directly
+          echo "Double-checking compilation status..."
+          cd backend
+          mvn compile -q > compile_check.log 2>&1
+          compile_exit=$?
+          cd ..
+          
+          if [ $exit_code -eq 0 ] && [ $compile_exit -eq 0 ]; then
+            echo "✅ Fixes successful! SDLC flow passes and compilation works."
             echo "fixes_successful=true" >> $GITHUB_OUTPUT
           else
             echo "❌ Fixes didn't resolve all issues."
+            echo "Flow exit code: $exit_code, Compile exit code: $compile_exit"
+            if [ $compile_exit -ne 0 ]; then
+              echo "Compilation errors still present:"
+              cat backend/compile_check.log
+            fi
             echo "fixes_successful=false" >> $GITHUB_OUTPUT
           fi
 
