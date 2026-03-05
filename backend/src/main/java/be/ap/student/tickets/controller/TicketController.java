@@ -21,6 +21,8 @@ public class TicketController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
         var saved = service.create(req);
+        // Test error: calling non-existent method again
+        String testVar = anotherNonExistentMethod(saved.getTicketNumber());
         return new CreateTicketResponse(saved.getTicketNumber(), saved.getStatus().name());
     }
 }
