@@ -239,19 +239,52 @@ analyze_errors_with_ai() {
     
     # Create AI prompt for error analysis
     cat > /tmp/ai_error_prompt.txt << EOF
-You are an expert software engineer analyzing compilation and build errors. 
+You are an expert Spring Boot engineer analyzing compilation and build errors. 
 
 TASK: Analyze the following errors and provide specific, actionable fixes.
 
 ERRORS:
 $error_content
 
+CONTEXT: This is a Spring Boot application with RestTemplate dependency injection issues in test files.
+
+CRITICAL SPRING BOOT PATTERNS:
+- For RestTemplate dependency injection in tests, you need:
+  1. A @TestConfiguration class with @Bean RestTemplate method
+  2. Test classes must have @Import(ConfigClassName.class) annotation at CLASS LEVEL
+  3. Do NOT add duplicate import statements
+  4. Do NOT add multiple @Import annotations
+
+EXAMPLE CORRECT TEST CLASS STRUCTURE:
+```java
+package com.example;
+
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestTemplate;
+import com.example.config.TestRestTemplateConfig;
+import org.junit.jupiter.api.Test;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(TestRestTemplateConfig.class)
+public class MyTest {
+    @Autowired
+    private RestTemplate restTemplate;
+    
+    @Test
+    public void testMethod() {
+        // test code
+    }
+}
+```
+
 REQUIREMENTS:
-1. Identify the root cause of each error
-2. Provide specific code changes needed
-3. Include file paths and exact code modifications
-4. Focus on practical, working solutions
-5. Consider Spring Boot 4+, React Testing Library best practices
+1. Identify RestTemplate dependency injection errors
+2. Ensure TestRestTemplateConfig.java exists with @TestConfiguration and RestTemplate @Bean
+3. Add @Import(TestRestTemplateConfig.class) annotation at CLASS LEVEL in test files
+4. Remove duplicate imports and fix package references
+5. Provide complete, valid Java class content
 
 FORMAT your response as JSON:
 {
@@ -261,7 +294,7 @@ FORMAT your response as JSON:
       "file": "relative/path/to/file",
       "issue": "Description of the problem",
       "action": "create|modify|delete",
-      "content": "Exact code content or modification"
+      "content": "Complete valid Java class content with proper Spring Boot annotations"
     }
   ]
 }
@@ -400,16 +433,32 @@ cleanup_duplicate_imports() {
                 local file_content=$(cat "$file")
                 
                 cat > /tmp/cleanup_prompt.txt << EOF
-Clean up this Java file by:
-1. Remove all duplicate import statements
-2. Remove duplicate @Import annotations (keep only one)  
+Clean up this Java Spring Boot test file following these EXACT requirements:
+
+1. Remove ALL duplicate import statements (keep only one of each)
+2. Remove ALL duplicate @Import annotations (keep only one)  
 3. Fix incorrect RestTemplateConfig references to TestRestTemplateConfig
-4. Ensure proper Spring Boot test configuration
+4. Ensure the @Import(TestRestTemplateConfig.class) annotation is at CLASS LEVEL (after @SpringBootTest)
+5. Verify proper package imports
+6. Maintain all existing test logic and @Autowired fields
+
+CRITICAL: The @Import annotation must be at the class level, NOT as an import statement.
+
+EXAMPLE CORRECT PATTERN:
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(TestRestTemplateConfig.class)
+public class TestClass {
+    @Autowired
+    private RestTemplate restTemplate;
+    // ... rest of class
+}
+```
 
 FILE CONTENT:
 $file_content
 
-Return ONLY the cleaned up Java code, no explanation.
+Return ONLY the cleaned up, complete Java class code with proper Spring Boot annotations. No explanation or markdown formatting.
 EOF
 
                 local cleaned_content=$(curl -s -X POST \

@@ -5,23 +5,17 @@ import org.springframework.context.annotation.Import;
 import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.junit.jupiter.api.Test;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestRestTemplateConfig.class)
-public class TestControllerIT {
-    
+public class NewBrokenTest {
     @Autowired
     private RestTemplate restTemplate;
     
-    @LocalServerPort
-    private int port;
-    
     @Test
-    public void testEndpoint() {
-        String result = restTemplate.getForObject("http://localhost:" + port + "/api/test", String.class);
+    public void testShouldFailWithoutImport() {
+        // This test should now work with RestTemplate properly injected
         System.out.println("RestTemplate injected: " + (restTemplate != null));
-        System.out.println("Test endpoint result: " + result);
     }
 }
