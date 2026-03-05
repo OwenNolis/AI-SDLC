@@ -1,6 +1,9 @@
 name: AI Code Fixes
 
 on:
+  workflow_run:
+    workflows: ["flow"]  # Triggers when the main CI workflow fails
+    types: [completed]
   push:
     branches: [main, develop, feature/*]
   pull_request:
@@ -16,8 +19,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     
-    # Only run if not a bot commit (avoid infinite loops)
-    if: ${{ !contains(github.event.head_commit.message, '[ai-fix]') }}
+    # Only run if:
+    # 1. Main workflow failed OR
+    # 2. Manual trigger OR  
+    # 3. Push/PR (but not bot commits)
+    if: |
+      (github.event.workflow_run.conclusion == 'failure') ||
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[ai-fix]')) ||
+      (github.event_name == 'pull_request' && !contains(github.event.head_commit.message, '[ai-fix]'))
 
     env:
       FEATURE_ID: feature-001-support-ticket
@@ -55,6 +65,7 @@ jobs:
             echo "Using GEMINI_API_KEY from .env file"
           else
             echo "⚠️ No GEMINI_API_KEY found in either .env or secrets"
+            echo "AI analysis will be limited to pattern-based fixes"
           fi
 
       - name: Setup Node
@@ -122,103 +133,114 @@ jobs:
           echo "Checking for SDLC Flow failures..."
           echo "Exit code: ${{ steps.sdlc_flow_attempt1.outputs.exit_code }}"
           
-          # Check if flow_output.log contains build failures
-          if [ -f flow_output.log ] && grep -q "BUILD FAILURE\|COMPILATION ERROR\|Error:" flow_output.log; then
-            echo "Build failures detected in logs - proceeding with analysis"
-          else
-            echo "No build failures found - skipping AI analysis"
-            echo "has_errors=false" >> $GITHUB_OUTPUT
-            exit 0
+          # Check multiple indicators of failures
+          has_errors=false
+          
+          # Check exit code
+          if [ "${{ steps.sdlc_flow_attempt1.outputs.exit_code }}" != "0" ]; then
+            echo "❌ Flow failed with exit code ${{ steps.sdlc_flow_attempt1.outputs.exit_code }}"
+            has_errors=true
           fi
           
-          # Use our helper script to extract errors
-          source .github/scripts/ai-fix-utils.sh
-          .github/scripts/ai-fix-utils.sh extract-errors flow_output.log error_analysis.md
+          # Check for build failures in logs
+          if [ -f flow_output.log ] && grep -q "BUILD FAILURE\|COMPILATION ERROR\|Error:\|cannot find symbol\|incompatible types" flow_output.log; then
+            echo "❌ Build/compilation errors detected in logs"
+            has_errors=true
+          fi
           
-          # Check if we have substantial errors to work with
-          if [ -s error_analysis.md ]; then
+          # Try direct compilation check
+          echo "Double-checking compilation status..."
+          cd backend
+          if ! mvn compile -q > compile_check.log 2>&1; then
+            echo "❌ Direct Maven compilation failed"
+            has_errors=true
+            cd ..
+            cp backend/compile_check.log compilation_errors.log
+          else
+            echo "✅ Direct Maven compilation succeeded"
+            cd ..
+          fi
+          
+          if [ "$has_errors" = "true" ]; then
+            echo "🔍 Errors detected - proceeding with AI-powered analysis"
             echo "has_errors=true" >> $GITHUB_OUTPUT
-            echo "Errors found and documented"
+            
+            # Ensure error context files exist
+            touch error_analysis.md
+            echo "# Error Analysis Report" > error_analysis.md
+            echo "Generated: $(date)" >> error_analysis.md
+            echo "" >> error_analysis.md
+            
+            # Add flow output errors
+            if [ -f flow_output.log ]; then
+              echo "## SDLC Flow Errors" >> error_analysis.md
+              grep -A5 -B5 "BUILD FAILURE\|COMPILATION ERROR\|Error:\|cannot find symbol\|incompatible types" flow_output.log >> error_analysis.md || echo "No specific error patterns found" >> error_analysis.md
+            fi
+            
+            # Add compilation errors if available
+            if [ -f compilation_errors.log ]; then
+              echo "## Direct Compilation Errors" >> error_analysis.md
+              cat compilation_errors.log >> error_analysis.md
+            fi
+            
           else
+            echo "✅ No errors detected - SDLC flow successful"
             echo "has_errors=false" >> $GITHUB_OUTPUT
-            echo "No clear errors to analyze"
           fi
-
-      - name: Install GitHub CLI Extensions
-        if: steps.analyze_errors.outputs.has_errors == 'true'
-        run: |
-          # Install GitHub Copilot CLI if available
-          gh extension install github/gh-copilot || echo "Copilot CLI not available, will use alternative approach"
 
       - name: Generate AI Fix Suggestions
         if: steps.analyze_errors.outputs.has_errors == 'true'
-        id: ai_fixes
+        id: generate_fixes  
         run: |
           echo "Generating AI fix suggestions..."
-          
-          # Create a comprehensive context for AI
-          cat > fix_context.md << 'EOF'
-          # AI-SDLC Code Fixing Context
-          
-          ## Repository Structure
-          This is an AI-driven SDLC project with:
-          - Backend: Spring Boot 4.x with Maven
-          - Frontend: React with Vite, TypeScript, Jest
-          - AI Tools: Node.js scripts for test generation
-          
-          ## Current Error Analysis
-          EOF
-          
-          cat error_analysis.md >> fix_context.md
-          
-          echo "" >> fix_context.md
-          echo "## Recent Changes" >> fix_context.md
-          git log --oneline -5 >> fix_context.md
-          
-          # Use our helper script for better suggestions
           source .github/scripts/ai-fix-utils.sh
-          .github/scripts/ai-fix-utils.sh generate-fixes error_analysis.md ai_suggestions.md
           
-          # Try GitHub Copilot as enhancement if available
-          if gh copilot --version >/dev/null 2>&1; then
-            echo "Enhancing with GitHub Copilot suggestions..."
-            echo "" >> ai_suggestions.md
-            echo "## 🧠 Enhanced AI Suggestions" >> ai_suggestions.md
-            gh copilot suggest -t shell "Based on the errors above, suggest specific file changes to fix the SDLC flow issues" < fix_context.md >> ai_suggestions.md || true
+          # Ensure GEMINI_API_KEY is available for the script
+          export GEMINI_API_KEY="${{ env.GEMINI_API_KEY }}"
+          
+          if [ -n "$GEMINI_API_KEY" ]; then
+            echo "🤖 Using Gemini AI for intelligent error analysis..."
+            .github/scripts/ai-fix-utils.sh generate-fixes error_analysis.md ai_suggestions.md
+          else
+            echo "⚠️ GEMINI_API_KEY not available, using pattern-based fixes"
+            .github/scripts/ai-fix-utils.sh generate-fixes error_analysis.md ai_suggestions.md
           fi
           
-          echo "fix_suggestions_created=true" >> $GITHUB_OUTPUT
+          echo "Fix suggestions generated successfully"
 
       - name: Apply Automated Fixes
-        if: steps.ai_fixes.outputs.fix_suggestions_created == 'true'
+        if: steps.analyze_errors.outputs.has_errors == 'true'
         id: apply_fixes
         run: |
           echo "Applying automated fixes based on AI suggestions..."
+          ls -la
           
-          # Debug: Show what files exist
-          ls -la error_analysis.md ai_suggestions.md flow_output.log 2>/dev/null || echo "Some files missing"
-          
-          # Use our helper script for intelligent fix application
-          source .github/scripts/ai-fix-utils.sh
+          # Check if suggestion file exists
+          if [ ! -f "ai_suggestions.md" ]; then
+            echo "No AI suggestions file found, creating basic analysis..."
+            touch ai_suggestions.md
+          fi
           
           echo "Attempting to apply fixes..."
-          if .github/scripts/ai-fix-utils.sh apply-fixes flow_output.log; then
+          source .github/scripts/ai-fix-utils.sh
+          
+          # Export environment for the script  
+          export GEMINI_API_KEY="${{ env.GEMINI_API_KEY }}"
+          
+          # Apply fixes using our enhanced AI utilities
+          if .github/scripts/ai-fix-utils.sh apply-fixes error_analysis.md; then
+            echo "✅ AI fixes applied successfully"
             echo "fixes_applied=true" >> $GITHUB_OUTPUT
-            echo "Applied automated fixes using helper script"
-            
-            # Check if any files were actually changed
-            if git diff --quiet && git diff --cached --quiet; then
-              echo "No actual file changes detected - checking logs"
-              cat /tmp/ai_analysis.json 2>/dev/null || echo "No AI analysis file found"
-            else
-              echo "File changes detected:"
-              git diff --name-only
-            fi
           else
-            echo "fixes_applied=false" >> $GITHUB_OUTPUT
-            echo "No automated fixes applied - checking why"
-            echo "Return code: $?"
+            echo "⚠️ Some fixes failed to apply"
+            echo "fixes_applied=partial" >> $GITHUB_OUTPUT
           fi
+          
+          echo "Applied automated fixes using helper script"
+          
+          # Check what files were modified
+          echo "File changes detected:"
+          git diff --name-only || echo "No changes detected"
 
       - name: Test Fixes (Attempt 2)
         if: steps.apply_fixes.outputs.fixes_applied == 'true'
@@ -282,32 +304,52 @@ jobs:
           git commit -m "$commit_msg"
           git push origin "$branch_name"
           
-          # Create PR with detailed description
+          # Create PR with enhanced description including AI analysis
           cat > pr_body.md << 'EOF'
           ## 🤖 Automated AI Code Fixes
           
-          This PR contains automated fixes generated by the AI Code Fixes workflow.
+          This PR contains automated fixes generated by the AI Code Fixes workflow using Gemini AI analysis.
           
-          ### Original Errors
-          ```
+          ### 🔍 Original Errors Detected
           EOF
-          head -20 error_analysis.md >> pr_body.md
           echo '```' >> pr_body.md
-          
-          echo "" >> pr_body.md
-          echo "### AI Suggestions Applied" >> pr_body.md
-          echo '```' >> pr_body.md
-          cat ai_suggestions.md >> pr_body.md
-          echo '```' >> pr_body.md
-          
-          echo "" >> pr_body.md
-          if [ "${{ steps.test_fixes.outputs.fixes_successful }}" = "true" ]; then
-            echo "### ✅ Status: Fixes Verified" >> pr_body.md
-            echo "The SDLC flow now passes successfully with these changes." >> pr_body.md
+          if [ -f error_analysis.md ]; then
+            head -30 error_analysis.md >> pr_body.md
           else
-            echo "### ⚠️ Status: Partial Fix" >> pr_body.md
-            echo "These fixes address some issues but the SDLC flow may still need manual attention." >> pr_body.md
+            echo "Error analysis not available" >> pr_body.md
           fi
+          echo '```' >> pr_body.md
+          
+          echo "" >> pr_body.md
+          echo "### 🤖 AI-Generated Fix Suggestions" >> pr_body.md
+          echo '```markdown' >> pr_body.md
+          if [ -f ai_suggestions.md ]; then
+            cat ai_suggestions.md >> pr_body.md
+          else
+            echo "AI suggestions not available - using pattern-based fixes" >> pr_body.md
+          fi
+          echo '```' >> pr_body.md
+          
+          echo "" >> pr_body.md
+          echo "### 📊 Fix Results" >> pr_body.md
+          if [ "${{ steps.test_fixes.outputs.fixes_successful }}" = "true" ]; then
+            echo "#### ✅ Status: Fixes Verified & Working" >> pr_body.md
+            echo "- All compilation errors resolved" >> pr_body.md
+            echo "- SDLC flow passes successfully" >> pr_body.md
+            echo "- Ready for merge" >> pr_body.md
+          else
+            echo "#### ⚠️ Status: Partial Fix Applied" >> pr_body.md
+            echo "- Some fixes applied but issues may remain" >> pr_body.md
+            echo "- Manual review recommended" >> pr_body.md
+          fi
+          
+          echo "" >> pr_body.md
+          echo "### 🔧 Files Modified" >> pr_body.md
+          git diff --name-only >> pr_body.md || echo "No files modified" >> pr_body.md
+          
+          echo "" >> pr_body.md
+          echo "---" >> pr_body.md
+          echo "*This PR was automatically generated by the AI Code Fixes workflow*" >> pr_body.md
           
           echo "" >> pr_body.md
           echo "### Files Modified" >> pr_body.md
