@@ -2283,10 +2283,59 @@ This is an AI-driven SDLC project with:
 
 ## AI Flow Errors
 
+## Maven Compilation Errors
+92-[INFO] -------------------------------------------------------------
+93-[INFO] ------------------------------------------------------------------------
+94:[INFO] BUILD FAILURE
+95-[INFO] ------------------------------------------------------------------------
+96-[INFO] Total time:  3.397 s
+97-[INFO] Finished at: 2026-03-05T13:24:55Z
+98-[INFO] ------------------------------------------------------------------------
+99-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure: Compilation failure: 
+75-[INFO] -------------------------------------------------------------
+76:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[4,54] cannot find symbol
+77-  symbol:   class SpringJUnitTest
+78-  location: package org.springframework.test.context.junit.jupiter
+79:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[14,13] cannot find symbol
+80-  symbol:   class RestTemplate
+81-  location: class be.ap.student.tickets.integration.BrokenIntegrationTest
+82:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[22,9] cannot find symbol
+83-  symbol:   method assertThatResult(java.lang.String)
+84-  location: class be.ap.student.tickets.integration.BrokenIntegrationTest
+85:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[28,9] cannot find symbol
+86-  symbol:   class UndefinedClass
+87-  location: class be.ap.student.tickets.integration.BrokenIntegrationTest
+88:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[28,30] cannot find symbol
+89-  symbol:   method createUndefinedObject()
+90-  location: class be.ap.student.tickets.integration.BrokenIntegrationTest
+91-[INFO] 5 errors 
+--
+99-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure: Compilation failure: 
+100:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[4,54] cannot find symbol
+101-[ERROR]   symbol:   class SpringJUnitTest
+102-[ERROR]   location: package org.springframework.test.context.junit.jupiter
+103:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[14,13] cannot find symbol
+104-[ERROR]   symbol:   class RestTemplate
+105-[ERROR]   location: class be.ap.student.tickets.integration.BrokenIntegrationTest
+106:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[22,9] cannot find symbol
+107-[ERROR]   symbol:   method assertThatResult(java.lang.String)
+108-[ERROR]   location: class be.ap.student.tickets.integration.BrokenIntegrationTest
+109:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[28,9] cannot find symbol
+110-[ERROR]   symbol:   class UndefinedClass
+111-[ERROR]   location: class be.ap.student.tickets.integration.BrokenIntegrationTest
+112:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[28,30] cannot find symbol
+113-[ERROR]   symbol:   method createUndefinedObject()
+114-[ERROR]   location: class be.ap.student.tickets.integration.BrokenIntegrationTest
+115-[ERROR] -> [Help 1]
+
+## NPM/Frontend Errors
+
+## AI Flow Errors
+
 
 ## Recent Changes
+a5d8135 Merge pull request #92 from OwenNolis/ai-fix/auto-fixes-20260305-132057
+21b309e [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
 8b36057 🔧 MAJOR AI FIXES IMPROVEMENTS:
 1007845 Merge pull request #90 from OwenNolis/ai-fix/auto-fixes-20260305-123640
 6ed90f4 [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
-652c446 Merge pull request #89 from OwenNolis/ai-fix/auto-fixes-20260305-123212
-3717b34 [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
