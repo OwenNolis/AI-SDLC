@@ -1629,10 +1629,147 @@ This is an AI-driven SDLC project with:
 
 ## AI Flow Errors
 
+## Maven Compilation Errors
+130-[INFO] -------------------------------------------------------------
+131-[INFO] ------------------------------------------------------------------------
+132:[INFO] BUILD FAILURE
+133-[INFO] ------------------------------------------------------------------------
+134-[INFO] Total time:  2.648 s
+135-[INFO] Finished at: 2026-03-05T12:04:19Z
+136-[INFO] ------------------------------------------------------------------------
+137-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
+68-[INFO] -------------------------------------------------------------
+69:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[12,12] cannot find symbol
+70-  symbol:   class UndefinedClass
+71-  location: class be.ap.student.config.BrokenConfig
+72:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[26,12] cannot find symbol
+73-  symbol:   class List
+74-  location: class be.ap.student.config.BrokenConfig
+75:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[26,17] cannot find symbol
+76-  symbol:   class UndefinedGenericType
+77-  location: class be.ap.student.config.BrokenConfig
+78:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[8,2] cannot find symbol
+79-  symbol: class RestController
+80:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[9,2] cannot find symbol
+81-  symbol: class RequestMapping
+82:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[14,12] cannot find symbol
+83-  symbol:   class ResponseEntity
+84-  location: class be.ap.student.tickets.controller.TestErrorController
+85:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[9,31] cannot find symbol
+86-  symbol:   class InvalidType
+87-  location: class be.ap.student.tickets.service.BrokenService
+88:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[18,13] cannot find symbol
+89-  symbol:   class UndefinedRepository
+90-  location: class be.ap.student.tickets.service.BrokenService
+91:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[13,6] cannot find symbol
+92-  symbol:   class GetMapping
+93-  location: class be.ap.student.tickets.controller.TestErrorController
+94:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[21,6] cannot find symbol
+95-  symbol:   class PostMapping
+96-  location: class be.ap.student.tickets.controller.TestErrorController
+97:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[14,20] cannot find symbol
+98-  symbol:   class UndefinedClass
+99-  location: class be.ap.student.config.BrokenConfig
+100:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[14,43] cannot find symbol
+101-  symbol:   variable nonExistentVariable
+102-  location: class be.ap.student.config.BrokenConfig
+103:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[21,16] cannot find symbol
+104-  symbol:   variable StaticUtility
+105-  location: class be.ap.student.config.BrokenConfig
+106:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[27,20] cannot find symbol
+107-  symbol:   class ArrayList
+108-  location: class be.ap.student.config.BrokenConfig
+109:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[16,9] cannot find symbol
+110-  symbol:   class UndefinedClass
+111-  location: class be.ap.student.tickets.controller.TestErrorController
+112:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[16,34] cannot find symbol
+113-  symbol:   class UndefinedClass
+114-  location: class be.ap.student.tickets.controller.TestErrorController
+115:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[17,16] cannot find symbol
+116-  symbol:   variable ResponseEntity
+117-  location: class be.ap.student.tickets.controller.TestErrorController
+118:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
+119-  symbol:   method undefinedMethod1(java.lang.String)
+120-  location: class be.ap.student.tickets.controller.TicketController
+121:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
+122-  symbol:   method undefinedMethod2()
+123-  location: class be.ap.student.tickets.controller.TicketController
+124-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
+125:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[11,25] cannot find symbol
+126-  symbol:   variable nonExistentUtility
+127-  location: class be.ap.student.tickets.service.BrokenService
+128-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[14,16] incompatible types: int cannot be converted to java.lang.String
+--
+137-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
+138:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[12,12] cannot find symbol
+139-[ERROR]   symbol:   class UndefinedClass
+140-[ERROR]   location: class be.ap.student.config.BrokenConfig
+141:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[26,12] cannot find symbol
+142-[ERROR]   symbol:   class List
+143-[ERROR]   location: class be.ap.student.config.BrokenConfig
+144:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[26,17] cannot find symbol
+145-[ERROR]   symbol:   class UndefinedGenericType
+146-[ERROR]   location: class be.ap.student.config.BrokenConfig
+147:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[8,2] cannot find symbol
+148-[ERROR]   symbol: class RestController
+149:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[9,2] cannot find symbol
+150-[ERROR]   symbol: class RequestMapping
+151:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[14,12] cannot find symbol
+152-[ERROR]   symbol:   class ResponseEntity
+153-[ERROR]   location: class be.ap.student.tickets.controller.TestErrorController
+154:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[9,31] cannot find symbol
+155-[ERROR]   symbol:   class InvalidType
+156-[ERROR]   location: class be.ap.student.tickets.service.BrokenService
+157:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[18,13] cannot find symbol
+158-[ERROR]   symbol:   class UndefinedRepository
+159-[ERROR]   location: class be.ap.student.tickets.service.BrokenService
+160:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[13,6] cannot find symbol
+161-[ERROR]   symbol:   class GetMapping
+162-[ERROR]   location: class be.ap.student.tickets.controller.TestErrorController
+163:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[21,6] cannot find symbol
+164-[ERROR]   symbol:   class PostMapping
+165-[ERROR]   location: class be.ap.student.tickets.controller.TestErrorController
+166:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[14,20] cannot find symbol
+167-[ERROR]   symbol:   class UndefinedClass
+168-[ERROR]   location: class be.ap.student.config.BrokenConfig
+169:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[14,43] cannot find symbol
+170-[ERROR]   symbol:   variable nonExistentVariable
+171-[ERROR]   location: class be.ap.student.config.BrokenConfig
+172:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[21,16] cannot find symbol
+173-[ERROR]   symbol:   variable StaticUtility
+174-[ERROR]   location: class be.ap.student.config.BrokenConfig
+175:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[27,20] cannot find symbol
+176-[ERROR]   symbol:   class ArrayList
+177-[ERROR]   location: class be.ap.student.config.BrokenConfig
+178:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[16,9] cannot find symbol
+179-[ERROR]   symbol:   class UndefinedClass
+180-[ERROR]   location: class be.ap.student.tickets.controller.TestErrorController
+181:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[16,34] cannot find symbol
+182-[ERROR]   symbol:   class UndefinedClass
+183-[ERROR]   location: class be.ap.student.tickets.controller.TestErrorController
+184:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java:[17,16] cannot find symbol
+185-[ERROR]   symbol:   variable ResponseEntity
+186-[ERROR]   location: class be.ap.student.tickets.controller.TestErrorController
+187:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
+188-[ERROR]   symbol:   method undefinedMethod1(java.lang.String)
+189-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
+190:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
+191-[ERROR]   symbol:   method undefinedMethod2()
+192-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
+193-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
+194:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[11,25] cannot find symbol
+195-[ERROR]   symbol:   variable nonExistentUtility
+196-[ERROR]   location: class be.ap.student.tickets.service.BrokenService
+197-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[14,16] incompatible types: int cannot be converted to java.lang.String
+
+## NPM/Frontend Errors
+
+## AI Flow Errors
+
 
 ## Recent Changes
-2e753fc Test 1: Multiple compilation errors - undefined methods and wrong types
-836fc41 Merge pull request #81 from OwenNolis/ai-fix/auto-fixes-20260305-105151
-898893d Merge branch 'main' into ai-fix/auto-fixes-20260305-105151
-a8cc2c4 AI Code Fixes workflow fully working - actual code fixes applied
-1be9a4c [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
+cc504d8 Merge 9615872703781fa40be3271bc02b5017e5e027bf into c1322ff5f6614cf5cddfeb2b8e7e06e4a0fb40e8
+9615872 Merge branch 'main' into ai-fix/auto-fixes-20260305-115747
+c1322ff 📈 COMPREHENSIVE TEST RESULTS:
+d949342 Add comprehensive AI Code Fixes test suite with multiple error types
+ce59212 [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
