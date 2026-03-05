@@ -8,32 +8,24 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.context.annotation.Import;
-import be.ap.student.config.RestTemplateConfig;
+import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.context.annotation.Import;
-import be.ap.student.config.RestTemplateConfig;
+import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.context.annotation.Import;
-import be.ap.student.config.RestTemplateConfig;
+import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.context.annotation.Import;
-import be.ap.student.config.RestTemplateConfig;
+import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.context.annotation.Import;
-import be.ap.student.config.RestTemplateConfig;
+import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.context.annotation.Import;
-import be.ap.student.config.RestTemplateConfig;
+import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.context.annotation.Import;
-import be.ap.student.config.RestTemplateConfig;
+import be.ap.student.config.TestRestTemplateConfig;
 import org.springframework.http.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestRestTemplateConfig.class)
-@Import(RestTemplateConfig.class)
-@Import(RestTemplateConfig.class)
-@Import(RestTemplateConfig.class)
-@Import(RestTemplateConfig.class)
-@Import(RestTemplateConfig.class)
-@Import(RestTemplateConfig.class)
-@Import(RestTemplateConfig.class)
 class TicketControllerIT {
 
     @Autowired

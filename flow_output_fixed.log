@@ -69,354 +69,509 @@ All AI artifacts validated successfully.
 [INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ backend ---
 [INFO] Recompiling the module because of changed source code.
 [INFO] Compiling 6 source files with javac [debug parameters release 21] to target/test-classes
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[7,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[9,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[11,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[13,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[15,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[17,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[19,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[7,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[9,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[11,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[13,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[15,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[17,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[19,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[7,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[9,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[11,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[13,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[15,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[17,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[19,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[11,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[13,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[15,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[17,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[19,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[21,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[23,28] cannot find symbol
-  symbol:   class RestTemplateConfig
-  location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[26,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[27,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[28,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[29,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[30,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[31,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[32,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[26,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[27,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[28,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[31,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[32,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[26,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[27,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[28,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[29,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[30,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[31,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[32,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[26,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[27,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[28,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[31,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[32,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[27,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[28,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[29,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[30,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[31,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[32,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[33,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[27,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[28,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[31,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[32,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[33,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[30,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[31,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[32,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[33,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[34,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[35,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[36,9] cannot find symbol
-  symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[31,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[32,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[33,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[34,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[35,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[36,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[INFO] 84 errors 
-[INFO] -------------------------------------------------------------
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.pom
+Progress (1): 832 BProgress (1): 2.7 kBProgress (1): 5.2 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.pom (5.2 kB at 12 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.4/surefire-providers-3.5.4.pom
+Progress (1): 844 BProgress (1): 2.2 kBProgress (1): 2.5 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.4/surefire-providers-3.5.4.pom (2.5 kB at 88 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.pom
+Progress (1): 839 BProgress (1): 2.2 kBProgress (1): 3.1 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.pom (3.1 kB at 90 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.pom
+Progress (1): 957 BProgress (1): 2.5 kBProgress (1): 3.2 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.pom (3.2 kB at 119 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.pom
+Progress (1): 966 BProgress (1): 2.5 kBProgress (1): 2.8 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.pom (2.8 kB at 13 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.pom
+Progress (1): 967 BProgress (1): 2.5 kBProgress (1): 3.0 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.pom (3.0 kB at 66 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.jar
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.jar
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.jar
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.jar
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.jar
+Progress (1): 0.9/35 kBProgress (1): 2.3/35 kBProgress (1): 3.6/35 kBProgress (1): 5.0/35 kBProgress (2): 5.0/35 kB | 0.9/256 kBProgress (2): 6.4/35 kB | 0.9/256 kBProgress (2): 6.4/35 kB | 2.3/256 kBProgress (2): 7.7/35 kB | 2.3/256 kBProgress (2): 9.1/35 kB | 2.3/256 kBProgress (2): 10/35 kB | 2.3/256 kB Progress (2): 12/35 kB | 2.3/256 kBProgress (2): 13/35 kB | 2.3/256 kBProgress (2): 13/35 kB | 3.6/256 kBProgress (2): 13/35 kB | 5.0/256 kBProgress (2): 13/35 kB | 6.4/256 kBProgress (2): 13/35 kB | 7.7/256 kBProgress (2): 13/35 kB | 9.1/256 kBProgress (2): 13/35 kB | 10/256 kB Progress (2): 13/35 kB | 12/256 kBProgress (2): 15/35 kB | 12/256 kBProgress (2): 16/35 kB | 12/256 kBProgress (2): 17/35 kB | 12/256 kBProgress (2): 19/35 kB | 12/256 kBProgress (2): 20/35 kB | 12/256 kBProgress (2): 21/35 kB | 12/256 kBProgress (2): 23/35 kB | 12/256 kBProgress (3): 23/35 kB | 12/256 kB | 0.9/18 kBProgress (3): 23/35 kB | 13/256 kB | 0.9/18 kBProgress (3): 24/35 kB | 13/256 kB | 0.9/18 kBProgress (3): 24/35 kB | 13/256 kB | 2.3/18 kBProgress (3): 24/35 kB | 15/256 kB | 2.3/18 kBProgress (3): 26/35 kB | 15/256 kB | 2.3/18 kBProgress (3): 26/35 kB | 15/256 kB | 3.6/18 kBProgress (3): 26/35 kB | 16/256 kB | 3.6/18 kBProgress (3): 27/35 kB | 16/256 kB | 3.6/18 kBProgress (3): 27/35 kB | 16/256 kB | 5.0/18 kBProgress (3): 27/35 kB | 17/256 kB | 5.0/18 kBProgress (3): 28/35 kB | 17/256 kB | 5.0/18 kBProgress (3): 28/35 kB | 19/256 kB | 5.0/18 kBProgress (3): 30/35 kB | 19/256 kB | 5.0/18 kBProgress (3): 30/35 kB | 20/256 kB | 5.0/18 kBProgress (3): 31/35 kB | 20/256 kB | 5.0/18 kBProgress (3): 32/35 kB | 20/256 kB | 5.0/18 kBProgress (3): 32/35 kB | 21/256 kB | 5.0/18 kBProgress (3): 32/35 kB | 23/256 kB | 5.0/18 kBProgress (4): 32/35 kB | 23/256 kB | 5.0/18 kB | 0.9/152 kBProgress (4): 32/35 kB | 24/256 kB | 5.0/18 kB | 0.9/152 kBProgress (4): 32/35 kB | 24/256 kB | 5.0/18 kB | 2.3/152 kBProgress (4): 32/35 kB | 25/256 kB | 5.0/18 kB | 2.3/152 kBProgress (4): 35 kB | 25/256 kB | 5.0/18 kB | 2.3/152 kB   Progress (4): 35 kB | 25/256 kB | 5.0/18 kB | 3.6/152 kBProgress (4): 35 kB | 26/256 kB | 5.0/18 kB | 3.6/152 kBProgress (5): 35 kB | 26/256 kB | 5.0/18 kB | 3.6/152 kB | 0.9/208 kB                                                                     Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.jar (35 kB at 479 kB/s)
+Progress (4): 26/256 kB | 5.0/18 kB | 5.0/152 kB | 0.9/208 kBProgress (4): 27/256 kB | 5.0/18 kB | 5.0/152 kB | 0.9/208 kBProgress (4): 27/256 kB | 5.0/18 kB | 5.0/152 kB | 2.3/208 kBProgress (4): 27/256 kB | 6.4/18 kB | 5.0/152 kB | 2.3/208 kBProgress (4): 27/256 kB | 6.4/18 kB | 5.0/152 kB | 3.6/208 kBProgress (4): 27/256 kB | 6.4/18 kB | 5.0/152 kB | 5.0/208 kBProgress (4): 27/256 kB | 6.4/18 kB | 5.0/152 kB | 6.4/208 kBProgress (4): 27/256 kB | 6.4/18 kB | 5.0/152 kB | 7.7/208 kBProgress (4): 27/256 kB | 6.4/18 kB | 5.0/152 kB | 9.1/208 kBProgress (4): 27/256 kB | 6.4/18 kB | 5.0/152 kB | 10/208 kB Progress (4): 27/256 kB | 6.4/18 kB | 5.0/152 kB | 12/208 kBProgress (4): 27/256 kB | 6.4/18 kB | 5.0/152 kB | 13/208 kBProgress (4): 29/256 kB | 6.4/18 kB | 5.0/152 kB | 13/208 kBProgress (4): 29/256 kB | 6.4/18 kB | 5.0/152 kB | 15/208 kBProgress (4): 29/256 kB | 6.4/18 kB | 5.0/152 kB | 16/208 kBProgress (4): 30/256 kB | 6.4/18 kB | 5.0/152 kB | 16/208 kBProgress (4): 30/256 kB | 6.4/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 31/256 kB | 6.4/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 31/256 kB | 7.7/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 33/256 kB | 7.7/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 33/256 kB | 9.1/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 34/256 kB | 9.1/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 34/256 kB | 10/18 kB | 5.0/152 kB | 17/208 kB Progress (4): 36/256 kB | 10/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 36/256 kB | 12/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 37/256 kB | 12/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 37/256 kB | 13/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 38/256 kB | 13/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 38/256 kB | 15/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 40/256 kB | 15/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 40/256 kB | 16/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 41/256 kB | 16/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 41/256 kB | 17/18 kB | 5.0/152 kB | 17/208 kBProgress (4): 41/256 kB | 18 kB | 5.0/152 kB | 17/208 kB   Progress (4): 42/256 kB | 18 kB | 5.0/152 kB | 17/208 kBProgress (4): 44/256 kB | 18 kB | 5.0/152 kB | 17/208 kBProgress (4): 45/256 kB | 18 kB | 5.0/152 kB | 17/208 kB                                                        Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.jar (18 kB at 185 kB/s)
+Progress (3): 46/256 kB | 5.0/152 kB | 17/208 kBProgress (3): 46/256 kB | 6.4/152 kB | 17/208 kBProgress (3): 46/256 kB | 7.7/152 kB | 17/208 kBProgress (3): 46/256 kB | 9.1/152 kB | 17/208 kBProgress (3): 46/256 kB | 10/152 kB | 17/208 kB Progress (3): 48/256 kB | 10/152 kB | 17/208 kBProgress (3): 48/256 kB | 12/152 kB | 17/208 kBProgress (3): 49/256 kB | 12/152 kB | 17/208 kBProgress (3): 49/256 kB | 13/152 kB | 17/208 kBProgress (3): 51/256 kB | 13/152 kB | 17/208 kBProgress (3): 51/256 kB | 15/152 kB | 17/208 kBProgress (3): 52/256 kB | 15/152 kB | 17/208 kBProgress (3): 52/256 kB | 16/152 kB | 17/208 kBProgress (3): 53/256 kB | 16/152 kB | 17/208 kBProgress (3): 53/256 kB | 17/152 kB | 17/208 kBProgress (3): 55/256 kB | 17/152 kB | 17/208 kBProgress (3): 59/256 kB | 17/152 kB | 17/208 kBProgress (3): 63/256 kB | 17/152 kB | 17/208 kBProgress (3): 63/256 kB | 17/152 kB | 18/208 kBProgress (3): 63/256 kB | 17/152 kB | 20/208 kBProgress (3): 63/256 kB | 17/152 kB | 21/208 kBProgress (3): 67/256 kB | 17/152 kB | 21/208 kBProgress (3): 67/256 kB | 17/152 kB | 23/208 kBProgress (3): 67/256 kB | 17/152 kB | 24/208 kBProgress (3): 72/256 kB | 17/152 kB | 24/208 kBProgress (3): 72/256 kB | 17/152 kB | 25/208 kBProgress (3): 72/256 kB | 17/152 kB | 27/208 kBProgress (3): 76/256 kB | 17/152 kB | 27/208 kBProgress (3): 76/256 kB | 17/152 kB | 28/208 kBProgress (3): 76/256 kB | 17/152 kB | 29/208 kBProgress (3): 76/256 kB | 18/152 kB | 29/208 kBProgress (3): 76/256 kB | 18/152 kB | 31/208 kBProgress (3): 76/256 kB | 20/152 kB | 31/208 kBProgress (3): 76/256 kB | 21/152 kB | 31/208 kBProgress (3): 76/256 kB | 21/152 kB | 32/208 kBProgress (3): 76/256 kB | 23/152 kB | 32/208 kBProgress (3): 76/256 kB | 24/152 kB | 32/208 kBProgress (3): 76/256 kB | 25/152 kB | 32/208 kBProgress (3): 76/256 kB | 27/152 kB | 32/208 kBProgress (3): 76/256 kB | 28/152 kB | 32/208 kBProgress (3): 76/256 kB | 28/152 kB | 33/208 kBProgress (3): 76/256 kB | 29/152 kB | 33/208 kBProgress (3): 76/256 kB | 29/152 kB | 35/208 kBProgress (3): 76/256 kB | 31/152 kB | 35/208 kBProgress (3): 76/256 kB | 31/152 kB | 36/208 kBProgress (3): 76/256 kB | 32/152 kB | 36/208 kBProgress (3): 76/256 kB | 32/152 kB | 38/208 kBProgress (3): 76/256 kB | 32/152 kB | 39/208 kBProgress (3): 76/256 kB | 32/152 kB | 40/208 kBProgress (3): 76/256 kB | 32/152 kB | 42/208 kBProgress (3): 80/256 kB | 32/152 kB | 42/208 kBProgress (3): 84/256 kB | 32/152 kB | 42/208 kBProgress (3): 84/256 kB | 32/152 kB | 43/208 kBProgress (3): 84/256 kB | 33/152 kB | 43/208 kBProgress (3): 89/256 kB | 33/152 kB | 43/208 kBProgress (3): 89/256 kB | 33/152 kB | 44/208 kBProgress (3): 89/256 kB | 35/152 kB | 44/208 kBProgress (3): 89/256 kB | 36/152 kB | 44/208 kBProgress (3): 89/256 kB | 36/152 kB | 46/208 kBProgress (3): 89/256 kB | 38/152 kB | 46/208 kBProgress (3): 89/256 kB | 38/152 kB | 47/208 kBProgress (3): 89/256 kB | 39/152 kB | 47/208 kBProgress (3): 89/256 kB | 39/152 kB | 49/208 kBProgress (3): 93/256 kB | 39/152 kB | 49/208 kBProgress (3): 93/256 kB | 40/152 kB | 49/208 kBProgress (3): 93/256 kB | 40/152 kB | 50/208 kBProgress (3): 93/256 kB | 40/152 kB | 51/208 kBProgress (3): 93/256 kB | 42/152 kB | 51/208 kBProgress (3): 93/256 kB | 42/152 kB | 53/208 kBProgress (3): 93/256 kB | 43/152 kB | 53/208 kBProgress (3): 97/256 kB | 43/152 kB | 53/208 kBProgress (3): 97/256 kB | 43/152 kB | 54/208 kBProgress (3): 97/256 kB | 44/152 kB | 54/208 kBProgress (3): 101/256 kB | 44/152 kB | 54/208 kBProgress (3): 101/256 kB | 44/152 kB | 55/208 kBProgress (3): 101/256 kB | 46/152 kB | 55/208 kBProgress (3): 101/256 kB | 47/152 kB | 55/208 kBProgress (3): 105/256 kB | 47/152 kB | 55/208 kBProgress (3): 105/256 kB | 47/152 kB | 60/208 kBProgress (3): 105/256 kB | 49/152 kB | 60/208 kBProgress (3): 110/256 kB | 49/152 kB | 60/208 kBProgress (3): 110/256 kB | 50/152 kB | 60/208 kBProgress (3): 110/256 kB | 50/152 kB | 64/208 kBProgress (3): 110/256 kB | 51/152 kB | 64/208 kBProgress (3): 114/256 kB | 51/152 kB | 64/208 kBProgress (3): 114/256 kB | 53/152 kB | 64/208 kBProgress (3): 114/256 kB | 53/152 kB | 68/208 kBProgress (3): 114/256 kB | 54/152 kB | 68/208 kBProgress (3): 118/256 kB | 54/152 kB | 68/208 kBProgress (3): 122/256 kB | 54/152 kB | 68/208 kBProgress (3): 127/256 kB | 54/152 kB | 68/208 kBProgress (3): 127/256 kB | 54/152 kB | 72/208 kBProgress (3): 127/256 kB | 55/152 kB | 72/208 kBProgress (3): 131/256 kB | 55/152 kB | 72/208 kBProgress (3): 131/256 kB | 55/152 kB | 77/208 kBProgress (3): 135/256 kB | 55/152 kB | 77/208 kBProgress (3): 135/256 kB | 60/152 kB | 77/208 kBProgress (3): 135/256 kB | 60/152 kB | 81/208 kBProgress (3): 135/256 kB | 64/152 kB | 81/208 kBProgress (3): 135/256 kB | 64/152 kB | 85/208 kBProgress (3): 139/256 kB | 64/152 kB | 85/208 kBProgress (3): 139/256 kB | 64/152 kB | 89/208 kBProgress (3): 139/256 kB | 68/152 kB | 89/208 kBProgress (3): 144/256 kB | 68/152 kB | 89/208 kBProgress (3): 144/256 kB | 72/152 kB | 89/208 kBProgress (3): 144/256 kB | 72/152 kB | 93/208 kBProgress (3): 148/256 kB | 72/152 kB | 93/208 kBProgress (3): 148/256 kB | 72/152 kB | 98/208 kBProgress (3): 148/256 kB | 77/152 kB | 98/208 kBProgress (3): 152/256 kB | 77/152 kB | 98/208 kBProgress (3): 156/256 kB | 77/152 kB | 98/208 kBProgress (3): 160/256 kB | 77/152 kB | 98/208 kBProgress (3): 164/256 kB | 77/152 kB | 98/208 kBProgress (3): 168/256 kB | 77/152 kB | 98/208 kBProgress (3): 168/256 kB | 81/152 kB | 98/208 kBProgress (3): 168/256 kB | 81/152 kB | 102/208 kBProgress (3): 173/256 kB | 81/152 kB | 102/208 kBProgress (3): 173/256 kB | 85/152 kB | 102/208 kBProgress (3): 173/256 kB | 85/152 kB | 106/208 kBProgress (3): 177/256 kB | 85/152 kB | 106/208 kBProgress (3): 177/256 kB | 89/152 kB | 106/208 kBProgress (3): 177/256 kB | 89/152 kB | 110/208 kBProgress (3): 181/256 kB | 89/152 kB | 110/208 kBProgress (3): 185/256 kB | 89/152 kB | 110/208 kBProgress (3): 185/256 kB | 89/152 kB | 115/208 kBProgress (3): 185/256 kB | 89/152 kB | 119/208 kBProgress (3): 185/256 kB | 93/152 kB | 119/208 kBProgress (3): 185/256 kB | 93/152 kB | 123/208 kBProgress (3): 189/256 kB | 93/152 kB | 123/208 kBProgress (3): 189/256 kB | 98/152 kB | 123/208 kBProgress (3): 189/256 kB | 98/152 kB | 127/208 kBProgress (3): 194/256 kB | 98/152 kB | 127/208 kBProgress (3): 194/256 kB | 102/152 kB | 127/208 kBProgress (3): 194/256 kB | 102/152 kB | 131/208 kBProgress (3): 198/256 kB | 102/152 kB | 131/208 kBProgress (3): 198/256 kB | 106/152 kB | 131/208 kBProgress (3): 198/256 kB | 110/152 kB | 131/208 kBProgress (3): 202/256 kB | 110/152 kB | 131/208 kBProgress (3): 206/256 kB | 110/152 kB | 131/208 kBProgress (3): 211/256 kB | 110/152 kB | 131/208 kBProgress (3): 215/256 kB | 110/152 kB | 131/208 kBProgress (3): 215/256 kB | 110/152 kB | 136/208 kBProgress (3): 219/256 kB | 110/152 kB | 136/208 kBProgress (3): 219/256 kB | 110/152 kB | 140/208 kBProgress (3): 223/256 kB | 110/152 kB | 140/208 kBProgress (3): 223/256 kB | 115/152 kB | 140/208 kBProgress (3): 223/256 kB | 115/152 kB | 144/208 kBProgress (3): 223/256 kB | 119/152 kB | 144/208 kBProgress (3): 223/256 kB | 119/152 kB | 147/208 kBProgress (3): 223/256 kB | 123/152 kB | 147/208 kBProgress (3): 223/256 kB | 123/152 kB | 151/208 kBProgress (3): 223/256 kB | 127/152 kB | 151/208 kBProgress (3): 223/256 kB | 132/152 kB | 151/208 kBProgress (3): 240/256 kB | 132/152 kB | 151/208 kBProgress (3): 240/256 kB | 132/152 kB | 155/208 kBProgress (3): 240/256 kB | 132/152 kB | 159/208 kBProgress (3): 240/256 kB | 136/152 kB | 159/208 kBProgress (3): 240/256 kB | 136/152 kB | 164/208 kBProgress (3): 240/256 kB | 136/152 kB | 168/208 kBProgress (3): 240/256 kB | 140/152 kB | 168/208 kBProgress (3): 240/256 kB | 144/152 kB | 168/208 kBProgress (3): 240/256 kB | 144/152 kB | 172/208 kBProgress (3): 240/256 kB | 147/152 kB | 172/208 kBProgress (3): 240/256 kB | 151/152 kB | 172/208 kBProgress (3): 240/256 kB | 152 kB | 172/208 kB    Progress (3): 256 kB | 152 kB | 172/208 kB    Progress (3): 256 kB | 152 kB | 176/208 kB                                          Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.jar (152 kB at 973 kB/s)
+Progress (2): 256 kB | 181/208 kBProgress (2): 256 kB | 185/208 kB                                 Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.jar (256 kB at 1.6 MB/s)
+Progress (1): 189/208 kBProgress (1): 193/208 kBProgress (1): 197/208 kBProgress (1): 202/208 kBProgress (1): 206/208 kBProgress (1): 208 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.jar (208 kB at 1.3 MB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom
+Progress (1): 971 BProgress (1): 3.2 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom (3.2 kB at 111 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar
+Progress (1): 3.8/246 kBProgress (1): 20/246 kB Progress (1): 32/246 kBProgress (1): 48/246 kBProgress (1): 65/246 kBProgress (1): 81/246 kBProgress (1): 98/246 kBProgress (1): 114/246 kBProgress (1): 130/246 kBProgress (1): 147/246 kBProgress (1): 163/246 kBProgress (1): 180/246 kBProgress (1): 196/246 kBProgress (1): 212/246 kBProgress (1): 229/246 kBProgress (1): 245/246 kBProgress (1): 246 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar (246 kB at 5.5 MB/s)
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running be.ap.student.tickets.BrokenTest
+08:25:40.850 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [be.ap.student.tickets.BrokenTest]: BrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+08:25:40.971 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.BrokenTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.3)
+
+2026-03-05T08:25:41.415Z  INFO 3718 --- [           main] be.ap.student.tickets.BrokenTest         : Starting BrokenTest using Java 21.0.10 with PID 3718 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
+2026-03-05T08:25:41.417Z  INFO 3718 --- [           main] be.ap.student.tickets.BrokenTest         : No active profile set, falling back to 1 default profile: "default"
+2026-03-05T08:25:42.063Z  INFO 3718 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-05T08:25:42.121Z  INFO 3718 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 49 ms. Found 1 JPA repository interface.
+2026-03-05T08:25:42.641Z  INFO 3718 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-03-05T08:25:42.664Z  INFO 3718 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-05T08:25:42.664Z  INFO 3718 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-05T08:25:42.702Z  INFO 3718 --- [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1257 ms
+2026-03-05T08:25:42.800Z  INFO 3718 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-03-05T08:25:42.932Z  INFO 3718 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:demo user=SA
+2026-03-05T08:25:42.934Z  INFO 3718 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-03-05T08:25:43.018Z  INFO 3718 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-03-05T08:25:43.062Z  INFO 3718 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.4.Final
+2026-03-05T08:25:43.414Z  INFO 3718 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-05T08:25:43.488Z  INFO 3718 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:h2:mem:demo]
+	Database driver: H2 JDBC Driver
+	Database dialect: H2Dialect
+	Database version: 2.4.240
+	Default catalog/schema: DEMO/PUBLIC
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 100
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-03-05T08:25:44.124Z  INFO 3718 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-03-05T08:25:44.130Z  INFO 3718 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-05T08:25:44.194Z  INFO 3718 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-05T08:25:44.297Z  WARN 3718 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-05T08:25:44.570Z  INFO 3718 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 39521 (http) with context path '/'
+2026-03-05T08:25:44.576Z  INFO 3718 --- [           main] be.ap.student.tickets.BrokenTest         : Started BrokenTest in 3.461 seconds (process running for 4.851)
+2026-03-05T08:25:44.580Z  WARN 3718 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener] to prepare test instance [be.ap.student.tickets.BrokenTest@5ce045e3]
+
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.BrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:748) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:146) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1446) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireBeanProperties(AbstractAutowireCapableBeanFactory.java:402) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.injectDependencies(DependencyInjectionTestExecutionListener.java:156) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.prepareTestInstance(DependencyInjectionTestExecutionListener.java:111) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:210) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$1(ClassBasedTestDescriptor.java:423) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:428) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$0(ClassBasedTestDescriptor.java:422) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:422) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$0(ClassBasedTestDescriptor.java:334) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:333) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$1(ClassBasedTestDescriptor.java:322) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.Optional.orElseGet(Optional.java:364) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$0(ClassBasedTestDescriptor.java:321) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:27) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:127) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:126) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:70) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$0(NodeTestTask.java:144) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:144) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:110) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:246) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:218) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:179) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:108) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:157) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:125) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:57) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:56) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125) ~[surefire-api-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.4.jar:3.5.4]
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:2297) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1725) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1651) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:764) ~[spring-beans-7.0.5.jar:7.0.5]
+	... 88 common frames omitted
+
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 3.959 s <<< FAILURE! -- in be.ap.student.tickets.BrokenTest
+[ERROR] be.ap.student.tickets.BrokenTest.testWillFail -- Time elapsed: 0.007 s <<< ERROR!
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.BrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:748)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:146)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1446)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireBeanProperties(AbstractAutowireCapableBeanFactory.java:402)
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.injectDependencies(DependencyInjectionTestExecutionListener.java:156)
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.prepareTestInstance(DependencyInjectionTestExecutionListener.java:111)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:210)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:2297)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1725)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1651)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:764)
+	... 23 more
+
+[INFO] Running be.ap.student.tickets.TestControllerIT
+2026-03-05T08:25:44.617Z  INFO 3718 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.TestControllerIT]: TestControllerIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-05T08:25:44.620Z  INFO 3718 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.TestControllerIT
+2026-03-05T08:25:44.627Z  WARN 3718 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener] to prepare test instance [be.ap.student.tickets.TestControllerIT@1641dfb3]
+
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.TestControllerIT': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:748) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:146) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1446) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireBeanProperties(AbstractAutowireCapableBeanFactory.java:402) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.injectDependencies(DependencyInjectionTestExecutionListener.java:156) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.prepareTestInstance(DependencyInjectionTestExecutionListener.java:111) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:210) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$1(ClassBasedTestDescriptor.java:423) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:428) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$0(ClassBasedTestDescriptor.java:422) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:422) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$0(ClassBasedTestDescriptor.java:334) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:333) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$1(ClassBasedTestDescriptor.java:322) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.Optional.orElseGet(Optional.java:364) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$0(ClassBasedTestDescriptor.java:321) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:27) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:127) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:126) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:70) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$0(NodeTestTask.java:144) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:144) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:110) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:246) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:218) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:179) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:108) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:157) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:125) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:57) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:56) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125) ~[surefire-api-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.4.jar:3.5.4]
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:2297) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1725) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1651) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:764) ~[spring-beans-7.0.5.jar:7.0.5]
+	... 88 common frames omitted
+
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.023 s <<< FAILURE! -- in be.ap.student.tickets.TestControllerIT
+[ERROR] be.ap.student.tickets.TestControllerIT.testEndpoint -- Time elapsed: 0.003 s <<< ERROR!
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.TestControllerIT': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:748)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:146)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1446)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireBeanProperties(AbstractAutowireCapableBeanFactory.java:402)
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.injectDependencies(DependencyInjectionTestExecutionListener.java:156)
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.prepareTestInstance(DependencyInjectionTestExecutionListener.java:111)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:210)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:2297)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1725)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1651)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:764)
+	... 23 more
+
+[INFO] Running be.ap.student.tickets.PersistentBrokenTest
+2026-03-05T08:25:44.644Z  INFO 3718 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.PersistentBrokenTest]: PersistentBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-05T08:25:44.648Z  INFO 3718 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.PersistentBrokenTest
+2026-03-05T08:25:44.651Z  WARN 3718 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener] to prepare test instance [be.ap.student.tickets.PersistentBrokenTest@3a917e07]
+
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.PersistentBrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:748) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:146) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1446) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireBeanProperties(AbstractAutowireCapableBeanFactory.java:402) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.injectDependencies(DependencyInjectionTestExecutionListener.java:156) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.prepareTestInstance(DependencyInjectionTestExecutionListener.java:111) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:210) ~[spring-test-7.0.5.jar:7.0.5]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$1(ClassBasedTestDescriptor.java:423) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:428) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$0(ClassBasedTestDescriptor.java:422) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:422) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$0(ClassBasedTestDescriptor.java:334) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:333) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$1(ClassBasedTestDescriptor.java:322) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.Optional.orElseGet(Optional.java:364) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$0(ClassBasedTestDescriptor.java:321) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:27) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:127) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:126) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:70) ~[junit-jupiter-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$0(NodeTestTask.java:144) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:144) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:110) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58) ~[junit-platform-engine-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:246) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:218) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:179) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:108) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:157) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:125) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:57) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:56) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58) ~[junit-platform-launcher-6.0.3.jar:6.0.3]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125) ~[surefire-api-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.4.jar:3.5.4]
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:2297) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1725) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1651) ~[spring-beans-7.0.5.jar:7.0.5]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:764) ~[spring-beans-7.0.5.jar:7.0.5]
+	... 88 common frames omitted
+
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.019 s <<< FAILURE! -- in be.ap.student.tickets.PersistentBrokenTest
+[ERROR] be.ap.student.tickets.PersistentBrokenTest.testWillFailDueToBadImport -- Time elapsed: 0.003 s <<< ERROR!
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'be.ap.student.tickets.PersistentBrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:767)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:748)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:146)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1446)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireBeanProperties(AbstractAutowireCapableBeanFactory.java:402)
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.injectDependencies(DependencyInjectionTestExecutionListener.java:156)
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.prepareTestInstance(DependencyInjectionTestExecutionListener.java:111)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:210)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:2297)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1725)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1651)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:764)
+	... 23 more
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   BrokenTest.testWillFail » UnsatisfiedDependency Error creating bean with name 'be.ap.student.tickets.BrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+[ERROR]   PersistentBrokenTest.testWillFailDueToBadImport » UnsatisfiedDependency Error creating bean with name 'be.ap.student.tickets.PersistentBrokenTest': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+[ERROR]   TestControllerIT.testEndpoint » UnsatisfiedDependency Error creating bean with name 'be.ap.student.tickets.TestControllerIT': Unsatisfied dependency expressed through field 'restTemplate': No qualifying bean of type 'org.springframework.web.client.RestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+[INFO] 
+[ERROR] Tests run: 3, Failures: 0, Errors: 3, Skipped: 0
+[INFO] 
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.359 s
-[INFO] Finished at: 2026-03-03T14:07:26Z
+[INFO] Total time:  9.003 s
+[INFO] Finished at: 2026-03-05T08:25:44Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[7,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[9,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[11,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[13,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[15,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[17,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[19,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[7,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[9,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[11,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[13,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[15,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[17,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[19,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[7,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[9,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[11,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[13,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[15,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[17,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[19,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[11,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[13,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[15,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[17,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[19,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[21,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[23,28] cannot find symbol
-[ERROR]   symbol:   class RestTemplateConfig
-[ERROR]   location: package be.ap.student.config
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[26,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[27,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[28,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[29,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[30,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[31,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[32,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[26,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[27,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[28,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[31,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/BrokenTest.java:[32,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[26,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[27,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[28,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[29,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[30,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[31,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[32,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[26,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[27,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[28,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[31,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/PersistentBrokenTest.java:[32,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[27,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[28,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[29,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[30,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[31,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[32,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[33,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[27,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[28,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[29,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[31,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[32,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TestControllerIT.java:[33,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[30,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[31,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[32,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[33,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[34,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[35,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[36,9] cannot find symbol
-[ERROR]   symbol: class RestTemplateConfig
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[30,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[31,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[32,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[33,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[34,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[35,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/TicketControllerIT.java:[36,1] org.springframework.context.annotation.Import is not a repeatable annotation interface
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project backend: 
+[ERROR] 
+[ERROR] See /home/runner/work/AI-SDLC/AI-SDLC/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
