@@ -1,5 +1,5 @@
 # Error Analysis Report
-Generated: Thu Mar  5 15:02:26 UTC 2026
+Generated: Thu Mar  5 15:05:58 UTC 2026
 
 ## SDLC Flow Errors
 [INFO] 
@@ -17,8 +17,8 @@ Generated: Thu Mar  5 15:02:26 UTC 2026
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  3.540 s
-[INFO] Finished at: 2026-03-05T15:02:24Z
+[INFO] Total time:  2.909 s
+[INFO] Finished at: 2026-03-05T15:05:56Z
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure
 [ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[5,54] cannot find symbol
