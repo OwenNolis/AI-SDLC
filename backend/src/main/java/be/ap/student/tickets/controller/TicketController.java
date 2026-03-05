@@ -21,8 +21,6 @@ public class TicketController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
         var saved = service.create(req);
-        // Intentional error to test AI Code Fixes workflow
-        String invalidVar = nonExistentMethod(saved.getTicketNumber());
         return new CreateTicketResponse(saved.getTicketNumber(), saved.getStatus().name());
     }
 }

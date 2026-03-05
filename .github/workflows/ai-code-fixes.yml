@@ -170,15 +170,29 @@ jobs:
         run: |
           echo "Applying automated fixes based on AI suggestions..."
           
+          # Debug: Show what files exist
+          ls -la error_analysis.md ai_suggestions.md flow_output.log 2>/dev/null || echo "Some files missing"
+          
           # Use our helper script for intelligent fix application
           source .github/scripts/ai-fix-utils.sh
           
+          echo "Attempting to apply fixes..."
           if .github/scripts/ai-fix-utils.sh apply-fixes flow_output.log; then
             echo "fixes_applied=true" >> $GITHUB_OUTPUT
             echo "Applied automated fixes using helper script"
+            
+            # Check if any files were actually changed
+            if git diff --quiet && git diff --cached --quiet; then
+              echo "No actual file changes detected - checking logs"
+              cat /tmp/ai_analysis.json 2>/dev/null || echo "No AI analysis file found"
+            else
+              echo "File changes detected:"
+              git diff --name-only
+            fi
           else
             echo "fixes_applied=false" >> $GITHUB_OUTPUT
-            echo "No automated fixes applied"
+            echo "No automated fixes applied - checking why"
+            echo "Return code: $?"
           fi
 
       - name: Test Fixes (Attempt 2)
