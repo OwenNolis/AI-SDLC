@@ -1550,3 +1550,17 @@
 
 ## AI Flow Errors
 
+## Maven Compilation Errors
+195-[INFO] 
+196-[INFO] ------------------------------------------------------------------------
+197:[INFO] BUILD FAILURE
+198-[INFO] ------------------------------------------------------------------------
+199-[INFO] Total time:  10.081 s
+200-[INFO] Finished at: 2026-03-05T09:06:14Z
+201-[INFO] ------------------------------------------------------------------------
+202-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project backend: 
+
+## NPM/Frontend Errors
+
+## AI Flow Errors
+
