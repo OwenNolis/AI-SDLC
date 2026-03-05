@@ -237,56 +237,85 @@ analyze_errors_with_ai() {
     # Prepare error context for AI analysis
     local error_content=$(cat "$error_file" | head -200)  # Limit to avoid token limits
     
-    # Create the AI prompt without sed substitution to avoid escaping issues
+    # Get file context for better AI analysis
+    local file_context=""
+    
+    # Find relevant files mentioned in errors and include their content
+    while IFS= read -r line; do
+        # Extract file paths from error messages
+        if [[ "$line" =~ \.java\:?[0-9]* ]]; then
+            # Extract the file path (remove line numbers and brackets)
+            local file_path=$(echo "$line" | grep -o '[^[:space:]]*\.java' | head -1)
+            
+            if [ -f "$file_path" ]; then
+                log_info "Including file context for $file_path"
+                file_context+="\\n=== FILE: $file_path ===\\n"
+                file_context+="$(cat "$file_path" | head -50)"  # First 50 lines
+                file_context+="\\n=== END FILE ===\\n"
+            fi
+        fi
+    done < "$error_file"
+    
+    # Create the AI prompt with file context
     cat > /tmp/ai_error_prompt.txt << EOF
 You are an expert Java/Spring Boot engineer analyzing compilation and build errors.
 
-TASK: Analyze the following errors and provide specific, actionable fixes as JSON.
+TASK: Analyze the following errors WITH FILE CONTEXT and provide specific, actionable fixes as JSON.
 
 ERRORS:
 $error_content
 
-CONTEXT: This is a Spring Boot application. Analyze ALL types of errors and provide fixes.
+FILE CONTEXT:
+$file_context
+
+ANALYSIS INSTRUCTIONS:
+1. Review the error messages AND the actual file content
+2. Understand what each file is trying to do
+3. Identify the root cause of compilation failures
+4. Generate complete, valid Java class content that fixes the issues
+5. Preserve the intended functionality while fixing syntax and import issues
 
 ERROR TYPES TO HANDLE:
-1. COMPILATION ERRORS ("cannot find symbol"):
-   - Remove calls to non-existent methods
-   - Remove unused variables 
-   - Fix method signatures
-   - Add missing imports
+1. COMPILATION ERRORS ("cannot find symbol", "package does not exist"):
+   - Fix incorrect import statements
+   - Remove calls to non-existent methods/classes
+   - Add missing dependencies or create missing classes
+   - Fix method signatures and variable types
 
-2. DEPENDENCY INJECTION ERRORS:
-   - Create @TestConfiguration classes
-   - Add @Import annotations
-   - Fix bean definitions
-
-3. SYNTAX/LOGIC ERRORS:
-   - Fix malformed code
-   - Correct method calls
-   - Fix variable declarations
-
-4. IMPORT/PACKAGE ERRORS:
-   - Add missing imports
-   - Fix package declarations
+2. PACKAGE/IMPORT ISSUES:
+   - Ensure package declarations are first in file
+   - Add missing imports for used classes
    - Remove unused imports
+   - Fix malformed package structures
+
+3. SPRING BOOT ISSUES:
+   - Fix incorrect @SpringBootTest configurations
+   - Add proper @Import or @TestConfiguration annotations
+   - Create missing test configuration classes
+   - Fix dependency injection issues
+
+4. SYNTAX/STRUCTURE ERRORS:
+   - Fix malformed class declarations
+   - Correct method implementations
+   - Fix variable declarations and initializations
 
 REQUIREMENTS:
-- Identify the specific error type and root cause
-- For "cannot find symbol" errors: Remove or fix the problematic code
-- For missing methods: Remove the calls or provide implementations
-- Provide COMPLETE, VALID Java class content
-- Preserve existing working code and structure
-- Do NOT add duplicate imports or annotations
+- Analyze BOTH the error AND the file content to understand intent
+- Provide COMPLETE, VALID Java class content for each fix
+- Preserve existing working functionality
+- Follow Spring Boot and Java best practices
+- Do NOT duplicate imports or annotations
+- Ensure proper file structure (package -> imports -> class)
 
 CRITICAL: Return ONLY valid JSON in this exact format:
 {
-  "analysis": "Brief summary of issues found",
+  "analysis": "Brief summary of issues found and approach taken",
   "fixes": [
     {
-      "file": "relative/path/to/file",
-      "issue": "Description of the problem", 
+      "file": "relative/path/to/file.java",
+      "issue": "Detailed description of the problem found", 
       "action": "create|modify|delete",
-      "content": "Complete valid Java class content"
+      "content": "Complete valid Java class content with proper structure"
     }
   ]
 }
@@ -727,31 +756,90 @@ apply_npm_fixes() {
 }
 
 # Main fix application function
-apply_all_fixes() {
-    local log_file="$1"
-    local fixes_applied=false
+apply_ai_fixes() {
+    local error_file="$1"
+    local analysis_file="/tmp/ai_analysis.json"
     
-    log_info "Applying automated fixes based on error patterns..."
+    log_info "Applying AI-powered fixes using Gemini analysis..."
     
-    if apply_spring_boot_fixes "$log_file"; then
-        fixes_applied=true
-    fi
-    
-    if apply_react_testing_fixes "$log_file"; then
-        fixes_applied=true
-    fi
-    
-    if apply_npm_fixes "$log_file"; then
-        fixes_applied=true
-    fi
-    
-    if [ "$fixes_applied" = true ]; then
-        log_success "Automated fixes applied successfully"
-        return 0
-    else
-        log_warning "No automated fixes were applicable"
+    # First, get AI analysis of the errors
+    if ! analyze_errors_with_ai "$error_file" "$analysis_file"; then
+        log_error "AI analysis failed"
         return 1
     fi
+    
+    # Check if analysis file exists and has content
+    if [ ! -f "$analysis_file" ] || [ ! -s "$analysis_file" ]; then
+        log_error "No AI analysis available"
+        return 1
+    fi
+    
+    # Parse AI analysis and apply fixes
+    log_info "Parsing AI recommendations and applying fixes..."
+    
+    # Extract fixes from JSON using jq
+    local fixes_count=$(jq -r '.fixes | length' "$analysis_file" 2>/dev/null || echo "0")
+    
+    if [ "$fixes_count" -eq 0 ]; then
+        log_warning "No fixes recommended by AI"
+        return 1
+    fi
+    
+    log_info "AI recommended $fixes_count fix(es)"
+    
+    # Apply each fix
+    local fixes_applied=0
+    for ((i=0; i<fixes_count; i++)); do
+        local file_path=$(jq -r ".fixes[$i].file" "$analysis_file" 2>/dev/null || echo "")
+        local action=$(jq -r ".fixes[$i].action" "$analysis_file" 2>/dev/null || echo "")
+        local content=$(jq -r ".fixes[$i].content" "$analysis_file" 2>/dev/null || echo "")
+        local issue=$(jq -r ".fixes[$i].issue" "$analysis_file" 2>/dev/null || echo "")
+        
+        if [ -n "$file_path" ] && [ -n "$action" ] && [ -n "$content" ]; then
+            log_info "Applying fix $((i+1)): $issue"
+            
+            case "$action" in
+                "create"|"modify")
+                    # Ensure directory exists
+                    mkdir -p "$(dirname "$file_path")"
+                    
+                    # Write AI-generated content to file
+                    echo "$content" > "$file_path"
+                    log_success "Applied fix to $file_path"
+                    fixes_applied=$((fixes_applied + 1))
+                    ;;
+                "delete")
+                    if [ -f "$file_path" ]; then
+                        rm -f "$file_path"
+                        log_success "Deleted $file_path as recommended by AI"
+                        fixes_applied=$((fixes_applied + 1))
+                    fi
+                    ;;
+                *) 
+                    log_warning "Unknown action: $action for $file_path"
+                    ;;
+            esac
+        else
+            log_warning "Invalid fix format for fix $((i+1))"
+        fi
+    done
+    
+    if [ "$fixes_applied" -gt 0 ]; then
+        log_success "Applied $fixes_applied AI-generated fix(es) successfully"
+        return 0
+    else
+        log_error "Failed to apply any AI-generated fixes"
+        return 1
+    fi
+}
+
+apply_all_fixes() {
+    local log_file="$1"
+    
+    log_warning "apply_all_fixes is deprecated - use apply_ai_fixes for intelligent AI-powered fixes"
+    
+    # Fallback to AI fixes
+    return apply_ai_fixes "$log_file"
 }
 
 # Check if this is being run directly (not sourced)
@@ -779,6 +867,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
             fi
             ;;
         apply-fixes)
+            log_warning "apply-fixes is deprecated - use apply-ai-fixes for intelligent AI-powered fixes"
             if [[ $# -eq 2 ]]; then
                 apply_all_fixes "$2"
             else
@@ -786,11 +875,20 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
                 exit 1
             fi
             ;;
+        apply-ai-fixes)
+            if [[ $# -eq 2 ]]; then
+                apply_ai_fixes "$2"
+            else
+                log_error "Usage: $0 apply-ai-fixes <log_file>"
+                exit 1
+            fi
+            ;;
         *)
             log_info "Available commands:"
             log_info "  extract-errors <input_log> <output_file>"
             log_info "  generate-fixes <error_file> <suggestion_file>"
-            log_info "  apply-fixes <log_file>"
+            log_info "  apply-fixes <log_file> (deprecated - use apply-ai-fixes)"
+            log_info "  apply-ai-fixes <error_file> (new AI-powered intelligent fixes)"
             ;;
     esac
 fi

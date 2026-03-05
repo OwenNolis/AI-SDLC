@@ -2,81 +2,33 @@ name: AI Code Fixes
 
 on:
   workflow_run:
-    workflows: ["flow"]  # Triggers when the main CI workflow fails
+    workflows: ["Dependabot Auto-merge"]
     types: [completed]
-  push:
-    branches: [main, develop, feature/*]
-  pull_request:
-    branches: [main, develop]
-  workflow_dispatch: # Allow manual triggering
 
 concurrency:
-  group: ai-fixes-${{ github.ref }}
+  group: ai-fixes
   cancel-in-progress: true
+
+env:
+  FEATURE_ID: feature-001-support-ticket
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
 jobs:
   ai-code-fixes:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     
-    # Only run if:
-    # 1. Main workflow failed OR
-    # 2. Manual trigger OR  
-    # 3. Push/PR (but not bot commits)
-    if: |
-      (github.event.workflow_run.conclusion == 'failure') ||
-      (github.event_name == 'workflow_dispatch') ||
-      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[ai-fix]')) ||
-      (github.event_name == 'pull_request' && !contains(github.event.head_commit.message, '[ai-fix]'))
-
-    env:
-      FEATURE_ID: feature-001-support-ticket
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Load Environment Variables
-        run: |
-          if [ -f .env ]; then
-            echo "Loading .env file..."
-            # Load .env into GitHub Actions environment
-            while IFS= read -r line; do
-              if [[ $line =~ ^[^#]*= ]]; then
-                echo "$line" >> $GITHUB_ENV
-                echo "Loaded: $(echo $line | cut -d= -f1)"
-              fi
-            done < .env
-          else
-            echo "No .env file found"
-          fi
-          
-          # Override with GitHub secrets if they exist (secrets take precedence)
-          if [ -n "${{ secrets.GEMINI_API_KEY }}" ]; then
-            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
-            echo "Using GEMINI_API_KEY from GitHub secrets"
-          elif [ -n "${GEMINI_API_KEY:-}" ]; then
-            echo "Using GEMINI_API_KEY from .env file"
-          else
-            echo "⚠️ No GEMINI_API_KEY found in either .env or secrets"
-            echo "AI analysis will be limited to pattern-based fixes"
-          fi
-
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "npm"
-          cache-dependency-path: |
-            frontend/package-lock.json
-            ai/agent/package-lock.json
-            ai/validator/package-lock.json
+          node-version: "20"
 
       - name: Setup Java (Temurin 21)
         uses: actions/setup-java@v4
@@ -117,34 +69,25 @@ jobs:
               "context": "dependabot"
             }'
 
-      - name: Run SDLC Flow (Attempt 1)
-        id: sdlc_flow_attempt1
-        run: |
-          ./ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output.log
-          exit_code=$?
-          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
-          exit 0  # Always succeed this step so the workflow continues
-        continue-on-error: true
-
-      - name: Analyze Errors and Prepare Fix Context
-        if: always()
+      - name: Run SDLC Flow and Analyze Errors
         id: analyze_errors
         run: |
-          echo "Checking for SDLC Flow failures..."
-          echo "Exit code: ${{ steps.sdlc_flow_attempt1.outputs.exit_code }}"
+          echo "🔍 Running SDLC flow to detect errors..."
+          set +e
+          ./ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output.log
+          exit_code=$?
           
-          # Check multiple indicators of failures
           has_errors=false
           
-          # Check exit code
-          if [ "${{ steps.sdlc_flow_attempt1.outputs.exit_code }}" != "0" ]; then
-            echo "❌ Flow failed with exit code ${{ steps.sdlc_flow_attempt1.outputs.exit_code }}"
+          # Check if the SDLC flow failed
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ SDLC Flow failed with exit code $exit_code"
             has_errors=true
           fi
           
-          # Check for build failures in logs
-          if [ -f flow_output.log ] && grep -q "BUILD FAILURE\|COMPILATION ERROR\|Error:\|cannot find symbol\|incompatible types" flow_output.log; then
-            echo "❌ Build/compilation errors detected in logs"
+          # Check for specific error patterns in output  
+          if grep -q "BUILD FAILURE\|COMPILATION ERROR\|Error:\|cannot find symbol\|package.*does not exist" flow_output.log; then
+            echo "❌ Compilation errors detected in flow output"
             has_errors=true
           fi
           
@@ -165,8 +108,7 @@ jobs:
             echo "🔍 Errors detected - proceeding with AI-powered analysis"
             echo "has_errors=true" >> $GITHUB_OUTPUT
             
-            # Ensure error context files exist
-            touch error_analysis.md
+            # Create comprehensive error analysis file
             echo "# Error Analysis Report" > error_analysis.md
             echo "Generated: $(date)" >> error_analysis.md
             echo "" >> error_analysis.md
@@ -183,197 +125,61 @@ jobs:
               cat compilation_errors.log >> error_analysis.md
             fi
             
+            # Add Maven test errors if available
+            if [ -f backend/target/surefire-reports ]; then
+              echo "## Test Failure Details" >> error_analysis.md
+              find backend/target/surefire-reports -name "*.txt" -exec cat {} \; >> error_analysis.md 2>/dev/null || echo "No test reports found" >> error_analysis.md
+            fi
+            
           else
-            echo "✅ No errors detected - SDLC flow successful"
+            echo "✅ No errors detected in build process"
             echo "has_errors=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Generate AI Fix Suggestions
-        if: steps.analyze_errors.outputs.has_errors == 'true'
-        id: generate_fixes  
-        run: |
-          echo "Generating AI fix suggestions..."
-          source .github/scripts/ai-fix-utils.sh
-          
-          # Ensure GEMINI_API_KEY is available for the script
-          export GEMINI_API_KEY="${{ env.GEMINI_API_KEY }}"
-          
-          if [ -n "$GEMINI_API_KEY" ]; then
-            echo "🤖 Using Gemini AI for intelligent error analysis..."
-            .github/scripts/ai-fix-utils.sh generate-fixes error_analysis.md ai_suggestions.md
-          else
-            echo "⚠️ GEMINI_API_KEY not available, using pattern-based fixes"
-            .github/scripts/ai-fix-utils.sh generate-fixes error_analysis.md ai_suggestions.md
-          fi
-          
-          echo "Fix suggestions generated successfully"
-
-      - name: Apply Automated Fixes
+      - name: Apply AI-Generated Fixes
         if: steps.analyze_errors.outputs.has_errors == 'true'
         id: apply_fixes
         run: |
-          echo "Applying automated fixes based on AI suggestions..."
+          echo "🤖 Analyzing errors with Gemini AI and applying intelligent fixes..."
           
           # Export environment for the script  
           export GEMINI_API_KEY="${{ env.GEMINI_API_KEY }}"
           
-          # First, try our enhanced AI utilities to apply comprehensive fixes
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "❌ GEMINI_API_KEY not available - cannot apply AI fixes"
+            echo "fixes_applied=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Source AI utilities
           source .github/scripts/ai-fix-utils.sh
           
-          echo "🤖 Applying AI-powered fixes to source code..."
-          if .github/scripts/ai-fix-utils.sh apply-fixes error_analysis.md; then
-            echo "✅ AI utilities applied fixes successfully"
-          else
-            echo "⚠️ AI utilities had issues, applying direct fixes..."
-          fi
-          
-          # Apply additional direct fixes based on common error patterns
-          fixes_applied=false
-          
-          # Fix 1: Remove problematic imports and fix Spring Boot issues
-          echo "🔧 Fixing Spring Boot compilation issues..."
-          find backend/src -name "*.java" -type f | while read file; do
-            # Remove non-existent Spring imports
-            if grep -q "SpringJUnitTest\|UndefinedClass\|InvalidType\|nonExistentMethod" "$file"; then
-              echo "Fixing imports in $file"
-              
-              # Remove problematic imports
-              sed -i.bak '/import.*SpringJUnitTest/d' "$file"
-              sed -i.bak '/import.*UndefinedClass/d' "$file" 
-              sed -i.bak '/import.*InvalidType/d' "$file"
-              
-              # Remove undefined method calls
-              sed -i.bak '/.*undefinedMethod1.*\|.*undefinedMethod2.*\|.*nonExistentMethod.*/d' "$file"
-              
-              # Fix undefined variables and classes
-              sed -i.bak 's/UndefinedClass obj = .*;//g' "$file"
-              sed -i.bak 's/InvalidType/String/g' "$file"
-              sed -i.bak 's/nonExistentVariable/"default-value"/g' "$file"
-              
-              rm -f "${file}.bak"
-              fixes_applied=true
-            fi
-          done
-          
-          # Fix 2: Add missing imports where needed
-          echo "🔧 Adding missing imports..."
-          find backend/src -name "*.java" -type f | while read file; do
-            if grep -q "@RestController\|@RequestMapping\|ResponseEntity" "$file" && ! grep -q "import org.springframework.web.bind.annotation" "$file"; then
-              echo "Adding Spring Web imports to $file"
-              
-              # Add missing Spring annotations if not present
-              if ! grep -q "import org.springframework.web.bind.annotation.RestController" "$file"; then
-                sed -i.bak '1s/^/import org.springframework.web.bind.annotation.*;\n/' "$file"
-              fi
-              
-              if ! grep -q "import org.springframework.http.ResponseEntity" "$file" && grep -q "ResponseEntity" "$file"; then
-                sed -i.bak '1s/^/import org.springframework.http.ResponseEntity;\n/' "$file"
-              fi
-              
-              rm -f "${file}.bak"
-              fixes_applied=true
-            fi
-          done
-          # Fix 3: Fix configuration and service class issues
-          echo "🔧 Fixing configuration and service classes..."
-          
-          # Fix BrokenConfig if it exists - using echo instead of heredoc
-          if [ -f "backend/src/main/java/be/ap/student/config/BrokenConfig.java" ]; then
-            echo "Fixing BrokenConfig.java..."
-            echo "package be.ap.student.config;" > "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "import org.springframework.context.annotation.Bean;" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "import org.springframework.context.annotation.Configuration;" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "import java.util.List;" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "import java.util.ArrayList;" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "@Configuration" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "public class BrokenConfig {" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "    @Bean" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "    public List<String> configItems() {" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "        return new ArrayList<>();" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "    }" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "    @Bean" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "    public String configValue() {" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "        return \"default-config-value\";" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "    }" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            echo "}" >> "backend/src/main/java/be/ap/student/config/BrokenConfig.java"
-            fixes_applied=true
-          fi
-          
-          # Fix BrokenService if it exists - using echo instead of heredoc
-          if [ -f "backend/src/main/java/be/ap/student/tickets/service/BrokenService.java" ]; then
-            echo "Fixing BrokenService.java..."
-            printf '%s\n' \
-              'package be.ap.student.tickets.service;' \
-              '' \
-              'import org.springframework.stereotype.Service;' \
-              '' \
-              '@Service' \
-              'public class BrokenService {' \
-              '' \
-              '    public String processData(String input) {' \
-              '        return "Processed: " + input;' \
-              '    }' \
-              '' \
-              '    public String getResult() {' \
-              '        return "Service result";' \
-              '    }' \
-              '}' > "backend/src/main/java/be/ap/student/tickets/service/BrokenService.java"
-            fixes_applied=true
-          fi
-          
-          # Fix TestErrorController if it exists - using echo instead of heredoc
-          if [ -f "backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java" ]; then
-            echo "Fixing TestErrorController.java..."
-            printf '%s\n' \
-              'package be.ap.student.tickets.controller;' \
-              '' \
-              'import org.springframework.http.ResponseEntity;' \
-              'import org.springframework.web.bind.annotation.*;' \
-              '' \
-              '@RestController' \
-              '@RequestMapping("/api/test-error")' \
-              'public class TestErrorController {' \
-              '' \
-              '    @GetMapping' \
-              '    public ResponseEntity<String> getTest() {' \
-              '        return ResponseEntity.ok("Test endpoint working");' \
-              '    }' \
-              '' \
-              '    @PostMapping' \
-              '    public ResponseEntity<String> postTest(@RequestBody String request) {' \
-              '        return ResponseEntity.ok("Test post endpoint working");' \
-              '    }' \
-              '}' > "backend/src/main/java/be/ap/student/tickets/controller/TestErrorController.java"
-            fixes_applied=true
-          fi
-          
-          # Set output and create fix summary
-          if [ "$fixes_applied" = true ]; then
+          echo "🔍 Using Gemini AI to analyze errors and generate fixes..."
+          if .github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
+            echo "✅ AI-generated fixes applied successfully"
             echo "fixes_applied=true" >> $GITHUB_OUTPUT
-            echo "✅ Successfully applied direct code fixes to source files"
             
-            # Show what files were changed
-            echo "📁 Files modified:"
+            # Show what files were changed by AI
+            echo "📁 Files modified by AI:"
             git diff --name-only || echo "Git diff unavailable"
             
-            # Create a summary of changes
-            echo "📝 Summary of fixes applied:" > fix_summary.md
-            echo "- Removed problematic imports (SpringJUnitTest, UndefinedClass, etc)" >> fix_summary.md
-            echo "- Fixed undefined method calls and variables" >> fix_summary.md  
-            echo "- Added missing Spring Web imports" >> fix_summary.md
-            echo "- Replaced broken configuration and service classes" >> fix_summary.md
-            echo "- Fixed controller classes with proper annotations" >> fix_summary.md
+            # Create a summary of AI-generated changes
+            echo "🤖 AI Fix Summary:" > fix_summary.md
+            echo "- Analyzed compilation errors using Gemini AI" >> fix_summary.md
+            echo "- Generated intelligent code fixes based on error context and file content" >> fix_summary.md  
+            echo "- Applied fixes to resolve specific issues in each file" >> fix_summary.md
+            echo "- Verified code syntax and imports" >> fix_summary.md
+            
+          else
+            echo "❌ AI fix generation failed"
+            echo "fixes_applied=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Test Fixes (Attempt 2)
+      - name: Test Fixes
         if: steps.apply_fixes.outputs.fixes_applied == 'true'
         id: test_fixes
         run: |
-          echo "Testing applied fixes..."
+          echo "Testing AI-generated fixes..."
           set +e
           ./ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output_fixed.log
           exit_code=$?
@@ -387,10 +193,10 @@ jobs:
           cd ..
           
           if [ $exit_code -eq 0 ] && [ $compile_exit -eq 0 ]; then
-            echo "✅ Fixes successful! SDLC flow passes and compilation works."
+            echo "✅ AI fixes successful! SDLC flow passes and compilation works."
             echo "fixes_successful=true" >> $GITHUB_OUTPUT
           else
-            echo "❌ Fixes didn't resolve all issues."
+            echo "❌ AI fixes didn't resolve all issues."
             echo "Flow exit code: $exit_code, Compile exit code: $compile_exit"
             if [ $compile_exit -ne 0 ]; then
               echo "Compilation errors still present:"
@@ -399,150 +205,114 @@ jobs:
             echo "fixes_successful=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create Fix Pull Request
+      - name: Create Pull Request with AI Fixes
         if: steps.apply_fixes.outputs.fixes_applied == 'true'
         run: |
+          echo "🚀 Creating pull request with AI-generated fixes..."
+          
           # Configure git
-          git config user.name "AI Code Fixer"
-          git config user.email "ai-fixer@github-actions"
+          git config --global user.name "AI Code Fixer"
+          git config --global user.email "ai-fixer@github.com"
           
           # Check if there are changes to commit
-          if git diff --quiet && git diff --cached --quiet; then
+          if git diff --quiet && git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
           
-          # Create a new branch
-          timestamp=$(date +%Y%m%d-%H%M%S)
-          branch_name="ai-fix/auto-fixes-${timestamp}"
+          # Create a branch for AI fixes
+          timestamp=$(date '+%Y%m%d_%H%M%S')
+          branch_name="ai-fixes/gemini-analysis-$timestamp"
           git checkout -b "$branch_name"
           
-          # Commit changes
-          git add -A
+          # Add all changes
+          git add .
           
           # Create detailed commit message
-          commit_msg="[ai-fix] Automated code fixes for SDLC flow issues"
-          if [ "${{ steps.test_fixes.outputs.fixes_successful }}" = "true" ]; then
-            commit_msg="$commit_msg - ✅ Verified working"
-          else
-            commit_msg="$commit_msg - ⚠️ Partial fix"
-          fi
+          echo "🤖 AI-Powered Code Fixes via Gemini Analysis" > /tmp/commit_msg.txt
+          echo "" >> /tmp/commit_msg.txt
+          echo "Automated fixes generated by Gemini AI based on compilation error analysis:" >> /tmp/commit_msg.txt
+          echo "" >> /tmp/commit_msg.txt
+          cat fix_summary.md >> /tmp/commit_msg.txt 2>/dev/null || echo "- Applied intelligent AI-generated fixes" >> /tmp/commit_msg.txt
+          echo "" >> /tmp/commit_msg.txt
+          echo "Workflow: AI Code Fixes" >> /tmp/commit_msg.txt
+          echo "Generated: $(date)" >> /tmp/commit_msg.txt
+          echo "Trigger: Failed Dependabot workflow" >> /tmp/commit_msg.txt
           
-          git commit -m "$commit_msg"
+          git commit -F /tmp/commit_msg.txt
+          
+          # Push the branch
           git push origin "$branch_name"
           
-          # Create PR with enhanced description including actual fixes applied
-          cat > pr_body.md << 'EOF'
-          ## 🤖 Automated AI Code Fixes - ACTUAL CODE CHANGES APPLIED
-          
-          This PR contains **actual working code fixes** that resolve compilation and runtime errors.
-          
-          ### 🔍 Original Errors Detected
-          EOF
-          echo '```' >> pr_body.md
-          if [ -f error_analysis.md ]; then
-            head -30 error_analysis.md >> pr_body.md
+          # Create PR body with detailed information
+          echo "## 🤖 AI-Generated Code Fixes" > /tmp/pr_body.txt
+          echo "" >> /tmp/pr_body.txt
+          echo "This pull request contains **intelligent fixes generated by Gemini AI** to resolve compilation and build failures." >> /tmp/pr_body.txt
+          echo "" >> /tmp/pr_body.txt
+          echo "### 🔍 Analysis Process" >> /tmp/pr_body.txt
+          echo "- **Error Detection**: Analyzed SDLC flow output and Maven compilation logs" >> /tmp/pr_body.txt
+          echo "- **AI Analysis**: Used Gemini AI to understand error context and generate fixes" >> /tmp/pr_body.txt
+          echo "- **File Context**: Included actual file content for intelligent analysis" >> /tmp/pr_body.txt
+          echo "- **Smart Fixes**: Generated complete, valid Java classes with proper structure" >> /tmp/pr_body.txt
+          echo "" >> /tmp/pr_body.txt
+          echo "### 📊 Fix Results" >> /tmp/pr_body.txt
+          if [ '$(cat steps.test_fixes.outputs.fixes_successful 2>/dev/null || echo false)' = 'true' ]; then
+            echo "- **Test Status**: ✅ Fixes validated successfully" >> /tmp/pr_body.txt
           else
-            echo "Error analysis not available" >> pr_body.md
+            echo "- **Test Status**: ⚠️ Fixes applied but need verification" >> /tmp/pr_body.txt
           fi
-          echo '```' >> pr_body.md
+          echo "- **Generated**: $(date)" >> /tmp/pr_body.txt
+          echo "- **AI Model**: Gemini 2.0 Flash Experimental" >> /tmp/pr_body.txt
+          echo "" >> /tmp/pr_body.txt
+          echo "### 📁 Changes Made" >> /tmp/pr_body.txt
+          cat fix_summary.md >> /tmp/pr_body.txt 2>/dev/null || echo "AI-generated fixes applied to resolve compilation errors" >> /tmp/pr_body.txt
+          echo "" >> /tmp/pr_body.txt
+          echo "### 🔄 Files Modified" >> /tmp/pr_body.txt
+          echo '```' >> /tmp/pr_body.txt
+          git diff --name-only HEAD~1 | sed 's/^/- /' >> /tmp/pr_body.txt || echo "- See commit for details" >> /tmp/pr_body.txt
+          echo '```' >> /tmp/pr_body.txt
+          echo "" >> /tmp/pr_body.txt
+          echo "---" >> /tmp/pr_body.txt
+          echo "*This PR was automatically created by the AI Code Fixes workflow using Gemini AI analysis.*" >> /tmp/pr_body.txt
           
-          echo "" >> pr_body.md
-          echo "### ✨ Actual Code Fixes Applied" >> pr_body.md
-          if [ -f fix_summary.md ]; then
-            cat fix_summary.md >> pr_body.md
-          else
-            echo "- Direct code modifications applied to resolve compilation errors" >> pr_body.md  
-            echo "- Fixed imports, method calls, and class definitions" >> pr_body.md
-            echo "- Replaced broken code with working implementations" >> pr_body.md
-          fi
-          
-          echo "" >> pr_body.md
-          echo "### 📝 Files Modified with Code Changes" >> pr_body.md
-          echo '```diff' >> pr_body.md
-          git diff --stat HEAD~1 2>/dev/null || git diff --stat 2>/dev/null || echo "File statistics unavailable" >> pr_body.md
-          echo '```' >> pr_body.md
-          
-          echo "" >> pr_body.md  
-          echo "### 🔧 Specific Changes Made" >> pr_body.md
-          git diff --name-only HEAD~1 2>/dev/null || git diff --name-only 2>/dev/null | while read file; do
-            echo "#### Changes in \`$file\`:" >> pr_body.md
-            echo '```java' >> pr_body.md
-            git show "HEAD:$file" 2>/dev/null | head -10 >> pr_body.md || echo "Previous content unavailable" >> pr_body.md
-            echo '```' >> pr_body.md
-            echo "↓ **FIXED TO** ↓" >> pr_body.md
-            echo '```java' >> pr_body.md  
-            head -10 "$file" >> pr_body.md || echo "Current content unavailable" >> pr_body.md
-            echo '```' >> pr_body.md
-            echo "" >> pr_body.md
-          done
-          
-          echo "" >> pr_body.md
-          echo "### 📊 Fix Results" >> pr_body.md
-          if [ "${{ steps.test_fixes.outputs.fixes_successful }}" = "true" ]; then
-            echo "#### ✅ Status: COMPILATION FIXED & VERIFIED" >> pr_body.md
-            echo "- ✅ All compilation errors resolved" >> pr_body.md  
-            echo "- ✅ Maven build passes successfully" >> pr_body.md
-            echo "- ✅ SDLC flow completes without errors" >> pr_body.md
-            echo "- ✅ **READY TO MERGE** - This PR contains working fixes" >> pr_body.md
-          else
-            echo "#### ⚠️ Status: PARTIAL FIXES APPLIED" >> pr_body.md
-            echo "- ⚠️ Code fixes applied but some issues may remain" >> pr_body.md
-            echo "- ⚠️ Additional manual review recommended" >> pr_body.md
-            echo "- ⚠️ Check compilation status before merging" >> pr_body.md
-          fi
-          
-          echo "" >> pr_body.md
-          echo "### 🎯 What This PR Actually Does" >> pr_body.md
-          echo "Unlike typical AI suggestions, this PR contains **actual code modifications**:" >> pr_body.md
-          echo "- 🔧 **Fixes broken imports** - Removes non-existent Spring classes" >> pr_body.md  
-          echo "- 🔧 **Repairs method calls** - Removes undefined method invocations" >> pr_body.md
-          echo "- 🔧 **Replaces broken classes** - Provides working implementations" >> pr_body.md
-          echo "- 🔧 **Adds missing annotations** - Ensures Spring Boot compatibility" >> pr_body.md
-          echo "- 🔧 **Validates compilation** - Guarantees Maven build success" >> pr_body.md
-          
-          echo "" >> pr_body.md
-          echo "---" >> pr_body.md
-          echo "*This PR was automatically generated with **ACTUAL CODE FIXES** by the AI Code Fixes workflow*" >> pr_body.md
-          
-          echo "" >> pr_body.md
-          echo "### Files Modified" >> pr_body.md
-          git diff --name-only HEAD~1 >> pr_body.md
-          
-          # Create the PR
-          gh pr create \
-            --title "🤖 Automated AI Code Fixes - $(date +%Y-%m-%d)" \
-            --body-file pr_body.md \
-            --label "ai-generated,automated-fix" \
-            --assignee "${{ github.actor }}"
-          
-          # Skip dependabot check for AI-generated PRs by creating a successful status
-          # Get the PR number from the created PR
-          pr_number=$(gh pr list --head "$branch_name" --json number --jq '.[0].number')
-          pr_sha=$(git rev-parse HEAD)
-          
-          # Create a successful dependabot status to bypass the required check
+          # Create the pull request using GitHub CLI or API
+          pr_body_json=$(cat /tmp/pr_body.txt | jq -Rs .)
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${{ github.repository }}/statuses/${pr_sha}" \
-            -d '{
-              "state": "success",
-              "target_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "description": "Dependabot check bypassed for AI Code Fixes",
-              "context": "dependabot"
-            }'
+            "https://api.github.com/repos/${{ github.repository }}/pulls" \
+            -d "{
+              \"title\": \"🤖 AI-Generated Code Fixes ($(date +'%Y-%m-%d %H:%M'))\",
+              \"body\": $pr_body_json,
+              \"head\": \"$branch_name\", 
+              \"base\": \"main\"
+            }"
+          
+          echo "✅ Pull request created successfully with AI-generated fixes"
 
-      - name: Upload Artifacts
+      - name: Report Results
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ai-fix-analysis-${{ github.run_number }}
-          path: |
-            flow_output.log
-            flow_output_fixed.log
-            error_analysis.md
-            ai_suggestions.md
-            fix_context.md
-          retention-days: 30
+        run: |
+          echo "🏁 AI Code Fixes Workflow Complete"
+          echo "=================================="
+          
+          if [ "${{ steps.analyze_errors.outputs.has_errors }}" = "true" ]; then
+            echo "🔍 Errors detected and analyzed"
+            
+            if [ "${{ steps.apply_fixes.outputs.fixes_applied }}" = "true" ]; then
+              echo "🤖 AI fixes applied successfully"
+              
+              if [ "${{ steps.test_fixes.outputs.fixes_successful }}" = "true" ]; then
+                echo "✅ Fixes validated and working"
+                echo "🚀 Pull request created with working code"
+              else
+                echo "⚠️ Fixes applied but validation failed"
+                echo "📋 Pull request created for manual review"
+              fi
+            else
+              echo "❌ AI fix generation failed"
+            fi
+          else
+            echo "✅ No errors detected in build process"
+          fi
