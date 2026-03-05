@@ -23,13 +23,8 @@ public class TicketController {
         var saved = service.create(req);
         return new CreateTicketResponse(saved.getTicketNumber(), saved.getStatus().name());
     }
-}
 
-@RestController
-@RequestMapping("/api")
-class TestController {
-
-    @GetMapping("/test")
+    @GetMapping("/api/test")
     public String test() {
         return "Test endpoint OK";
     }
