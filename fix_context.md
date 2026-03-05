@@ -2332,10 +2332,35 @@ This is an AI-driven SDLC project with:
 
 ## AI Flow Errors
 
+## Maven Compilation Errors
+80-[INFO] -------------------------------------------------------------
+81-[INFO] ------------------------------------------------------------------------
+82:[INFO] BUILD FAILURE
+83-[INFO] ------------------------------------------------------------------------
+84-[INFO] Total time:  3.200 s
+85-[INFO] Finished at: 2026-03-05T13:27:17Z
+86-[INFO] ------------------------------------------------------------------------
+87-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure
+75-[INFO] -------------------------------------------------------------
+76:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[5,54] cannot find symbol
+77-  symbol:   class SpringJUnitTest
+78-  location: package org.springframework.test.context.junit.jupiter
+79-[INFO] 1 error
+--
+87-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure
+88:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[5,54] cannot find symbol
+89-[ERROR]   symbol:   class SpringJUnitTest
+90-[ERROR]   location: package org.springframework.test.context.junit.jupiter
+91-[ERROR] 
+
+## NPM/Frontend Errors
+
+## AI Flow Errors
+
 
 ## Recent Changes
+2ed0385 Merge pull request #93 from OwenNolis/ai-fix/auto-fixes-20260305-132532
+2789221 [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
 a5d8135 Merge pull request #92 from OwenNolis/ai-fix/auto-fixes-20260305-132057
 21b309e [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
 8b36057 🔧 MAJOR AI FIXES IMPROVEMENTS:
-1007845 Merge pull request #90 from OwenNolis/ai-fix/auto-fixes-20260305-123640
-6ed90f4 [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working

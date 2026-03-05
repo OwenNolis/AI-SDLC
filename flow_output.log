@@ -73,45 +73,22 @@ All AI artifacts validated successfully.
 [INFO] -------------------------------------------------------------
 [ERROR] COMPILATION ERROR : 
 [INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[4,54] cannot find symbol
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[5,54] cannot find symbol
   symbol:   class SpringJUnitTest
   location: package org.springframework.test.context.junit.jupiter
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[14,13] cannot find symbol
-  symbol:   class RestTemplate
-  location: class be.ap.student.tickets.integration.BrokenIntegrationTest
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[22,9] cannot find symbol
-  symbol:   method assertThatResult(java.lang.String)
-  location: class be.ap.student.tickets.integration.BrokenIntegrationTest
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[28,9] cannot find symbol
-  symbol:   class UndefinedClass
-  location: class be.ap.student.tickets.integration.BrokenIntegrationTest
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[28,30] cannot find symbol
-  symbol:   method createUndefinedObject()
-  location: class be.ap.student.tickets.integration.BrokenIntegrationTest
-[INFO] 5 errors 
+[INFO] 1 error
 [INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  3.397 s
-[INFO] Finished at: 2026-03-05T13:24:55Z
+[INFO] Total time:  3.200 s
+[INFO] Finished at: 2026-03-05T13:27:17Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[4,54] cannot find symbol
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[5,54] cannot find symbol
 [ERROR]   symbol:   class SpringJUnitTest
 [ERROR]   location: package org.springframework.test.context.junit.jupiter
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[14,13] cannot find symbol
-[ERROR]   symbol:   class RestTemplate
-[ERROR]   location: class be.ap.student.tickets.integration.BrokenIntegrationTest
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[22,9] cannot find symbol
-[ERROR]   symbol:   method assertThatResult(java.lang.String)
-[ERROR]   location: class be.ap.student.tickets.integration.BrokenIntegrationTest
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[28,9] cannot find symbol
-[ERROR]   symbol:   class UndefinedClass
-[ERROR]   location: class be.ap.student.tickets.integration.BrokenIntegrationTest
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[28,30] cannot find symbol
-[ERROR]   symbol:   method createUndefinedObject()
-[ERROR]   location: class be.ap.student.tickets.integration.BrokenIntegrationTest
+[ERROR] 
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
