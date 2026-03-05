@@ -1590,43 +1590,12 @@
 ## AI Flow Errors
 
 ## Maven Compilation Errors
-77-[INFO] -------------------------------------------------------------
-78-[INFO] ------------------------------------------------------------------------
-79:[INFO] BUILD FAILURE
-80-[INFO] ------------------------------------------------------------------------
-81-[INFO] Total time:  2.321 s
-82-[INFO] Finished at: 2026-03-05T11:57:15Z
-83-[INFO] ------------------------------------------------------------------------
-84-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
-68-[INFO] -------------------------------------------------------------
-69:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
-70-  symbol:   method undefinedMethod1(java.lang.String)
-71-  location: class be.ap.student.tickets.controller.TicketController
-72:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
-73-  symbol:   method undefinedMethod2()
-74-  location: class be.ap.student.tickets.controller.TicketController
-75-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
---
-84-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
-85:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
-86-[ERROR]   symbol:   method undefinedMethod1(java.lang.String)
-87-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
-88:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
-89-[ERROR]   symbol:   method undefinedMethod2()
-90-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
-91-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
-
-## NPM/Frontend Errors
-
-## AI Flow Errors
-
-## Maven Compilation Errors
 130-[INFO] -------------------------------------------------------------
 131-[INFO] ------------------------------------------------------------------------
 132:[INFO] BUILD FAILURE
 133-[INFO] ------------------------------------------------------------------------
-134-[INFO] Total time:  2.648 s
-135-[INFO] Finished at: 2026-03-05T12:04:19Z
+134-[INFO] Total time:  3.652 s
+135-[INFO] Finished at: 2026-03-05T12:01:12Z
 136-[INFO] ------------------------------------------------------------------------
 137-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
 68-[INFO] -------------------------------------------------------------

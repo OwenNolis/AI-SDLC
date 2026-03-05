@@ -1599,43 +1599,12 @@ This is an AI-driven SDLC project with:
 ## AI Flow Errors
 
 ## Maven Compilation Errors
-77-[INFO] -------------------------------------------------------------
-78-[INFO] ------------------------------------------------------------------------
-79:[INFO] BUILD FAILURE
-80-[INFO] ------------------------------------------------------------------------
-81-[INFO] Total time:  2.321 s
-82-[INFO] Finished at: 2026-03-05T11:57:15Z
-83-[INFO] ------------------------------------------------------------------------
-84-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
-68-[INFO] -------------------------------------------------------------
-69:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
-70-  symbol:   method undefinedMethod1(java.lang.String)
-71-  location: class be.ap.student.tickets.controller.TicketController
-72:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
-73-  symbol:   method undefinedMethod2()
-74-  location: class be.ap.student.tickets.controller.TicketController
-75-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
---
-84-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
-85:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[25,24] cannot find symbol
-86-[ERROR]   symbol:   method undefinedMethod1(java.lang.String)
-87-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
-88:[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[26,21] cannot find symbol
-89-[ERROR]   symbol:   method undefinedMethod2()
-90-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
-91-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[28,63] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.dto.CreateTicketResponse
-
-## NPM/Frontend Errors
-
-## AI Flow Errors
-
-## Maven Compilation Errors
 130-[INFO] -------------------------------------------------------------
 131-[INFO] ------------------------------------------------------------------------
 132:[INFO] BUILD FAILURE
 133-[INFO] ------------------------------------------------------------------------
-134-[INFO] Total time:  2.648 s
-135-[INFO] Finished at: 2026-03-05T12:04:19Z
+134-[INFO] Total time:  3.652 s
+135-[INFO] Finished at: 2026-03-05T12:01:12Z
 136-[INFO] ------------------------------------------------------------------------
 137-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
 68-[INFO] -------------------------------------------------------------
@@ -1768,8 +1737,8 @@ This is an AI-driven SDLC project with:
 
 
 ## Recent Changes
-cc504d8 Merge 9615872703781fa40be3271bc02b5017e5e027bf into c1322ff5f6614cf5cddfeb2b8e7e06e4a0fb40e8
-9615872 Merge branch 'main' into ai-fix/auto-fixes-20260305-115747
 c1322ff 📈 COMPREHENSIVE TEST RESULTS:
 d949342 Add comprehensive AI Code Fixes test suite with multiple error types
-ce59212 [ai-fix] Automated code fixes for SDLC flow issues - ✅ Verified working
+2e753fc Test 1: Multiple compilation errors - undefined methods and wrong types
+836fc41 Merge pull request #81 from OwenNolis/ai-fix/auto-fixes-20260305-105151
+898893d Merge branch 'main' into ai-fix/auto-fixes-20260305-105151

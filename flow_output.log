@@ -131,8 +131,8 @@ All AI artifacts validated successfully.
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.648 s
-[INFO] Finished at: 2026-03-05T12:04:19Z
+[INFO] Total time:  3.652 s
+[INFO] Finished at: 2026-03-05T12:01:12Z
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
 [ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/config/BrokenConfig.java:[12,12] cannot find symbol
