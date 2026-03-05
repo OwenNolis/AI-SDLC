@@ -238,7 +238,7 @@ analyze_errors_with_ai() {
     local error_content=$(cat "$error_file" | head -200)  # Limit to avoid token limits
     
     # Create AI prompt for error analysis
-    cat > /tmp/ai_error_prompt.txt << EOF
+    cat > /tmp/ai_error_prompt.txt << 'EOF'
 You are an expert Spring Boot engineer analyzing compilation and build errors. 
 
 TASK: Analyze the following errors and provide specific, actionable fixes.
@@ -299,6 +299,9 @@ FORMAT your response as JSON:
   ]
 }
 EOF
+
+    # Replace the error content placeholder
+    sed -i.bak "s/\$error_content/${error_content//\//\\/}/" /tmp/ai_error_prompt.txt
 
     # Call Gemini API for error analysis
     if [ -n "$GEMINI_API_KEY" ]; then
@@ -432,7 +435,7 @@ cleanup_duplicate_imports() {
             if [ -n "$GEMINI_API_KEY" ]; then
                 local file_content=$(cat "$file")
                 
-                cat > /tmp/cleanup_prompt.txt << EOF
+                cat > /tmp/cleanup_prompt.txt << 'EOF'
 Clean up this Java Spring Boot test file following these EXACT requirements:
 
 1. Remove ALL duplicate import statements (keep only one of each)
@@ -460,6 +463,9 @@ $file_content
 
 Return ONLY the cleaned up, complete Java class code with proper Spring Boot annotations. No explanation or markdown formatting.
 EOF
+
+                # Replace the file content placeholder
+                sed -i.bak "s/\$file_content/${file_content//\//\\/}/" /tmp/cleanup_prompt.txt
 
                 local cleaned_content=$(curl -s -X POST \
                     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=$GEMINI_API_KEY" \

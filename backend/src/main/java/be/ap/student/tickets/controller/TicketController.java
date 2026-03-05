@@ -24,3 +24,13 @@ public class TicketController {
         return new CreateTicketResponse(saved.getTicketNumber(), saved.getStatus().name());
     }
 }
+
+@RestController
+@RequestMapping("/api")
+class TestController {
+
+    @GetMapping("/test")
+    public String test() {
+        return "Test endpoint OK";
+    }
+}
