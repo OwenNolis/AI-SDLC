@@ -1,3 +1,5 @@
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 package be.ap.student.tickets;
 
 import be.ap.student.tickets.dto.CreateTicketRequest;
