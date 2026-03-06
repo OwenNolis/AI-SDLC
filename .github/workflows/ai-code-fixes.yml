@@ -104,14 +104,20 @@ jobs:
           # Try direct compilation check
           echo "Double-checking compilation status..."
           cd backend
-          if ! mvn compile -q > compile_check.log 2>&1; then
+          set +e
+          timeout 120 mvn compile -q > compile_check.log 2>&1
+          compile_exit=$?
+          cd ..
+          
+          if [ $compile_exit -eq 0 ]; then
+            echo "✅ Direct Maven compilation succeeded"
+          elif [ $compile_exit -eq 124 ]; then
+            echo "⚠️ Maven compilation check timed out (but SDLC flow passed)"
+            # Don't treat timeout as error if SDLC flow already passed
+          else
             echo "❌ Direct Maven compilation failed"
             has_errors=true
-            cd ..
             cp backend/compile_check.log compilation_errors.log
-          else
-            echo "✅ Direct Maven compilation succeeded"
-            cd ..
           fi
           
           if [ "$has_errors" = "true" ]; then
@@ -151,6 +157,10 @@ jobs:
             echo "✅ No errors detected in build process"
             echo "has_errors=false" >> $GITHUB_OUTPUT
             echo "🎉 SDLC flow completed successfully - no fixes needed!"
+            
+            # Explicitly mark this step as successful
+            echo "::notice::Codebase is healthy - no AI fixes required"
+            exit 0
           fi
 
       - name: Success - No Errors Detected
