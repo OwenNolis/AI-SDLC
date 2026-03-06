@@ -131,14 +131,12 @@ jobs:
               echo "✅ All tests passing after flow completion"
             fi
           fi
-            has_errors=true
-          fi
           
-          # Try direct compilation check
+          # Try direct compilation check (including test sources)
           echo "Double-checking compilation status..."
           cd backend
           set +e
-          timeout 120 mvn compile -q > compile_check.log 2>&1
+          timeout 120 mvn test-compile -q > compile_check.log 2>&1
           compile_exit=$?
           cd ..
           
@@ -174,14 +172,20 @@ jobs:
               cat compilation_errors.log >> error_analysis.md
             fi
             
+            # Add test failure logs if available
+            if [ -f test_failures.log ]; then
+              echo "## Test Failure Output" >> error_analysis.md
+              cat test_failures.log >> error_analysis.md
+            fi
+            
             # Add test failure reports if available
-            if [ -f backend/target/surefire-reports ]; then
+            if [ -d backend/target/surefire-reports ]; then
               echo "## Test Failure Details" >> error_analysis.md
               find backend/target/surefire-reports -name "*.txt" -exec cat {} \; >> error_analysis.md 2>/dev/null || echo "No test reports found" >> error_analysis.md
             fi
             
             # Add specific test error analysis
-            if grep -q "InternalServerError\|HttpServerErrorException" flow_output.log; then
+            if grep -q "InternalServerError\|HttpServerErrorException" flow_output.log 2>/dev/null; then
               echo "## HTTP Server Errors" >> error_analysis.md
               grep -A10 -B5 "InternalServerError\|HttpServerErrorException" flow_output.log >> error_analysis.md
             fi
