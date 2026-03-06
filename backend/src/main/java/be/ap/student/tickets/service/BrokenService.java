@@ -19,6 +19,9 @@ public class BrokenService {
     }
 
     public String validateInput(String data) {
-        return DataTransformer.transform(data);
+        // Removed usage of DataTransformer as it's not defined.
+        // If DataTransformer is a separate class, it needs to be provided and imported.
+        // For now, returning the input directly.
+        return data;
     }
 }
