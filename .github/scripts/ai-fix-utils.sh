@@ -79,6 +79,25 @@ extract_ai_flow_errors() {
     echo "" >> "$output_file"
 }
 
+extract_test_errors() {
+    local log_file="$1"
+    local output_file="$2"
+    
+    log_info "Extracting test failures and HTTP errors..."
+    echo "## Test Failures" >> "$output_file"
+    
+    # Look for Maven test failures
+    grep -n -A10 -B5 "Tests run:.*Failures:\|Tests run:.*Errors:\|BUILD FAILURE.*test" "$log_file" >> "$output_file" 2>/dev/null || true
+    
+    # Look for HTTP errors in tests (500, 404, etc.)
+    grep -n -A5 -B2 "HttpServerErrorException\|500.*Internal Server Error\|404.*Not Found\|ResponseEntity" "$log_file" >> "$output_file" 2>/dev/null || true
+    
+    # Look for missing endpoint patterns
+    grep -n -A3 -B1 "No mapping found\|404.*api.*\|endpoint.*not found" "$log_file" >> "$output_file" 2>/dev/null || true
+    
+    echo "" >> "$output_file"
+}
+
 # Generate AI-powered fix suggestions
 generate_fix_suggestions() {
     local error_file="$1"
@@ -750,7 +769,153 @@ apply_ai_fixes() {
     fi
     
     log_success "Fix application completed"
+    
+    # After applying compilation fixes, check if tests pass
+    log_info "Checking if tests pass after compilation fixes..."
+    if check_and_fix_test_failures; then
+        log_success "All tests are now passing!"
+    else
+        log_warning "Some test failures remain after AI analysis"
+    fi
+    
     return 0
+}
+
+# Check for test failures and generate missing functionality
+check_and_fix_test_failures() {
+    local test_log="/tmp/test_results.log"
+    local test_analysis="/tmp/test_analysis.json"
+    
+    # Run tests to check for failures
+    log_info "Running tests to check for failures..."
+    if cd backend && mvn test > "$test_log" 2>&1; then
+        log_success "All tests are passing"
+        return 0
+    else
+        log_info "Tests are failing, analyzing test failures..."
+        
+        # Extract test failure information
+        extract_test_errors "$test_log" "/tmp/test_errors.txt"
+        
+        # Analyze test failures with AI to understand what endpoints/functionality is missing
+        if analyze_test_failures_with_ai "/tmp/test_errors.txt" "$test_analysis"; then
+            log_info "AI analysis of test failures successful, generating missing functionality..."
+            
+            if [ -f "$test_analysis" ] && [ -s "$test_analysis" ]; then
+                apply_ai_generated_fixes "$test_analysis"
+                
+                # Test again to see if we fixed the issues
+                if mvn test > /dev/null 2>&1; then
+                    log_success "Test failures fixed by AI-generated functionality"
+                    return 0
+                else
+                    log_warning "AI fixes applied but some tests still failing"
+                    return 1
+                fi
+            else
+                log_warning "Test failure analysis file is empty"
+                return 1
+            fi
+        else
+            log_warning "AI analysis of test failures failed"
+            return 1
+        fi
+    fi
+}
+
+# AI analysis specifically for test failures
+analyze_test_failures_with_ai() {
+    local error_file="$1"
+    local analysis_file="$2"
+    
+    log_info "Analyzing test failures with Gemini AI..."
+    
+    # Check if we have API key
+    if [ -z "$GEMINI_API_KEY" ]; then
+        log_warning "GEMINI_API_KEY not set, skipping AI test failure analysis"
+        return 1
+    fi
+    
+    # Prepare test failure context for AI analysis
+    local test_content=$(cat "$error_file" | head -100)
+    
+    # Create AI prompt focused on test failures and missing endpoints
+    cat > /tmp/ai_test_prompt.txt << EOF
+You are an expert Spring Boot developer. Analyze these test failures and generate missing REST endpoints.
+
+TEST FAILURES:
+$test_content
+
+The tests are failing because REST endpoints are missing. Please analyze and provide JSON response with missing endpoints:
+
+{
+  "analysis": "Brief summary of missing endpoints",
+  "fixes": [
+    {
+      "file": "path/to/controller.java",
+      "issue": "Missing REST endpoint", 
+      "action": "modify",
+      "content": "Complete Java controller with missing endpoints"
+    }
+  ]
+}
+
+Focus on:
+1. HTTP 500 errors from missing endpoints
+2. Missing @GetMapping/@PostMapping methods
+3. Required controller methods to make tests pass
+EOF
+
+    # Make API call with timeout
+    local api_response
+    api_response=$(timeout 120 curl -s -X POST \
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=$GEMINI_API_KEY" \
+        -H 'Content-Type: application/json' \
+        -d "{
+            \"contents\": [{
+                \"parts\": [{
+                    \"text\": \"$(cat /tmp/ai_test_prompt.txt | python3 -c "import sys, json; print(json.dumps(sys.stdin.read()))" | sed 's/^"//;s/"$//')\"
+                }]
+            }],
+            \"generationConfig\": {
+                \"temperature\": 0.1,
+                \"maxOutputTokens\": 2048
+            }
+        }" 2>/dev/null)
+    
+    # Check if API call succeeded
+    if [ $? -ne 0 ] || [ -z "$api_response" ]; then
+        log_warning "Gemini API call for test failures timed out or failed"
+        rm -f /tmp/ai_test_prompt.txt
+        return 1
+    fi
+    
+    # Extract and validate response
+    local ai_analysis=$(echo "$api_response" | jq -r '.candidates[0].content.parts[0].text' 2>/dev/null || echo "")
+    local error_msg=$(echo "$api_response" | jq -r '.error.message' 2>/dev/null || echo "")
+    
+    if [ -n "$error_msg" ] && [ "$error_msg" != "null" ]; then
+        log_warning "Gemini API error for test failures: $error_msg"
+        rm -f /tmp/ai_test_prompt.txt
+        return 1
+    fi
+    
+    if [ -n "$ai_analysis" ] && [ "$ai_analysis" != "null" ]; then
+        # Validate JSON response
+        if echo "$ai_analysis" | jq . >/dev/null 2>&1; then
+            echo "$ai_analysis" > "$analysis_file"
+            log_success "AI test failure analysis completed successfully"
+            rm -f /tmp/ai_test_prompt.txt
+            return 0
+        else
+            log_warning "Gemini returned invalid JSON response for test failures"
+        fi
+    else
+        log_warning "Gemini API returned empty response for test failures"
+    fi
+    
+    rm -f /tmp/ai_test_prompt.txt
+    return 1
 }
 
 # Apply common fixes for known error patterns
@@ -911,6 +1076,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
                 extract_maven_errors "$2" "$3"
                 extract_npm_errors "$2" "$3"
                 extract_ai_flow_errors "$2" "$3"
+                extract_test_errors "$2" "$3"
             else
                 log_error "Usage: $0 extract-errors <input_log> <output_file>"
                 exit 1

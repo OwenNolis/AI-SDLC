@@ -32,7 +32,7 @@ public class TestControllerIT {
         System.out.println("This should fail: " + result);
     }
     
-    // Error: Test will fail due to compilation error in controller
+    // Error: Test will fail due to missing /api/broken endpoint
     @Test  
     public void testBrokenEndpoint() {
         String result = restTemplate.getForObject("http://localhost:" + port + "/api/broken", String.class);
