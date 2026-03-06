@@ -1,13 +1,13 @@
 # Error Analysis Report
-Generated: Fri Mar  6 13:02:21 UTC 2026
+Generated: Fri Mar  6 13:44:43 UTC 2026
 
 ## SDLC Flow Errors
-2026-03-06T13:02:18.246Z  INFO 3136 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-03-06T13:44:40.517Z  INFO 3165 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
 RestTemplate injected: true
 Test endpoint result: Test endpoint working
-[ERROR] Tests run: 3, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.338 s <<< FAILURE! -- in be.ap.student.tickets.TestControllerIT
+[ERROR] Tests run: 3, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.319 s <<< FAILURE! -- in be.ap.student.tickets.TestControllerIT
 [ERROR] be.ap.student.tickets.TestControllerIT.testNonExistentEndpoint -- Time elapsed: 0.069 s <<< ERROR!
-org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:34211/api/nonexistent": "{"correlationId":"966730fe-64e6-4867-9b86-b4a1a4a21ed5","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
+org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:38899/api/nonexistent": "{"correlationId":"9a4c98d2-8501-4e81-8165-a5158bffe307","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
 	at org.springframework.web.client.HttpServerErrorException.create(HttpServerErrorException.java:103)
 	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:148)
 	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:120)
@@ -18,22 +18,22 @@ org.springframework.web.client.HttpServerErrorException$InternalServerError: 500
 	at be.ap.student.tickets.TestControllerIT.testNonExistentEndpoint(TestControllerIT.java:31)
 
 [ERROR] be.ap.student.tickets.TestControllerIT.testBrokenEndpoint -- Time elapsed: 0.012 s <<< ERROR!
-org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:34211/api/broken": "{"correlationId":"3bcfbd36-cd36-42eb-8b5b-872d021f7afb","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
+org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:38899/api/broken": "{"correlationId":"df910b9d-9087-444d-a9d4-62d8cf0759f3","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
 	at org.springframework.web.client.HttpServerErrorException.create(HttpServerErrorException.java:103)
 	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:148)
 	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:120)
 	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:807)
 	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:756)
 --
-[ERROR]   TestControllerIT.testNonExistentEndpoint:31 » InternalServer 500  on GET request for "http://localhost:34211/api/nonexistent": "{"correlationId":"966730fe-64e6-4867-9b86-b4a1a4a21ed5","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
+[ERROR]   TestControllerIT.testNonExistentEndpoint:31 » InternalServer 500  on GET request for "http://localhost:38899/api/nonexistent": "{"correlationId":"9a4c98d2-8501-4e81-8165-a5158bffe307","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
 [INFO] 
 [ERROR] Tests run: 7, Failures: 0, Errors: 2, Skipped: 0
 [INFO] 
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  11.818 s
-[INFO] Finished at: 2026-03-06T13:02:19Z
+[INFO] Total time:  11.438 s
+[INFO] Finished at: 2026-03-06T13:44:41Z
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project backend: 
 ## Direct Compilation Errors
@@ -112,13 +112,56 @@ org.springframework.web.client.HttpServerErrorException$InternalServerError: 500
 [ERROR] 
 [ERROR] For more information about the errors and possible solutions, please read the following articles:
 [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+## Test Failure Details
+-------------------------------------------------------------------------------
+Test set: be.ap.student.tickets.PersistentBrokenTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in be.ap.student.tickets.PersistentBrokenTest
+-------------------------------------------------------------------------------
+Test set: be.ap.student.tickets.integration.BrokenIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.511 s -- in be.ap.student.tickets.integration.BrokenIntegrationTest
+-------------------------------------------------------------------------------
+Test set: be.ap.student.tickets.NewBrokenTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in be.ap.student.tickets.NewBrokenTest
+-------------------------------------------------------------------------------
+Test set: be.ap.student.tickets.BrokenTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.521 s -- in be.ap.student.tickets.BrokenTest
+-------------------------------------------------------------------------------
+Test set: be.ap.student.tickets.TestControllerIT
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.319 s <<< FAILURE! -- in be.ap.student.tickets.TestControllerIT
+be.ap.student.tickets.TestControllerIT.testNonExistentEndpoint -- Time elapsed: 0.069 s <<< ERROR!
+org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:38899/api/nonexistent": "{"correlationId":"9a4c98d2-8501-4e81-8165-a5158bffe307","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
+	at org.springframework.web.client.HttpServerErrorException.create(HttpServerErrorException.java:103)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:148)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:120)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:807)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:756)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:677)
+	at org.springframework.web.client.RestTemplate.getForObject(RestTemplate.java:304)
+	at be.ap.student.tickets.TestControllerIT.testNonExistentEndpoint(TestControllerIT.java:31)
+
+be.ap.student.tickets.TestControllerIT.testBrokenEndpoint -- Time elapsed: 0.012 s <<< ERROR!
+org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:38899/api/broken": "{"correlationId":"df910b9d-9087-444d-a9d4-62d8cf0759f3","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
+	at org.springframework.web.client.HttpServerErrorException.create(HttpServerErrorException.java:103)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:148)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:120)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:807)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:756)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:677)
+	at org.springframework.web.client.RestTemplate.getForObject(RestTemplate.java:304)
+	at be.ap.student.tickets.TestControllerIT.testBrokenEndpoint(TestControllerIT.java:38)
+
 ## HTTP Server Errors
-2026-03-06T13:02:18.246Z  INFO 3136 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-03-06T13:44:40.517Z  INFO 3165 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
 RestTemplate injected: true
 Test endpoint result: Test endpoint working
-[ERROR] Tests run: 3, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.338 s <<< FAILURE! -- in be.ap.student.tickets.TestControllerIT
+[ERROR] Tests run: 3, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.319 s <<< FAILURE! -- in be.ap.student.tickets.TestControllerIT
 [ERROR] be.ap.student.tickets.TestControllerIT.testNonExistentEndpoint -- Time elapsed: 0.069 s <<< ERROR!
-org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:34211/api/nonexistent": "{"correlationId":"966730fe-64e6-4867-9b86-b4a1a4a21ed5","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
+org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:38899/api/nonexistent": "{"correlationId":"9a4c98d2-8501-4e81-8165-a5158bffe307","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
 	at org.springframework.web.client.HttpServerErrorException.create(HttpServerErrorException.java:103)
 	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:148)
 	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:120)
@@ -129,7 +172,7 @@ org.springframework.web.client.HttpServerErrorException$InternalServerError: 500
 	at be.ap.student.tickets.TestControllerIT.testNonExistentEndpoint(TestControllerIT.java:31)
 
 [ERROR] be.ap.student.tickets.TestControllerIT.testBrokenEndpoint -- Time elapsed: 0.012 s <<< ERROR!
-org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:34211/api/broken": "{"correlationId":"3bcfbd36-cd36-42eb-8b5b-872d021f7afb","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
+org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:38899/api/broken": "{"correlationId":"df910b9d-9087-444d-a9d4-62d8cf0759f3","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
 	at org.springframework.web.client.HttpServerErrorException.create(HttpServerErrorException.java:103)
 	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:148)
 	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:120)
@@ -140,4 +183,4 @@ org.springframework.web.client.HttpServerErrorException$InternalServerError: 500
 	at be.ap.student.tickets.TestControllerIT.testBrokenEndpoint(TestControllerIT.java:38)
 
 [INFO] Running be.ap.student.tickets.integration.BrokenIntegrationTest
-2026-03-06T13:02:18.435Z  INFO 3136 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.integration.BrokenIntegrationTest]: BrokenIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-06T13:44:40.706Z  INFO 3165 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.integration.BrokenIntegrationTest]: BrokenIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.

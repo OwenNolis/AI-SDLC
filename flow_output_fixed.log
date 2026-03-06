@@ -69,29 +69,166 @@ All AI artifacts validated successfully.
 [INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ backend ---
 [INFO] Recompiling the module because of changed source code.
 [INFO] Compiling 8 source files with javac [debug parameters release 21] to target/test-classes
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[5,54] cannot find symbol
-  symbol:   class SpringJUnitTest
-  location: package org.springframework.test.context.junit.jupiter
-[INFO] 1 error
-[INFO] -------------------------------------------------------------
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running be.ap.student.tickets.BrokenTest
+13:45:24.875 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [be.ap.student.tickets.BrokenTest]: BrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+13:45:24.976 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.BrokenTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.3)
+
+2026-03-06T13:45:25.352Z  INFO 3946 --- [           main] be.ap.student.tickets.BrokenTest         : Starting BrokenTest using Java 21.0.10 with PID 3946 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
+2026-03-06T13:45:25.354Z  INFO 3946 --- [           main] be.ap.student.tickets.BrokenTest         : No active profile set, falling back to 1 default profile: "default"
+2026-03-06T13:45:25.952Z  INFO 3946 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-06T13:45:25.994Z  INFO 3946 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 35 ms. Found 1 JPA repository interface.
+2026-03-06T13:45:26.452Z  INFO 3946 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-03-06T13:45:26.465Z  INFO 3946 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-06T13:45:26.465Z  INFO 3946 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-06T13:45:26.500Z  INFO 3946 --- [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1124 ms
+2026-03-06T13:45:26.600Z  INFO 3946 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-03-06T13:45:26.753Z  INFO 3946 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:demo user=SA
+2026-03-06T13:45:26.755Z  INFO 3946 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-03-06T13:45:26.850Z  INFO 3946 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-03-06T13:45:26.898Z  INFO 3946 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.4.Final
+2026-03-06T13:45:27.235Z  INFO 3946 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-06T13:45:27.294Z  INFO 3946 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:h2:mem:demo]
+	Database driver: H2 JDBC Driver
+	Database dialect: H2Dialect
+	Database version: 2.4.240
+	Default catalog/schema: DEMO/PUBLIC
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 100
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-03-06T13:45:27.898Z  INFO 3946 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-03-06T13:45:27.904Z  INFO 3946 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-06T13:45:27.982Z  INFO 3946 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-06T13:45:28.096Z  WARN 3946 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-06T13:45:28.345Z  INFO 3946 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 35217 (http) with context path '/'
+2026-03-06T13:45:28.351Z  INFO 3946 --- [           main] be.ap.student.tickets.BrokenTest         : Started BrokenTest in 3.247 seconds (process running for 4.303)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/runner/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+RestTemplate injected: true
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.998 s -- in be.ap.student.tickets.BrokenTest
+[INFO] Running be.ap.student.tickets.TestControllerIT
+2026-03-06T13:45:28.696Z  INFO 3946 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.TestControllerIT]: TestControllerIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-06T13:45:28.699Z  INFO 3946 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.TestControllerIT
+2026-03-06T13:45:28.833Z  INFO 3946 --- [o-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-06T13:45:28.833Z  INFO 3946 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-03-06T13:45:28.834Z  INFO 3946 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+RestTemplate injected: true
+Test endpoint result: Test endpoint working
+This should fail: Non-existent endpoint working
+Broken endpoint result: Broken endpoint fixed
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.227 s -- in be.ap.student.tickets.TestControllerIT
+[INFO] Running be.ap.student.tickets.integration.BrokenIntegrationTest
+2026-03-06T13:45:28.926Z  INFO 3946 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.integration.BrokenIntegrationTest]: BrokenIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-06T13:45:28.936Z  INFO 3946 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.integration.BrokenIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.3)
+
+2026-03-06T13:45:28.987Z  INFO 3946 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : Starting BrokenIntegrationTest using Java 21.0.10 with PID 3946 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
+2026-03-06T13:45:28.987Z  INFO 3946 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : No active profile set, falling back to 1 default profile: "default"
+2026-03-06T13:45:29.114Z  INFO 3946 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-06T13:45:29.123Z  INFO 3946 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 8 ms. Found 1 JPA repository interface.
+2026-03-06T13:45:29.185Z  INFO 3946 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-03-06T13:45:29.186Z  INFO 3946 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:demo user=SA
+2026-03-06T13:45:29.186Z  INFO 3946 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-03-06T13:45:29.201Z  INFO 3946 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-03-06T13:45:29.234Z  INFO 3946 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-06T13:45:29.235Z  INFO 3946 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:h2:mem:demo]
+	Database driver: H2 JDBC Driver
+	Database dialect: H2Dialect
+	Database version: 2.4.240
+	Default catalog/schema: DEMO/PUBLIC
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 100
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-03-06T13:45:29.265Z  INFO 3946 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-03-06T13:45:29.266Z  INFO 3946 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-06T13:45:29.310Z  WARN 3946 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-06T13:45:29.396Z  INFO 3946 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : Started BrokenIntegrationTest in 0.444 seconds (process running for 5.348)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.482 s -- in be.ap.student.tickets.integration.BrokenIntegrationTest
+[INFO] Running be.ap.student.tickets.NewBrokenTest
+2026-03-06T13:45:29.410Z  INFO 3946 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.NewBrokenTest]: NewBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-06T13:45:29.411Z  INFO 3946 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.NewBrokenTest
+RestTemplate injected: true
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in be.ap.student.tickets.NewBrokenTest
+[INFO] Running be.ap.student.tickets.PersistentBrokenTest
+2026-03-06T13:45:29.429Z  INFO 3946 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.PersistentBrokenTest]: PersistentBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-06T13:45:29.430Z  INFO 3946 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.PersistentBrokenTest
+RestTemplate injected: true
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in be.ap.student.tickets.PersistentBrokenTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+[INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.475 s
-[INFO] Finished at: 2026-03-06T13:02:53Z
+[INFO] Total time:  7.970 s
+[INFO] Finished at: 2026-03-06T13:45:29Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[5,54] cannot find symbol
-[ERROR]   symbol:   class SpringJUnitTest
-[ERROR]   location: package org.springframework.test.context.junit.jupiter
-[ERROR] 
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+✅ 4) Run backend tests (mvn test) (ok)
+
+==> 5) Run frontend tests (npm test)
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+
+added 525 packages, and audited 526 packages in 7s
+
+86 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> frontend@0.0.0 test
+> jest
+
+PASS src/ui/BrokenComponent.test.tsx
+PASS src/ui/TicketForm.test.tsx
+PASS src/ui/__generated__/feature-001-support-ticket.TicketForm.test.tsx
+
+Test Suites: 3 passed, 3 total
+Tests:       39 passed, 39 total
+Snapshots:   0 total
+Time:        5.741 s
+Ran all test suites.
+✅ 5) Run frontend tests (npm test) (ok)
+
+==============================================
+✅ FLOW COMPLETE
+Feature: feature-001-support-ticket
+==============================================
