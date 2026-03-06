@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ai-fixes-${{ github.ref }}
-  cancel-in-progress: true
+  group: ai-fixes-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: false
 
 env:
   FEATURE_ID: feature-001-support-ticket
@@ -158,9 +158,8 @@ jobs:
             echo "has_errors=false" >> $GITHUB_OUTPUT
             echo "🎉 SDLC flow completed successfully - no fixes needed!"
             
-            # Explicitly mark this step as successful
+            # Mark success but let workflow continue to proper completion
             echo "::notice::Codebase is healthy - no AI fixes required"
-            exit 0
           fi
 
       - name: Success - No Errors Detected
@@ -175,6 +174,10 @@ jobs:
           echo ""
           echo "The codebase is healthy. AI Code Fixes workflow completed successfully."
           echo "::notice::No errors detected - codebase is healthy"
+          
+          # Give the step time to complete properly
+          sleep 2
+          echo "Workflow completing successfully..."
 
       - name: Apply AI-Generated Fixes
         if: steps.analyze_errors.outputs.has_errors == 'true'
@@ -338,6 +341,17 @@ jobs:
           echo "🏁 AI Code Fixes Workflow Complete"
           echo "=================================="
           
+          # Check if this step is running after successful completion
+          if [ "${{ job.status }}" = "success" ] || [ "${{ steps.analyze_errors.outputs.has_errors }}" = "false" ]; then
+            echo "✅ Workflow completed successfully"
+            
+            if [ "${{ steps.analyze_errors.outputs.has_errors }}" = "false" ]; then
+              echo "✅ No errors detected - workflow succeeded without fixes needed"
+              exit 0
+            fi
+          fi
+          
+          # Handle error cases
           if [ "${{ steps.analyze_errors.outputs.has_errors }}" = "true" ]; then
             echo "🔍 Errors detected and analyzed"
             
@@ -357,7 +371,7 @@ jobs:
               echo "❌ AI fix generation failed"
               exit 1  # Failure - couldn't generate fixes
             fi
-          else
-            echo "✅ No errors detected - workflow succeeded without fixes needed"
-            exit 0  # Success - no errors found
           fi
+          
+          # Default success case
+          exit 0
