@@ -3,7 +3,7 @@ package be.ap.student.tickets.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestControler
+@RestController
 @RequestMapping("/api/test")
 public class TestController {
 
