@@ -70,192 +70,25 @@ All AI artifacts validated successfully.
 [INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ backend ---
 [INFO] Recompiling the module because of changed dependency.
 [INFO] Compiling 8 source files with javac [debug parameters release 21] to target/test-classes
-[INFO] 
-[INFO] --- surefire:3.5.4:test (default-test) @ backend ---
-[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
-Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.pom
-Progress (1): 832 BProgress (1): 2.7 kBProgress (1): 5.2 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.pom (5.2 kB at 17 kB/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.4/surefire-providers-3.5.4.pom
-Progress (1): 844 BProgress (1): 2.2 kBProgress (1): 2.5 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.4/surefire-providers-3.5.4.pom (2.5 kB at 110 kB/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.pom
-Progress (1): 839 BProgress (1): 2.2 kBProgress (1): 3.1 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.pom (3.1 kB at 139 kB/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.pom
-Progress (1): 957 BProgress (1): 2.5 kBProgress (1): 3.2 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.pom (3.2 kB at 139 kB/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.pom
-Progress (1): 966 BProgress (1): 2.5 kBProgress (1): 2.8 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.pom (2.8 kB at 142 kB/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.pom
-Progress (1): 967 BProgress (1): 2.5 kBProgress (1): 3.0 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.pom (3.0 kB at 144 kB/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.jar
-Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.jar
-Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.jar
-Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.jar
-Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.jar
-Progress (1): 0.9/18 kBProgress (1): 2.3/18 kBProgress (1): 3.6/18 kBProgress (1): 5.0/18 kBProgress (1): 6.4/18 kBProgress (1): 7.7/18 kBProgress (1): 9.1/18 kBProgress (1): 10/18 kB Progress (1): 12/18 kBProgress (1): 13/18 kBProgress (1): 15/18 kBProgress (1): 16/18 kBProgress (1): 17/18 kBProgress (1): 18 kB                      Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.jar (18 kB at 464 kB/s)
-Progress (1): 0.9/208 kBProgress (1): 2.3/208 kBProgress (1): 3.6/208 kBProgress (2): 3.6/208 kB | 0.9/35 kBProgress (2): 3.6/208 kB | 2.3/35 kBProgress (2): 3.6/208 kB | 3.6/35 kBProgress (2): 3.6/208 kB | 5.0/35 kBProgress (2): 3.6/208 kB | 6.4/35 kBProgress (2): 3.6/208 kB | 7.7/35 kBProgress (3): 3.6/208 kB | 7.7/35 kB | 0.9/256 kBProgress (3): 3.6/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 5.0/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 6.4/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 7.7/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 9.1/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 10/208 kB | 7.7/35 kB | 2.3/256 kB Progress (3): 12/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 13/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 15/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 16/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 17/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 19/208 kB | 7.7/35 kB | 2.3/256 kBProgress (3): 19/208 kB | 7.7/35 kB | 3.6/256 kBProgress (3): 19/208 kB | 7.7/35 kB | 5.0/256 kBProgress (3): 19/208 kB | 7.7/35 kB | 6.4/256 kBProgress (4): 19/208 kB | 7.7/35 kB | 6.4/256 kB | 0.9/152 kBProgress (4): 19/208 kB | 7.7/35 kB | 7.7/256 kB | 0.9/152 kBProgress (4): 19/208 kB | 7.7/35 kB | 7.7/256 kB | 2.3/152 kBProgress (4): 19/208 kB | 9.1/35 kB | 7.7/256 kB | 2.3/152 kBProgress (4): 19/208 kB | 10/35 kB | 7.7/256 kB | 2.3/152 kB Progress (4): 19/208 kB | 10/35 kB | 7.7/256 kB | 3.6/152 kBProgress (4): 19/208 kB | 12/35 kB | 7.7/256 kB | 3.6/152 kBProgress (4): 19/208 kB | 12/35 kB | 7.7/256 kB | 5.0/152 kBProgress (4): 19/208 kB | 13/35 kB | 7.7/256 kB | 5.0/152 kBProgress (4): 19/208 kB | 13/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 19/208 kB | 15/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 19/208 kB | 16/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 19/208 kB | 17/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 19/208 kB | 18/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 19/208 kB | 20/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 19/208 kB | 21/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 19/208 kB | 22/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 19/208 kB | 24/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 19/208 kB | 25/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 7.7/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 9.1/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 10/256 kB | 6.4/152 kB Progress (4): 20/208 kB | 25/35 kB | 12/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 13/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 15/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 16/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 17/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 19/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 20/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 21/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 23/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 24/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 26/256 kB | 6.4/152 kBProgress (4): 20/208 kB | 25/35 kB | 27/256 kB | 6.4/152 kBProgress (4): 21/208 kB | 25/35 kB | 27/256 kB | 6.4/152 kBProgress (4): 21/208 kB | 25/35 kB | 27/256 kB | 7.7/152 kBProgress (4): 23/208 kB | 25/35 kB | 27/256 kB | 7.7/152 kBProgress (4): 24/208 kB | 25/35 kB | 27/256 kB | 7.7/152 kBProgress (4): 24/208 kB | 25/35 kB | 27/256 kB | 9.1/152 kBProgress (4): 26/208 kB | 25/35 kB | 27/256 kB | 9.1/152 kBProgress (4): 26/208 kB | 25/35 kB | 27/256 kB | 10/152 kB Progress (4): 27/208 kB | 25/35 kB | 27/256 kB | 10/152 kBProgress (4): 27/208 kB | 25/35 kB | 27/256 kB | 12/152 kBProgress (4): 27/208 kB | 25/35 kB | 27/256 kB | 12/152 kBProgress (4): 28/208 kB | 25/35 kB | 27/256 kB | 12/152 kBProgress (4): 28/208 kB | 25/35 kB | 27/256 kB | 14/152 kBProgress (4): 29/208 kB | 25/35 kB | 27/256 kB | 14/152 kBProgress (4): 29/208 kB | 25/35 kB | 27/256 kB | 15/152 kBProgress (4): 31/208 kB | 25/35 kB | 27/256 kB | 15/152 kBProgress (4): 31/208 kB | 25/35 kB | 27/256 kB | 16/152 kBProgress (4): 32/208 kB | 25/35 kB | 27/256 kB | 16/152 kBProgress (4): 32/208 kB | 25/35 kB | 27/256 kB | 18/152 kBProgress (4): 33/208 kB | 25/35 kB | 27/256 kB | 18/152 kBProgress (4): 33/208 kB | 25/35 kB | 27/256 kB | 19/152 kBProgress (4): 35/208 kB | 25/35 kB | 27/256 kB | 19/152 kBProgress (4): 35/208 kB | 25/35 kB | 27/256 kB | 21/152 kBProgress (4): 35/208 kB | 27/35 kB | 27/256 kB | 21/152 kBProgress (4): 35/208 kB | 28/35 kB | 27/256 kB | 21/152 kBProgress (4): 35/208 kB | 29/35 kB | 27/256 kB | 21/152 kBProgress (4): 35/208 kB | 31/35 kB | 27/256 kB | 21/152 kBProgress (4): 35/208 kB | 32/35 kB | 27/256 kB | 21/152 kBProgress (4): 35/208 kB | 33/35 kB | 27/256 kB | 21/152 kBProgress (4): 35/208 kB | 35/35 kB | 27/256 kB | 21/152 kBProgress (4): 35/208 kB | 35 kB | 27/256 kB | 21/152 kB                                                          Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.jar (35 kB at 275 kB/s)
-Progress (3): 35/208 kB | 28/256 kB | 21/152 kBProgress (3): 35/208 kB | 29/256 kB | 21/152 kBProgress (3): 35/208 kB | 30/256 kB | 21/152 kBProgress (3): 35/208 kB | 31/256 kB | 21/152 kBProgress (3): 35/208 kB | 33/256 kB | 21/152 kBProgress (3): 35/208 kB | 34/256 kB | 21/152 kBProgress (3): 35/208 kB | 36/256 kB | 21/152 kBProgress (3): 35/208 kB | 37/256 kB | 21/152 kBProgress (3): 35/208 kB | 38/256 kB | 21/152 kBProgress (3): 35/208 kB | 40/256 kB | 21/152 kBProgress (3): 35/208 kB | 41/256 kB | 21/152 kBProgress (3): 36/208 kB | 41/256 kB | 21/152 kBProgress (3): 37/208 kB | 41/256 kB | 21/152 kBProgress (3): 39/208 kB | 41/256 kB | 21/152 kBProgress (3): 40/208 kB | 41/256 kB | 21/152 kBProgress (3): 42/208 kB | 41/256 kB | 21/152 kBProgress (3): 43/208 kB | 41/256 kB | 21/152 kBProgress (3): 43/208 kB | 41/256 kB | 22/152 kBProgress (3): 44/208 kB | 41/256 kB | 22/152 kBProgress (3): 44/208 kB | 41/256 kB | 23/152 kBProgress (3): 46/208 kB | 41/256 kB | 23/152 kBProgress (3): 46/208 kB | 41/256 kB | 25/152 kBProgress (3): 47/208 kB | 41/256 kB | 25/152 kBProgress (3): 47/208 kB | 41/256 kB | 26/152 kBProgress (3): 48/208 kB | 41/256 kB | 26/152 kBProgress (3): 48/208 kB | 41/256 kB | 27/152 kBProgress (3): 50/208 kB | 41/256 kB | 27/152 kBProgress (3): 50/208 kB | 41/256 kB | 29/152 kBProgress (3): 51/208 kB | 41/256 kB | 29/152 kBProgress (3): 51/208 kB | 41/256 kB | 30/152 kBProgress (3): 53/208 kB | 41/256 kB | 30/152 kBProgress (3): 53/208 kB | 41/256 kB | 31/152 kBProgress (3): 54/208 kB | 41/256 kB | 31/152 kBProgress (3): 54/208 kB | 41/256 kB | 33/152 kBProgress (3): 54/208 kB | 42/256 kB | 33/152 kBProgress (3): 54/208 kB | 44/256 kB | 33/152 kBProgress (3): 54/208 kB | 45/256 kB | 33/152 kBProgress (3): 54/208 kB | 46/256 kB | 33/152 kBProgress (3): 54/208 kB | 48/256 kB | 33/152 kBProgress (3): 54/208 kB | 49/256 kB | 33/152 kBProgress (3): 54/208 kB | 51/256 kB | 33/152 kBProgress (3): 54/208 kB | 52/256 kB | 33/152 kBProgress (3): 54/208 kB | 53/256 kB | 33/152 kBProgress (3): 54/208 kB | 55/256 kB | 33/152 kBProgress (3): 54/208 kB | 59/256 kB | 33/152 kBProgress (3): 55/208 kB | 59/256 kB | 33/152 kBProgress (3): 60/208 kB | 59/256 kB | 33/152 kBProgress (3): 64/208 kB | 59/256 kB | 33/152 kBProgress (3): 68/208 kB | 59/256 kB | 33/152 kBProgress (3): 68/208 kB | 59/256 kB | 34/152 kBProgress (3): 72/208 kB | 59/256 kB | 34/152 kBProgress (3): 72/208 kB | 59/256 kB | 36/152 kBProgress (3): 76/208 kB | 59/256 kB | 36/152 kBProgress (3): 81/208 kB | 59/256 kB | 36/152 kBProgress (3): 81/208 kB | 63/256 kB | 36/152 kBProgress (3): 81/208 kB | 63/256 kB | 37/152 kBProgress (3): 81/208 kB | 67/256 kB | 37/152 kBProgress (3): 81/208 kB | 67/256 kB | 38/152 kBProgress (3): 81/208 kB | 67/256 kB | 40/152 kBProgress (3): 81/208 kB | 67/256 kB | 41/152 kBProgress (3): 85/208 kB | 67/256 kB | 41/152 kBProgress (3): 85/208 kB | 67/256 kB | 42/152 kBProgress (3): 85/208 kB | 67/256 kB | 44/152 kBProgress (3): 85/208 kB | 67/256 kB | 45/152 kBProgress (3): 89/208 kB | 67/256 kB | 45/152 kBProgress (3): 89/208 kB | 67/256 kB | 47/152 kBProgress (3): 89/208 kB | 67/256 kB | 48/152 kBProgress (3): 93/208 kB | 67/256 kB | 48/152 kBProgress (3): 93/208 kB | 67/256 kB | 49/152 kBProgress (3): 98/208 kB | 67/256 kB | 49/152 kBProgress (3): 102/208 kB | 67/256 kB | 49/152 kBProgress (3): 102/208 kB | 72/256 kB | 49/152 kBProgress (3): 102/208 kB | 76/256 kB | 49/152 kBProgress (3): 102/208 kB | 80/256 kB | 49/152 kBProgress (3): 102/208 kB | 84/256 kB | 49/152 kBProgress (3): 102/208 kB | 89/256 kB | 49/152 kBProgress (3): 102/208 kB | 93/256 kB | 49/152 kBProgress (3): 102/208 kB | 97/256 kB | 49/152 kBProgress (3): 106/208 kB | 97/256 kB | 49/152 kBProgress (3): 110/208 kB | 97/256 kB | 49/152 kBProgress (3): 114/208 kB | 97/256 kB | 49/152 kBProgress (3): 115/208 kB | 97/256 kB | 49/152 kBProgress (3): 119/208 kB | 97/256 kB | 49/152 kBProgress (3): 123/208 kB | 97/256 kB | 49/152 kBProgress (3): 127/208 kB | 97/256 kB | 49/152 kBProgress (3): 127/208 kB | 97/256 kB | 51/152 kBProgress (3): 127/208 kB | 97/256 kB | 52/152 kBProgress (3): 127/208 kB | 101/256 kB | 52/152 kBProgress (3): 127/208 kB | 101/256 kB | 53/152 kBProgress (3): 127/208 kB | 101/256 kB | 55/152 kBProgress (3): 127/208 kB | 105/256 kB | 55/152 kBProgress (3): 127/208 kB | 105/256 kB | 59/152 kBProgress (3): 127/208 kB | 110/256 kB | 59/152 kBProgress (3): 127/208 kB | 110/256 kB | 63/152 kBProgress (3): 132/208 kB | 110/256 kB | 63/152 kBProgress (3): 136/208 kB | 110/256 kB | 63/152 kBProgress (3): 140/208 kB | 110/256 kB | 63/152 kBProgress (3): 144/208 kB | 110/256 kB | 63/152 kBProgress (3): 149/208 kB | 110/256 kB | 63/152 kBProgress (3): 149/208 kB | 114/256 kB | 63/152 kBProgress (3): 149/208 kB | 118/256 kB | 63/152 kBProgress (3): 149/208 kB | 122/256 kB | 63/152 kBProgress (3): 149/208 kB | 127/256 kB | 63/152 kBProgress (3): 149/208 kB | 127/256 kB | 67/152 kBProgress (3): 149/208 kB | 131/256 kB | 67/152 kBProgress (3): 149/208 kB | 131/256 kB | 72/152 kBProgress (3): 149/208 kB | 135/256 kB | 72/152 kBProgress (3): 149/208 kB | 135/256 kB | 76/152 kBProgress (3): 153/208 kB | 135/256 kB | 76/152 kBProgress (3): 157/208 kB | 135/256 kB | 76/152 kBProgress (3): 161/208 kB | 135/256 kB | 76/152 kBProgress (3): 165/208 kB | 135/256 kB | 76/152 kBProgress (3): 170/208 kB | 135/256 kB | 76/152 kBProgress (3): 170/208 kB | 139/256 kB | 76/152 kBProgress (3): 170/208 kB | 143/256 kB | 76/152 kBProgress (3): 170/208 kB | 148/256 kB | 76/152 kBProgress (3): 170/208 kB | 152/256 kB | 76/152 kBProgress (3): 170/208 kB | 156/256 kB | 76/152 kBProgress (3): 170/208 kB | 160/256 kB | 76/152 kBProgress (3): 170/208 kB | 164/256 kB | 76/152 kBProgress (3): 174/208 kB | 164/256 kB | 76/152 kBProgress (3): 178/208 kB | 164/256 kB | 76/152 kBProgress (3): 180/208 kB | 164/256 kB | 76/152 kBProgress (3): 184/208 kB | 164/256 kB | 76/152 kBProgress (3): 189/208 kB | 164/256 kB | 76/152 kBProgress (3): 189/208 kB | 164/256 kB | 80/152 kBProgress (3): 193/208 kB | 164/256 kB | 80/152 kBProgress (3): 193/208 kB | 168/256 kB | 80/152 kBProgress (3): 193/208 kB | 168/256 kB | 84/152 kBProgress (3): 193/208 kB | 172/256 kB | 84/152 kBProgress (3): 193/208 kB | 172/256 kB | 89/152 kBProgress (3): 193/208 kB | 177/256 kB | 89/152 kBProgress (3): 193/208 kB | 181/256 kB | 89/152 kBProgress (3): 197/208 kB | 181/256 kB | 89/152 kBProgress (3): 201/208 kB | 181/256 kB | 89/152 kBProgress (3): 206/208 kB | 181/256 kB | 89/152 kBProgress (3): 208 kB | 181/256 kB | 89/152 kB    Progress (3): 208 kB | 181/256 kB | 93/152 kB                                             Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.jar (208 kB at 1.3 MB/s)
-Progress (2): 185/256 kB | 93/152 kBProgress (2): 189/256 kB | 93/152 kBProgress (2): 189/256 kB | 97/152 kBProgress (2): 194/256 kB | 97/152 kBProgress (2): 194/256 kB | 101/152 kBProgress (2): 198/256 kB | 101/152 kBProgress (2): 198/256 kB | 105/152 kBProgress (2): 202/256 kB | 105/152 kBProgress (2): 202/256 kB | 110/152 kBProgress (2): 206/256 kB | 110/152 kBProgress (2): 206/256 kB | 114/152 kBProgress (2): 210/256 kB | 114/152 kBProgress (2): 215/256 kB | 114/152 kBProgress (2): 219/256 kB | 114/152 kBProgress (2): 223/256 kB | 114/152 kBProgress (2): 240/256 kB | 114/152 kBProgress (2): 256 kB | 114/152 kB                                     Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.jar (256 kB at 1.6 MB/s)
-Progress (1): 118/152 kBProgress (1): 122/152 kBProgress (1): 127/152 kBProgress (1): 131/152 kBProgress (1): 135/152 kBProgress (1): 139/152 kBProgress (1): 143/152 kBProgress (1): 148/152 kBProgress (1): 152/152 kBProgress (1): 152 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.jar (152 kB at 943 kB/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom
-Progress (1): 971 BProgress (1): 3.2 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom (3.2 kB at 153 kB/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar
-Progress (1): 3.8/246 kBProgress (1): 8.0/246 kBProgress (1): 12/246 kB Progress (1): 12/246 kBProgress (1): 17/246 kBProgress (1): 21/246 kBProgress (1): 25/246 kBProgress (1): 29/246 kBProgress (1): 33/246 kBProgress (1): 38/246 kBProgress (1): 42/246 kBProgress (1): 46/246 kBProgress (1): 50/246 kBProgress (1): 55/246 kBProgress (1): 71/246 kBProgress (1): 87/246 kBProgress (1): 104/246 kBProgress (1): 120/246 kBProgress (1): 127/246 kBProgress (1): 143/246 kBProgress (1): 160/246 kBProgress (1): 176/246 kBProgress (1): 193/246 kBProgress (1): 209/246 kBProgress (1): 225/246 kBProgress (1): 242/246 kBProgress (1): 246 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar (246 kB at 8.2 MB/s)
-[INFO] 
-[INFO] -------------------------------------------------------
-[INFO]  T E S T S
-[INFO] -------------------------------------------------------
-[INFO] Running be.ap.student.tickets.BrokenTest
-13:02:13.307 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [be.ap.student.tickets.BrokenTest]: BrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-13:02:13.427 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.BrokenTest
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::                (v4.0.3)
-
-2026-03-06T13:02:13.934Z  INFO 3136 --- [           main] be.ap.student.tickets.BrokenTest         : Starting BrokenTest using Java 21.0.10 with PID 3136 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
-2026-03-06T13:02:13.936Z  INFO 3136 --- [           main] be.ap.student.tickets.BrokenTest         : No active profile set, falling back to 1 default profile: "default"
-2026-03-06T13:02:14.593Z  INFO 3136 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-06T13:02:14.647Z  INFO 3136 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 44 ms. Found 1 JPA repository interface.
-2026-03-06T13:02:15.229Z  INFO 3136 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
-2026-03-06T13:02:15.256Z  INFO 3136 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-03-06T13:02:15.257Z  INFO 3136 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
-2026-03-06T13:02:15.299Z  INFO 3136 --- [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1317 ms
-2026-03-06T13:02:15.418Z  INFO 3136 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-03-06T13:02:15.589Z  INFO 3136 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:demo user=SA
-2026-03-06T13:02:15.591Z  INFO 3136 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-03-06T13:02:15.690Z  INFO 3136 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
-2026-03-06T13:02:15.743Z  INFO 3136 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.4.Final
-2026-03-06T13:02:16.197Z  INFO 3136 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-03-06T13:02:16.292Z  INFO 3136 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [jdbc:h2:mem:demo]
-	Database driver: H2 JDBC Driver
-	Database dialect: H2Dialect
-	Database version: 2.4.240
-	Default catalog/schema: DEMO/PUBLIC
-	Autocommit mode: undefined/unknown
-	Isolation level: READ_COMMITTED [default READ_COMMITTED]
-	JDBC fetch size: 100
-	Pool: DataSourceConnectionProvider
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-2026-03-06T13:02:17.013Z  INFO 3136 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-03-06T13:02:17.018Z  INFO 3136 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-03-06T13:02:17.108Z  INFO 3136 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-03-06T13:02:17.264Z  WARN 3136 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-03-06T13:02:17.605Z  INFO 3136 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 34211 (http) with context path '/'
-2026-03-06T13:02:17.613Z  INFO 3136 --- [           main] be.ap.student.tickets.BrokenTest         : Started BrokenTest in 4.024 seconds (process running for 5.47)
-Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-WARNING: A Java agent has been loaded dynamically (/home/runner/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
-WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
-WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
-WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-RestTemplate injected: true
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.968 s -- in be.ap.student.tickets.BrokenTest
-[INFO] Running be.ap.student.tickets.TestControllerIT
-2026-03-06T13:02:18.095Z  INFO 3136 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.TestControllerIT]: TestControllerIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-06T13:02:18.097Z  INFO 3136 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.TestControllerIT
-2026-03-06T13:02:18.244Z  INFO 3136 --- [o-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-03-06T13:02:18.244Z  INFO 3136 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-03-06T13:02:18.246Z  INFO 3136 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
-RestTemplate injected: true
-Test endpoint result: Test endpoint working
-[ERROR] Tests run: 3, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.338 s <<< FAILURE! -- in be.ap.student.tickets.TestControllerIT
-[ERROR] be.ap.student.tickets.TestControllerIT.testNonExistentEndpoint -- Time elapsed: 0.069 s <<< ERROR!
-org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:34211/api/nonexistent": "{"correlationId":"966730fe-64e6-4867-9b86-b4a1a4a21ed5","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
-	at org.springframework.web.client.HttpServerErrorException.create(HttpServerErrorException.java:103)
-	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:148)
-	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:120)
-	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:807)
-	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:756)
-	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:677)
-	at org.springframework.web.client.RestTemplate.getForObject(RestTemplate.java:304)
-	at be.ap.student.tickets.TestControllerIT.testNonExistentEndpoint(TestControllerIT.java:31)
-
-[ERROR] be.ap.student.tickets.TestControllerIT.testBrokenEndpoint -- Time elapsed: 0.012 s <<< ERROR!
-org.springframework.web.client.HttpServerErrorException$InternalServerError: 500  on GET request for "http://localhost:34211/api/broken": "{"correlationId":"3bcfbd36-cd36-42eb-8b5b-872d021f7afb","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
-	at org.springframework.web.client.HttpServerErrorException.create(HttpServerErrorException.java:103)
-	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:148)
-	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:120)
-	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:807)
-	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:756)
-	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:677)
-	at org.springframework.web.client.RestTemplate.getForObject(RestTemplate.java:304)
-	at be.ap.student.tickets.TestControllerIT.testBrokenEndpoint(TestControllerIT.java:38)
-
-[INFO] Running be.ap.student.tickets.integration.BrokenIntegrationTest
-2026-03-06T13:02:18.435Z  INFO 3136 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.integration.BrokenIntegrationTest]: BrokenIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-06T13:02:18.445Z  INFO 3136 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.integration.BrokenIntegrationTest
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::                (v4.0.3)
-
-2026-03-06T13:02:18.495Z  INFO 3136 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : Starting BrokenIntegrationTest using Java 21.0.10 with PID 3136 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
-2026-03-06T13:02:18.495Z  INFO 3136 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : No active profile set, falling back to 1 default profile: "default"
-2026-03-06T13:02:18.636Z  INFO 3136 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-06T13:02:18.646Z  INFO 3136 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 9 ms. Found 1 JPA repository interface.
-2026-03-06T13:02:18.708Z  INFO 3136 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
-2026-03-06T13:02:18.709Z  INFO 3136 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:demo user=SA
-2026-03-06T13:02:18.710Z  INFO 3136 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
-2026-03-06T13:02:18.724Z  INFO 3136 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
-2026-03-06T13:02:18.747Z  INFO 3136 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-03-06T13:02:18.749Z  INFO 3136 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [jdbc:h2:mem:demo]
-	Database driver: H2 JDBC Driver
-	Database dialect: H2Dialect
-	Database version: 2.4.240
-	Default catalog/schema: DEMO/PUBLIC
-	Autocommit mode: undefined/unknown
-	Isolation level: READ_COMMITTED [default READ_COMMITTED]
-	JDBC fetch size: 100
-	Pool: DataSourceConnectionProvider
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-2026-03-06T13:02:18.778Z  INFO 3136 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-03-06T13:02:18.779Z  INFO 3136 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-03-06T13:02:18.839Z  WARN 3136 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-03-06T13:02:18.940Z  INFO 3136 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : Started BrokenIntegrationTest in 0.482 seconds (process running for 6.798)
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.519 s -- in be.ap.student.tickets.integration.BrokenIntegrationTest
-[INFO] Running be.ap.student.tickets.NewBrokenTest
-2026-03-06T13:02:18.957Z  INFO 3136 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.NewBrokenTest]: NewBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-06T13:02:18.958Z  INFO 3136 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.NewBrokenTest
-RestTemplate injected: true
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in be.ap.student.tickets.NewBrokenTest
-[INFO] Running be.ap.student.tickets.PersistentBrokenTest
-2026-03-06T13:02:18.976Z  INFO 3136 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.PersistentBrokenTest]: PersistentBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-06T13:02:18.981Z  INFO 3136 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.PersistentBrokenTest
-RestTemplate injected: true
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in be.ap.student.tickets.PersistentBrokenTest
-2026-03-06T13:02:19.011Z  INFO 3136 --- [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
-[INFO] 
-[INFO] Results:
-[INFO] 
-[ERROR] Errors: 
-[ERROR]   TestControllerIT.testBrokenEndpoint:38 » InternalServer 500  on GET request for "http://localhost:34211/api/broken": "{"correlationId":"3bcfbd36-cd36-42eb-8b5b-872d021f7afb","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
-[ERROR]   TestControllerIT.testNonExistentEndpoint:31 » InternalServer 500  on GET request for "http://localhost:34211/api/nonexistent": "{"correlationId":"966730fe-64e6-4867-9b86-b4a1a4a21ed5","code":"INTERNAL_ERROR","message":"Something went wrong","fieldErrors":[]}"
-[INFO] 
-[ERROR] Tests run: 7, Failures: 0, Errors: 2, Skipped: 0
-[INFO] 
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[5,54] cannot find symbol
+  symbol:   class SpringJUnitTest
+  location: package org.springframework.test.context.junit.jupiter
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  11.818 s
-[INFO] Finished at: 2026-03-06T13:02:19Z
+[INFO] Total time:  3.303 s
+[INFO] Finished at: 2026-03-06T13:05:03Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project backend: 
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/integration/BrokenIntegrationTest.java:[5,54] cannot find symbol
+[ERROR]   symbol:   class SpringJUnitTest
+[ERROR]   location: package org.springframework.test.context.junit.jupiter
 [ERROR] 
-[ERROR] See /home/runner/work/AI-SDLC/AI-SDLC/backend/target/surefire-reports for the individual test results.
-[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
