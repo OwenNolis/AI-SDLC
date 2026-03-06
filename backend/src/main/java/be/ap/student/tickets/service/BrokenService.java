@@ -7,7 +7,9 @@ import java.util.List;
 public class BrokenService {
 
     public String processData(String input) {
-        int count = MagicCounter.getCount()
+        // Removed reference to undefined MagicCounter.getCount()
+        // A placeholder value or alternative logic would be needed here if MagicCounter was intended.
+        int count = 0; // Placeholder value
         return "Processed: " + input + count;
     }
 

@@ -1,69 +1,23 @@
-# Error Analysis Report
-Generated: Fri Mar  6 15:05:30 UTC 2026
-
-## SDLC Flow Errors
-No specific error patterns found
-## Direct Compilation Errors
 [ERROR] COMPILATION ERROR : 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestController.java:[6,2] cannot find symbol
-  symbol: class RestControler
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[6,34] package be.ap.student.tickets.util does not exist
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[22,16] cannot find symbol
-  symbol:   variable DataTransformer
+[INFO] -------------------------------------------------------------
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[10,21] cannot find symbol
+  symbol:   variable MagicCounter
   location: class be.ap.student.tickets.service.BrokenService
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestController.java:[6,2] cannot find symbol
-[ERROR]   symbol: class RestControler
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[6,34] package be.ap.student.tickets.util does not exist
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[22,16] cannot find symbol
-[ERROR]   symbol:   variable DataTransformer
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
+--
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[10,21] cannot find symbol
+[ERROR]   symbol:   variable MagicCounter
 [ERROR]   location: class be.ap.student.tickets.service.BrokenService
+[ERROR] 
 [ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
-## Test Failure Output
-[INFO] Scanning for projects...
-[INFO] 
-[INFO] -----------------------< be.ap.student:backend >------------------------
-[INFO] Building AI-SDLC Backend 1.0-SNAPSHOT
-[INFO]   from pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO] 
-[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
-[INFO] Copying 1 resource from src/main/resources to target/classes
-[INFO] Copying 1 resource from src/main/resources to target/classes
-[INFO] 
-[INFO] --- compiler:3.14.1:compile (default-compile) @ backend ---
-[INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 18 source files with javac [debug parameters release 21] to target/classes
-[INFO] -------------------------------------------------------------
 [ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestController.java:[6,2] cannot find symbol
-  symbol: class RestControler
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[6,34] package be.ap.student.tickets.util does not exist
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[22,16] cannot find symbol
-  symbol:   variable DataTransformer
-  location: class be.ap.student.tickets.service.BrokenService
-[INFO] 3 errors 
-[INFO] -------------------------------------------------------------
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.597 s
-[INFO] Finished at: 2026-03-06T15:05:27Z
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestController.java:[6,2] cannot find symbol
-[ERROR]   symbol: class RestControler
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[6,34] package be.ap.student.tickets.util does not exist
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[22,16] cannot find symbol
-[ERROR]   symbol:   variable DataTransformer
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[10,21] cannot find symbol
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[10,21] cannot find symbol
+[ERROR]   symbol:   variable MagicCounter
 [ERROR]   location: class be.ap.student.tickets.service.BrokenService
+[ERROR] 
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
