@@ -87,6 +87,19 @@ jobs:
           if [ $exit_code -ne 0 ]; then
             echo "❌ SDLC Flow failed with exit code $exit_code"
             has_errors=true
+            
+            # If flow failed, still try to run tests directly to capture test errors
+            echo "🔍 Flow failed, running tests directly to capture errors..."
+            cd backend
+            set +e
+            mvn test > direct_test_results.log 2>&1
+            test_exit=$?
+            cd ..
+            
+            if [ $test_exit -ne 0 ]; then
+              echo "❌ Direct test execution also failed - capturing for AI analysis"
+              cp backend/direct_test_results.log test_failures.log
+            fi
           fi
           
           # Check for compilation errors
@@ -95,9 +108,29 @@ jobs:
             has_errors=true
           fi
           
-          # Check for test failures (NEW)
-          if grep -q "Tests run.*Failures.*Errors.*<<< FAILURE\|InternalServerError\|HttpServerErrorException" flow_output.log; then
+          # Check for test failures
+          if grep -q "Tests run.*Failures.*Errors.*<<< FAILURE\|InternalServerError\|HttpServerErrorException\|BUILD FAILURE.*test" flow_output.log; then
             echo "❌ Test failures detected in flow output"
+            has_errors=true
+          fi
+          
+          # If flow succeeded but we want to check for test failures anyway
+          if [ $exit_code -eq 0 ] && [ "$has_errors" = "false" ]; then
+            echo "✅ SDLC Flow succeeded, but checking for test failures..."
+            cd backend
+            set +e
+            mvn test > post_flow_test_results.log 2>&1
+            test_exit=$?
+            cd ..
+            
+            if [ $test_exit -ne 0 ]; then
+              echo "❌ Tests are failing even after successful flow - need AI fixes"
+              has_errors=true
+              cp backend/post_flow_test_results.log test_failures.log
+            else
+              echo "✅ All tests passing after flow completion"
+            fi
+          fi
             has_errors=true
           fi
           
