@@ -23,9 +23,4 @@ public class TicketController {
         var saved = service.create(req);
         return new CreateTicketResponse(saved.getTicketNumber(), saved.getStatus().name());
     }
-
-    @GetMapping("/api/test")
-    public String test() {
-        return "Test endpoint OK";
-    }
 }

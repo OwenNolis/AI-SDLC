@@ -155,7 +155,7 @@ jobs:
       - name: Apply AI-Generated Fixes
         if: steps.analyze_errors.outputs.has_errors == 'true'
         id: apply_fixes
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: |
           echo "🤖 Analyzing errors with Gemini AI and applying intelligent fixes..."
           
@@ -171,8 +171,8 @@ jobs:
           # Source AI utilities
           source .github/scripts/ai-fix-utils.sh
           
-          echo "🔍 Using Gemini AI to analyze errors and generate fixes..."
-          if timeout 480 .github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
+          echo "🔍 Using improved AI fix system with common patterns and Gemini analysis..."
+          if timeout 600 .github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
             echo "✅ AI-generated fixes applied successfully"
             echo "fixes_applied=true" >> $GITHUB_OUTPUT
             
