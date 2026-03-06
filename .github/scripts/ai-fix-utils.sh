@@ -145,7 +145,7 @@ PROMPT
     escaped=$(python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" < /tmp/ai_prompt.txt)
 
     # ── API call with retry ─────────────────────────────
-    local model="${GEMINI_MODEL:-gemini-2.0-flash}"
+    local model="${GEMINI_MODEL:-gemini-2.5-flash-lite}"
     local url="https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=$GEMINI_API_KEY"
     local body="{
       \"contents\":[{\"parts\":[{\"text\":$escaped}]}],
