@@ -144,17 +144,37 @@ PROMPT
     local escaped
     escaped=$(python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" < /tmp/ai_prompt.txt)
 
-    # ── API call ────────────────────────────────────────
-    local resp
-    resp=$(timeout 180 curl -sf -X POST \
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=$GEMINI_API_KEY" \
-        -H 'Content-Type: application/json' \
-        -d "{
-          \"contents\":[{\"parts\":[{\"text\":$escaped}]}],
-          \"generationConfig\":{\"temperature\":0.1,\"maxOutputTokens\":8192,\"responseMimeType\":\"application/json\"}
-        }" 2>/dev/null) || true
+    # ── API call with retry ─────────────────────────────
+    local model="${GEMINI_MODEL:-gemini-2.0-flash}"
+    local url="https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=$GEMINI_API_KEY"
+    local body="{
+      \"contents\":[{\"parts\":[{\"text\":$escaped}]}],
+      \"generationConfig\":{\"temperature\":0.1,\"maxOutputTokens\":8192,\"responseMimeType\":\"application/json\"}
+    }"
 
-    [ -z "$resp" ] && { log_warning "Gemini API returned nothing"; rm -f /tmp/ai_prompt.txt; return 1; }
+    local resp="" attempt=0 max_attempts=4 wait_secs=5
+    while [ $attempt -lt $max_attempts ]; do
+        attempt=$((attempt+1))
+        log_info "  Gemini request attempt $attempt/$max_attempts (model: $model)"
+        resp=$(timeout 180 curl -s -X POST "$url" \
+            -H 'Content-Type: application/json' \
+            -d "$body" 2>&1) || true
+
+        # Check for retryable errors (503, 429, empty)
+        if [ -z "$resp" ]; then
+            log_warning "  Empty response – retrying in ${wait_secs}s …"
+        elif echo "$resp" | grep -qiE '503|429|overloaded|quota|high demand|temporarily unavailable'; then
+            local api_err; api_err=$(echo "$resp" | jq -r '.error.message // empty' 2>/dev/null)
+            log_warning "  Retryable error: ${api_err:-$(head -c200 <<< "$resp")} – retrying in ${wait_secs}s …"
+        else
+            break   # got a real response
+        fi
+
+        [ $attempt -lt $max_attempts ] && sleep $wait_secs
+        wait_secs=$((wait_secs * 2))
+    done
+
+    [ -z "$resp" ] && { log_warning "Gemini API returned nothing after $max_attempts attempts"; rm -f /tmp/ai_prompt.txt; return 1; }
 
     # Check for API-level errors
     local err; err=$(echo "$resp" | jq -r '.error.message // empty' 2>/dev/null)
