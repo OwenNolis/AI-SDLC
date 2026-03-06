@@ -6,15 +6,13 @@ import be.ap.student.tickets.service.TicketService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-// Missing import: import java.util.List;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tickets")
 public class TicketController {
 
     private final TicketService service;
-    // Error: undefined field
-    private final UndefinedService undefinedService;
 
     public TicketController(TicketService service) {
         this.service = service;
@@ -26,10 +24,9 @@ public class TicketController {
         var saved = service.create(req);
         return new CreateTicketResponse(saved.getTicketNumber(), saved.getStatus().name());
     }
-    
-    // Error: missing import for List
-    @GetMapping
+
+    @GetMapping("/all")
     public List<String> getAllTickets() {
-        return undefinedService.getAllTickets(); // Error: undefined method
+        return List.of("ticket1", "ticket2");
     }
 }
