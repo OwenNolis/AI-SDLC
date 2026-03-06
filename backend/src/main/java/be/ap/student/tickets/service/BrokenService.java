@@ -7,7 +7,8 @@ import java.util.List;
 public class BrokenService {
 
     public String processData(String input) {
-        return "Processed: " + input;
+        int count = MagicCounter.getCount()
+        return "Processed: " + input + count;
     }
 
     public List<String> getItems() {

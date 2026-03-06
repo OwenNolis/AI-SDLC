@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 public class TestController {
 
     @GetMapping
-    public ResponseEntity<String> testEndpoint() {
+    public ResponseEntity<String> testEndpoint(HttpServletRequest request) {
         return ResponseEntity.ok("Test endpoint working");
     }
 

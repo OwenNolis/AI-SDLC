@@ -26,7 +26,7 @@ public class TicketController {
     }
 
     @GetMapping("/all")
-    public List<String> getAllTickets() {
+    public int getAllTickets() {
         return List.of("ticket1", "ticket2");
     }
 }
