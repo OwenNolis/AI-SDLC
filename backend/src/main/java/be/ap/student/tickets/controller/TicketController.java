@@ -3,6 +3,7 @@ package be.ap.student.tickets.controller;
 import be.ap.student.tickets.dto.CreateTicketRequest;
 import be.ap.student.tickets.dto.CreateTicketResponse;
 import be.ap.student.tickets.service.TicketService;
+import be.ap.student.tickets.util.NonExistentValidator;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

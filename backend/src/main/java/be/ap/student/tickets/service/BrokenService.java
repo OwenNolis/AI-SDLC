@@ -17,4 +17,8 @@ public class BrokenService {
     public String handleRequest(String parameter) {
         return "Handled: " + parameter;
     }
+
+    public String validateInput(String data) {
+        return DataTransformer.transform(data);
+    }
 }
