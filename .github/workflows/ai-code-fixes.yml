@@ -2,7 +2,7 @@ name: AI Code Fixes
 
 on:
   workflow_run:
-    workflows: ["Dependabot Auto-merge"]
+    workflows: ["Dependabot Auto-merge", "CI"]
     types: [completed]
 
 concurrency:
