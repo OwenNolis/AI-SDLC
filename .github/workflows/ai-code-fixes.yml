@@ -232,10 +232,7 @@ jobs:
             exit 0
           fi
           
-          # Source AI utilities
-          source .github/scripts/ai-fix-utils.sh
-          
-          echo "🔍 Using improved AI fix system with common patterns and Gemini analysis..."
+          echo "🔍 Running generic AI fix pipeline (errors + source code → Gemini → fixes)..."
           if timeout 600 .github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
             echo "✅ AI-generated fixes applied successfully"
             echo "fixes_applied=true" >> $GITHUB_OUTPUT

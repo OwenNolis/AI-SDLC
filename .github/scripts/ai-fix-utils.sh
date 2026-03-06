@@ -4,7 +4,8 @@
 # Sends real errors + real source code to Gemini and applies
 # the returned fixes. No hard-coded file patterns.
 # ──────────────────────────────────────────────────────────────
-set -e
+# NOTE: No 'set -e' at top level — this file is sourced by the
+# workflow, so errexit would bleed into the caller.
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
 log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
@@ -52,23 +53,29 @@ extract_affected_files() {
 
     # Absolute paths in Maven output  (/home/runner/.../File.java:[line,col])
     files=$(grep -oE '/[^ ]*\.java' "$error_file" 2>/dev/null \
-        | sed 's|.*/AI-SDLC/||' | sort -u)
+        | sed 's|.*/AI-SDLC/||' | sort -u || true)
 
     # Relative paths (backend/src/...)
-    local rel; rel=$(grep -oE 'backend/src/[^ ]*\.java' "$error_file" 2>/dev/null | sort -u)
-    files=$(printf '%s\n%s' "$files" "$rel" | sort -u | grep -v '^$')
+    local rel; rel=$(grep -oE 'backend/src/[^ ]*\.java' "$error_file" 2>/dev/null | sort -u || true)
+    files=$(printf '%s\n%s' "$files" "$rel" | sort -u | grep -v '^$' || true)
 
     # Fully-qualified class names → file paths
-    local classes; classes=$(grep -oE 'be(\.[a-zA-Z_]+)+' "$error_file" 2>/dev/null | sort -u)
+    local classes; classes=$(grep -oE 'be(\.[a-zA-Z_]+)+' "$error_file" 2>/dev/null | sort -u || true)
     for cls in $classes; do
         local p; p=$(echo "$cls" | tr '.' '/')
         for base in backend/src/main/java backend/src/test/java; do
-            [ -f "$base/$p.java" ] && files=$(printf '%s\n%s' "$files" "$base/$p.java")
+            if [ -f "$base/$p.java" ]; then
+                files=$(printf '%s\n%s' "$files" "$base/$p.java")
+            fi
         done
     done
 
     # De-duplicate and keep only files that actually exist on disk
-    echo "$files" | sort -u | while read -r f; do [ -f "$f" ] && echo "$f"; done
+    local result=""
+    while IFS= read -r f; do
+        [ -n "$f" ] && [ -f "$f" ] && result=$(printf '%s\n%s' "$result" "$f")
+    done <<< "$(echo "$files" | sort -u)"
+    echo "$result" | sed '/^$/d'
 }
 
 # ──────────────────────────────────────────────────────────────
@@ -242,22 +249,18 @@ run_fix_pipeline() {
         log_info "── iteration $iter/$max ──────────────────────"
 
         # Make sure we have fresh error content
-        local errs; errs=$(cat "$error_file" 2>/dev/null | head -200)
+        local errs; errs=$(cat "$error_file" 2>/dev/null | head -200 || true)
         if [ -z "$errs" ] || [ "$(wc -l <<< "$errs" | tr -d ' ')" -lt 2 ]; then
             log_info "Error file thin – running build to capture errors …"
 
-            set +e
-            (cd backend && mvn test-compile -q > /tmp/_compile.log 2>&1)
-            local cc=$?
-            set -e
+            local cc=0
+            (cd backend && mvn test-compile -q > /tmp/_compile.log 2>&1) || cc=$?
 
             if [ $cc -ne 0 ]; then
                 extract_all_errors /tmp/_compile.log "$error_file"
             else
-                set +e
-                (cd backend && mvn test > /tmp/_test.log 2>&1)
-                local tc=$?
-                set -e
+                local tc=0
+                (cd backend && mvn test > /tmp/_test.log 2>&1) || tc=$?
                 if [ $tc -ne 0 ]; then
                     extract_all_errors /tmp/_test.log "$error_file"
                 else
@@ -265,12 +268,12 @@ run_fix_pipeline() {
                     return 0
                 fi
             fi
-            errs=$(cat "$error_file" | head -200)
+            errs=$(cat "$error_file" | head -200 || true)
         fi
 
         # Discover affected files & read their source
         local files; files=$(extract_affected_files "$error_file")
-        [ -z "$files" ] && files=$(grep -oE 'backend/src/[^ ]*\.java' "$error_file" 2>/dev/null | sort -u)
+        [ -z "$files" ] && files=$(grep -oE 'backend/src/[^ ]*\.java' "$error_file" 2>/dev/null | sort -u || true)
         log_info "Affected files: $(echo $files | tr '\n' ', ')"
 
         local src; src=$(build_source_context "$files")
@@ -285,21 +288,17 @@ run_fix_pipeline() {
         apply_fixes "$analysis"
 
         # Verify compilation
-        set +e
-        (cd backend && mvn test-compile -q > /dev/null 2>&1)
-        local cc=$?
-        set -e
+        local cc2=0
+        (cd backend && mvn test-compile -q > /dev/null 2>&1) || cc2=$?
 
-        if [ $cc -eq 0 ]; then
+        if [ $cc2 -eq 0 ]; then
             log_success "Compilation OK after iteration $iter"
 
             # Now check tests
-            set +e
-            (cd backend && mvn test > /tmp/_retest.log 2>&1)
-            local tc=$?
-            set -e
+            local tc2=0
+            (cd backend && mvn test > /tmp/_retest.log 2>&1) || tc2=$?
 
-            if [ $tc -eq 0 ]; then
+            if [ $tc2 -eq 0 ]; then
                 log_success "All tests pass after iteration $iter!"
                 return 0
             else
@@ -308,9 +307,7 @@ run_fix_pipeline() {
             fi
         else
             log_info "Compilation still broken – feeding new errors to next iteration"
-            set +e
-            (cd backend && mvn test-compile > /tmp/_recompile.log 2>&1)
-            set -e
+            (cd backend && mvn test-compile > /tmp/_recompile.log 2>&1) || true
             extract_all_errors /tmp/_recompile.log "$error_file"
         fi
     done
@@ -323,6 +320,8 @@ run_fix_pipeline() {
 # CLI
 # ──────────────────────────────────────────────────────────────
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    set -e          # strict mode only when running standalone
+    set -o pipefail
     case "${1:-}" in
         extract-errors)
             [[ $# -eq 3 ]] || { log_error "Usage: $0 extract-errors <log> <out>"; exit 1; }
