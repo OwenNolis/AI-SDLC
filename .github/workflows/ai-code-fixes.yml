@@ -74,6 +74,7 @@ jobs:
 
       - name: Run SDLC Flow and Analyze Errors
         id: analyze_errors
+        timeout-minutes: 15
         run: |
           echo "🔍 Running SDLC flow to detect errors..."
           set +e
@@ -88,9 +89,15 @@ jobs:
             has_errors=true
           fi
           
-          # Check for specific error patterns in output  
+          # Check for compilation errors
           if grep -q "BUILD FAILURE\|COMPILATION ERROR\|Error:\|cannot find symbol\|package.*does not exist" flow_output.log; then
             echo "❌ Compilation errors detected in flow output"
+            has_errors=true
+          fi
+          
+          # Check for test failures (NEW)
+          if grep -q "Tests run.*Failures.*Errors.*<<< FAILURE\|InternalServerError\|HttpServerErrorException" flow_output.log; then
+            echo "❌ Test failures detected in flow output"
             has_errors=true
           fi
           
@@ -128,10 +135,16 @@ jobs:
               cat compilation_errors.log >> error_analysis.md
             fi
             
-            # Add Maven test errors if available
+            # Add test failure reports if available
             if [ -f backend/target/surefire-reports ]; then
               echo "## Test Failure Details" >> error_analysis.md
               find backend/target/surefire-reports -name "*.txt" -exec cat {} \; >> error_analysis.md 2>/dev/null || echo "No test reports found" >> error_analysis.md
+            fi
+            
+            # Add specific test error analysis
+            if grep -q "InternalServerError\|HttpServerErrorException" flow_output.log; then
+              echo "## HTTP Server Errors" >> error_analysis.md
+              grep -A10 -B5 "InternalServerError\|HttpServerErrorException" flow_output.log >> error_analysis.md
             fi
             
           else
@@ -142,6 +155,7 @@ jobs:
       - name: Apply AI-Generated Fixes
         if: steps.analyze_errors.outputs.has_errors == 'true'
         id: apply_fixes
+        timeout-minutes: 10
         run: |
           echo "🤖 Analyzing errors with Gemini AI and applying intelligent fixes..."
           
@@ -158,7 +172,7 @@ jobs:
           source .github/scripts/ai-fix-utils.sh
           
           echo "🔍 Using Gemini AI to analyze errors and generate fixes..."
-          if .github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
+          if timeout 480 .github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
             echo "✅ AI-generated fixes applied successfully"
             echo "fixes_applied=true" >> $GITHUB_OUTPUT
             
@@ -168,13 +182,13 @@ jobs:
             
             # Create a summary of AI-generated changes
             echo "🤖 AI Fix Summary:" > fix_summary.md
-            echo "- Analyzed compilation errors using Gemini AI" >> fix_summary.md
+            echo "- Analyzed compilation and test errors using Gemini AI" >> fix_summary.md
             echo "- Generated intelligent code fixes based on error context and file content" >> fix_summary.md  
             echo "- Applied fixes to resolve specific issues in each file" >> fix_summary.md
-            echo "- Verified code syntax and imports" >> fix_summary.md
+            echo "- Fixed test failures and server errors" >> fix_summary.md
             
           else
-            echo "❌ AI fix generation failed"
+            echo "❌ AI fix generation failed or timed out"
             echo "fixes_applied=false" >> $GITHUB_OUTPUT
           fi
 

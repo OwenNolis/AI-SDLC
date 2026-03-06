@@ -271,9 +271,9 @@ $file_context
 ANALYSIS INSTRUCTIONS:
 1. Review the error messages AND the actual file content
 2. Understand what each file is trying to do
-3. Identify the root cause of compilation failures
+3. Identify the root cause of compilation failures OR test failures
 4. Generate complete, valid Java class content that fixes the issues
-5. Preserve the intended functionality while fixing syntax and import issues
+5. Preserve the intended functionality while fixing syntax and runtime issues
 
 ERROR TYPES TO HANDLE:
 1. COMPILATION ERRORS ("cannot find symbol", "package does not exist"):
@@ -282,22 +282,25 @@ ERROR TYPES TO HANDLE:
    - Add missing dependencies or create missing classes
    - Fix method signatures and variable types
 
-2. PACKAGE/IMPORT ISSUES:
+2. TEST FAILURES (HTTP errors, missing endpoints, runtime exceptions):
+   - Create missing REST controller endpoints
+   - Fix incorrect URL mappings 
+   - Add proper error handling in controllers
+   - Fix test expectations vs actual behavior
+   - Create missing service or configuration classes
+
+3. PACKAGE/IMPORT ISSUES:
    - Ensure package declarations are first in file
    - Add missing imports for used classes
    - Remove unused imports
    - Fix malformed package structures
 
-3. SPRING BOOT ISSUES:
+4. SPRING BOOT RUNTIME ISSUES:
    - Fix incorrect @SpringBootTest configurations
    - Add proper @Import or @TestConfiguration annotations
    - Create missing test configuration classes
    - Fix dependency injection issues
-
-4. SYNTAX/STRUCTURE ERRORS:
-   - Fix malformed class declarations
-   - Correct method implementations
-   - Fix variable declarations and initializations
+   - Add missing @RestController, @RequestMapping annotations
 
 REQUIREMENTS:
 - Analyze BOTH the error AND the file content to understand intent
