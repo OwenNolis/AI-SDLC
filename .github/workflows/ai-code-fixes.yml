@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ai-fixes-${{ github.ref }}-${{ github.event_name }}
-  cancel-in-progress: false
+  group: ai-fixes-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   FEATURE_ID: feature-001-support-ticket
