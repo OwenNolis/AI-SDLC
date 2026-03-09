@@ -1,20 +1,20 @@
 [ERROR] COMPILATION ERROR : 
 [INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[45,17] incompatible types: java.lang.String cannot be converted to java.util.UUID
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[44,32] incompatible types: java.util.UUID cannot be converted to java.lang.String
 [INFO] 1 error
 [INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 --
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[45,17] incompatible types: java.lang.String cannot be converted to java.util.UUID
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[44,32] incompatible types: java.util.UUID cannot be converted to java.lang.String
 [ERROR] 
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
 [ERROR] COMPILATION ERROR : 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[45,17] incompatible types: java.lang.String cannot be converted to java.util.UUID
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[44,32] incompatible types: java.util.UUID cannot be converted to java.lang.String
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[45,17] incompatible types: java.lang.String cannot be converted to java.util.UUID
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[44,32] incompatible types: java.util.UUID cannot be converted to java.lang.String
 [ERROR] 
 [ERROR] -> [Help 1]
 [ERROR] 

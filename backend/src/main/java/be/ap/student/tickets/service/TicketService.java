@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.UUID;
-import java.util.NoSuchElementException; // Added for findById
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static be.ap.student.common.web.CorrelationIdFilter.MDC_KEY;
@@ -41,8 +41,8 @@ public class TicketService {
 
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
-                UUID.randomUUID().toString(), // Corrected: Convert UUID to String for id
-                ticketNumber,      // Corrected: String for ticketNumber
+                UUID.randomUUID(), 
+                ticketNumber,
                 req.getSubject(),
                 req.getDescription(),
                 priority,
