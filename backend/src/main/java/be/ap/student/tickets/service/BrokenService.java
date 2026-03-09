@@ -2,6 +2,7 @@ package be.ap.student.tickets.service;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class BrokenService {
@@ -14,7 +15,11 @@ public class BrokenService {
     }
 
     public List<Integer> getItems() {
-        return List.of("item1", "item2");
+        // Corrected to return List<Integer>
+        List<Integer> items = new ArrayList<>();
+        items.add(1);
+        items.add(2);
+        return items;
     }
 
     public String handleRequest(String parameter) {

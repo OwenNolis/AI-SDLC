@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import be.ap.student.tickets.util.TicketFormatter;
 
 import java.util.List;
 
@@ -34,6 +33,7 @@ public class TicketController {
 
     @GetMapping("/all")
     public List<String> getAllTickets() {
-        return TicketFormatter.formatAll(List.of("ticket1", "ticket2"));
+        // Removed usage of undefined TicketFormatter
+        return List.of("ticket1", "ticket2");
     }
 }
