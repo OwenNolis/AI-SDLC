@@ -1,11 +1,23 @@
 [ERROR] COMPILATION ERROR : 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[44,31] incompatible types: java.lang.String cannot be converted to java.util.UUID
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[66,34] incompatible types: java.lang.String cannot be converted to java.util.UUID
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[88,34] incompatible types: java.lang.String cannot be converted to java.util.UUID
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[31,71] cannot find symbol
+  symbol:   method getFormattedStatus()
+  location: variable saved of type be.ap.student.tickets.domain.SupportTicket
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[51,36] cannot find symbol
+  symbol:   method countByStatus(be.ap.student.tickets.domain.TicketStatus)
+  location: variable repository of type be.ap.student.tickets.repo.SupportTicketRepository
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[17,23] incompatible types: inference variable E has incompatible bounds
+    equality constraints: java.lang.Integer
+    lower bounds: java.lang.String
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[44,31] incompatible types: java.lang.String cannot be converted to java.util.UUID
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[66,34] incompatible types: java.lang.String cannot be converted to java.util.UUID
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[88,34] incompatible types: java.lang.String cannot be converted to java.util.UUID
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[31,71] cannot find symbol
+[ERROR]   symbol:   method getFormattedStatus()
+[ERROR]   location: variable saved of type be.ap.student.tickets.domain.SupportTicket
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[51,36] cannot find symbol
+[ERROR]   symbol:   method countByStatus(be.ap.student.tickets.domain.TicketStatus)
+[ERROR]   location: variable repository of type be.ap.student.tickets.repo.SupportTicketRepository
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[17,23] incompatible types: inference variable E has incompatible bounds
+[ERROR]     equality constraints: java.lang.Integer
+[ERROR]     lower bounds: java.lang.String
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.

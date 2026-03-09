@@ -51,4 +51,8 @@ public class SupportTicket {
     public Priority getPriority() { return priority; }
     public TicketStatus getStatus() { return status; }
     public Instant getCreatedAt() { return createdAt; }
+
+    public String getFormattedStatus() {
+        return this.status.name();
+    }
 }
