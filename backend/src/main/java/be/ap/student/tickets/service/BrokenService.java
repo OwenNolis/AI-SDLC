@@ -2,16 +2,9 @@ package be.ap.student.tickets.service;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.ArrayList;
-
-// Assuming Cacheable is an interface that should be implemented. 
-// If it's not intended, this line should be removed.
-// For the purpose of fixing compilation, we assume it's a valid interface.
-// If Cacheable is missing, it needs to be created or imported.
-interface Cacheable {}
 
 @Service
-public class BrokenService implements Cacheable {
+public class BrokenService {
 
     public String processData(String input) {
         // Removed reference to undefined MagicCounter.getCount()
@@ -20,12 +13,8 @@ public class BrokenService implements Cacheable {
         return "Processed: " + input + count;
     }
 
-    public List<Integer> getItems() {
-        // Corrected to return List<Integer>
-        List<Integer> items = new ArrayList<>();
-        items.add(1);
-        items.add(2);
-        return items;
+    public List<String> getItems() {
+        return List.of("item1", "item2");
     }
 
     public String handleRequest(String parameter) {

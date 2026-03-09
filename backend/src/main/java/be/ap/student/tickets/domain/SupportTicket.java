@@ -49,6 +49,6 @@ public class SupportTicket {
     public String getSubject() { return subject; }
     public String getDescription() { return description; }
     public Priority getPriority() { return priority; }
-    public String getStatus() { return status.name(); }
+    public TicketStatus getStatus() { return status; }
     public Instant getCreatedAt() { return createdAt; }
 }

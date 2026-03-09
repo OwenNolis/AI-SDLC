@@ -20,10 +20,4 @@ public class TestController {
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("Service is healthy");
     }
-
-    @GetMapping("/status")
-    public ResponseEntity<String> getStatus() {
-        // Removed usage of undefined StatusChecker
-        return ResponseEntity.ok("Status check not available");
-    }
 }
