@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import be.ap.student.tickets.domain.SupportTicket; // Added import for SupportTicket
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -27,8 +28,10 @@ public class TicketController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
-        service.validate(req);
-        var saved = service.create(req);
+        // Removed service.validate(req); as TicketService does not have this method and @Valid annotation handles validation.
+        var optionalSavedTicket = service.create(req);
+        // Unwrap the Optional to access SupportTicket methods
+        SupportTicket saved = optionalSavedTicket.orElseThrow(() -> new IllegalStateException("Failed to create ticket"));
         return new CreateTicketResponse(saved.getTicketNumber(), saved.getFormattedStatus());
     }
 

@@ -2,12 +2,12 @@ package be.ap.student.tickets.service;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
-import be.ap.student.tickets.cache.CacheManager;
 
 @Service
 public class BrokenService {
 
-    private final CacheManager cacheManager = CacheManager.getInstance();
+    // Removed reference to CacheManager as the package and class do not exist.
+    // private final CacheManager cacheManager = CacheManager.getInstance();
 
     public String processData(String input) {
         // Removed reference to undefined MagicCounter.getCount()
@@ -25,7 +25,7 @@ public class BrokenService {
     }
 
     public String validateInput(String data) {
-        // Assuming DataTransformer is a static utility class. 
+        // Assuming DataTransformer is a static utility class.
         // A placeholder implementation is provided as it was not found.
         return DataTransformer.transform(data);
     }
