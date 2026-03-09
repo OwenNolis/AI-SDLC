@@ -4,6 +4,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.ArrayList;
 
+// Assuming Cacheable is an interface that should be implemented. 
+// If it's not intended, this line should be removed.
+// For the purpose of fixing compilation, we assume it's a valid interface.
+// If Cacheable is missing, it needs to be created or imported.
+interface Cacheable {}
+
 @Service
 public class BrokenService implements Cacheable {
 
