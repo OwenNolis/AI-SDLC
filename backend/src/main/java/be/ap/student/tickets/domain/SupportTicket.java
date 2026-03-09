@@ -34,7 +34,7 @@ public class SupportTicket {
 
     protected SupportTicket() {}
 
-    private SupportTicket(String ticketNumber, UUID id, String subject, String description, Priority priority, TicketStatus status, Instant createdAt) {
+    public SupportTicket(String ticketNumber, UUID id, String subject, String description, Priority priority, TicketStatus status, Instant createdAt) {
         this.id = id;
         this.ticketNumber = ticketNumber;
         this.subject = subject;

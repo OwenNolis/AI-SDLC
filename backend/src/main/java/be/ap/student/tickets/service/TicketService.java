@@ -42,7 +42,7 @@ public class TicketService {
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
                 ticketNumber,
-                UUID.randomUUID().toString(), // Fix: Convert UUID to String
+                UUID.randomUUID(), // Fix: Pass UUID object directly, not its String representation
                 req.getSubject(),
                 req.getDescription(),
                 priority,
