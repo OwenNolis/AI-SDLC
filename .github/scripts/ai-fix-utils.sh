@@ -191,6 +191,11 @@ PROMPT
     [ -n "$err" ] && { log_warning "Gemini error: $err"; rm -f /tmp/ai_prompt.txt; return 1; }
 
     # Extract text from Gemini response
+    local finish_reason; finish_reason=$(echo "$resp" | jq -r '.candidates[0].finishReason // "STOP"' 2>/dev/null)
+    if [ "$finish_reason" = "MAX_TOKENS" ]; then
+        log_warning "  Gemini response was TRUNCATED (hit output token limit)"
+    fi
+
     local raw; raw=$(echo "$resp" | jq -r '.candidates[0].content.parts[0].text // empty' 2>/dev/null)
     [ -z "$raw" ] && { log_warning "Empty candidate text"; rm -f /tmp/ai_prompt.txt; return 1; }
 
@@ -364,8 +369,33 @@ run_fix_pipeline() {
         fi
     done
 
-    log_warning "Reached $max iterations – some issues may remain"
-    return 1
+    # Final check: even if we hit max iterations or Gemini failed on a later
+    # iteration, previous iterations may have fixed things.
+    log_info "Running final compilation check..."
+    local final_cc=0
+    (cd backend && mvn test-compile -q > /dev/null 2>&1) || final_cc=$?
+
+    if [ $final_cc -eq 0 ]; then
+        log_success "Compilation passes after $iter iteration(s)"
+        local final_tc=0
+        (cd backend && mvn test > /tmp/_final_test.log 2>&1) || final_tc=$?
+        if [ $final_tc -eq 0 ]; then
+            log_success "All tests pass!"
+            return 0
+        else
+            log_warning "Compilation OK but some tests still fail"
+            return 0  # still return success — fixes were applied, PR should be created
+        fi
+    else
+        log_warning "Compilation still broken after $iter iteration(s)"
+        # Check if ANY files were changed — if so, still create a PR with partial fixes
+        local changed; changed=$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$changed" -gt 0 ]; then
+            log_info "$changed file(s) were modified — creating PR with partial fixes"
+            return 0  # partial fix is better than nothing
+        fi
+        return 1
+    fi
 }
 
 # ──────────────────────────────────────────────────────────────
