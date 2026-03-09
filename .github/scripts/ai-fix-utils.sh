@@ -190,13 +190,26 @@ PROMPT
     if echo "$clean" | jq . > /dev/null 2>&1; then
         echo "$clean" > "$out_file"
     else
-        # Last-ditch: pull the first { … } from the text with Python
+        # Last-ditch: use Python json.JSONDecoder for robust extraction of first JSON object
         clean=$(python3 -c "
-import sys, json, re
-m = re.search(r'\{.*\}', sys.stdin.read(), re.DOTALL)
-if m:
-    try: o=json.loads(m.group()); print(json.dumps(o))
+import sys, json
+text = sys.stdin.read()
+# Try the whole text first
+try:
+    o = json.loads(text)
+    print(json.dumps(o))
+    sys.exit(0)
+except: pass
+# Find the first { and use raw_decode
+idx = text.find('{')
+if idx >= 0:
+    try:
+        decoder = json.JSONDecoder()
+        o, _ = decoder.raw_decode(text, idx)
+        print(json.dumps(o))
+        sys.exit(0)
     except: pass
+sys.exit(1)
 " <<< "$raw" 2>/dev/null)
         if [ -n "$clean" ] && echo "$clean" | jq . > /dev/null 2>&1; then
             echo "$clean" > "$out_file"
@@ -301,6 +314,10 @@ run_fix_pipeline() {
         # Ask Gemini
         if ! call_gemini "$errs" "$src" "$analysis"; then
             log_error "Gemini call failed on iteration $iter"
+            if [ $iter -gt 1 ]; then
+                log_warning "Continuing with fixes from previous iterations"
+                break
+            fi
             return 1
         fi
 
