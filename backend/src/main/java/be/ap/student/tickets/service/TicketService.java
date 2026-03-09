@@ -42,16 +42,16 @@ public class TicketService {
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
                 ticketNumber,
-                UUID.randomUUID(), 
+                UUID.randomUUID().toString(), // Fix: Convert UUID to String
                 req.getSubject(),
                 req.getDescription(),
                 priority,
-                TicketStatus.OPEN,
+                TicketStatus.PENDING, // Fix: Changed OPEN to PENDING
                 Instant.now()
         );
 
         SupportTicket saved = repository.save(ticket);
-        long openCount = repository.countByStatus(TicketStatus.OPEN);
+        long openCount = repository.countByStatus(TicketStatus.PENDING); // Fix: Changed OPEN to PENDING
         log.info("ticket_created ticketNumber={} priority={} correlationId={} openTickets={}",
                 saved.getTicketNumber(), saved.getPriority(), MDC.get(MDC_KEY), openCount);
         return Optional.ofNullable(saved);

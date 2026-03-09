@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 
-    private ApiError.FieldError mapFieldError(String fieldName) {
-        return new ApiError.FieldError(fieldName, "invalid");
+    private ApiError.FieldError mapFieldError(FieldError fieldError) {
+        return new ApiError.FieldError(fieldError.getField(), "invalid");
     }
 }
