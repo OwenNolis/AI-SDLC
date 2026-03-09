@@ -48,8 +48,9 @@ public class TicketService {
         );
 
         SupportTicket saved = repository.save(ticket);
-        log.info("ticket_created ticketNumber={} priority={} correlationId={}",
-                saved.getTicketNumber(), saved.getPriority(), MDC.get(MDC_KEY));
+        long openCount = repository.countByStatus(TicketStatus.OPEN);
+        log.info("ticket_created ticketNumber={} priority={} correlationId={} openTickets={}",
+                saved.getTicketNumber(), saved.getPriority(), MDC.get(MDC_KEY), openCount);
         return saved;
     }
 }

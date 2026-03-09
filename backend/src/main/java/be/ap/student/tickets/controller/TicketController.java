@@ -28,7 +28,7 @@ public class TicketController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
         var saved = service.create(req);
-        return new CreateTicketResponse(saved.getTicketNumber(), saved.getStatus().name());
+        return new CreateTicketResponse(saved.getTicketNumber(), saved.getFormattedStatus());
     }
 
     @GetMapping("/all")
