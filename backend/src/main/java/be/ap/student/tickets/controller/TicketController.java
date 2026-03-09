@@ -43,6 +43,7 @@ public class TicketController {
     @GetMapping("/{id}")
     public CreateTicketResponse getById(@org.springframework.web.bind.annotation.PathVariable java.util.UUID id) {
         var ticket = service.findById(id);
-        return new CreateTicketResponse(ticket.getTicketNumber(), ticket.getStatus().name());
+        // Changed ticket.getStatus().name() to ticket.getFormattedStatus() for consistency with create method and to resolve 'cannot find symbol name()' error.
+        return new CreateTicketResponse(ticket.getTicketNumber(), ticket.getFormattedStatus());
     }
 }

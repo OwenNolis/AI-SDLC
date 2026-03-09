@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGeneric(Exception ex) {
+    public ResponseEntity<ApiError> handleGeneric(Exception ex) { // Changed return type to ApiError
         String correlationId = MDC.get(MDC_KEY);
         ApiError body = new ApiError(correlationId, "INTERNAL_ERROR", "Something went wrong", List.of());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
