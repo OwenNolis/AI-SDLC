@@ -23,7 +23,7 @@ public class TestController {
 
     @GetMapping("/status")
     public ResponseEntity<String> getStatus() {
-        StatusChecker checker = new StatusChecker();
-        return ResponseEntity.ok(checker.check());
+        // Removed usage of undefined StatusChecker
+        return ResponseEntity.ok("Status check not available");
     }
 }
