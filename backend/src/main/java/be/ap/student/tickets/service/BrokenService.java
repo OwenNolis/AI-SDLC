@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class BrokenService {
+public class BrokenService implements Cacheable {
 
     // Removed reference to CacheManager as the package and class do not exist.
     // private final CacheManager cacheManager = CacheManager.getInstance();

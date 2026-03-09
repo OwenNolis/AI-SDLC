@@ -22,10 +22,12 @@ public class TicketService {
 
     private final SupportTicketRepository repository;
     private final TicketNumberGenerator ticketNumberGenerator;
+    private final be.ap.student.tickets.audit.AuditService auditService;
 
-    public TicketService(SupportTicketRepository repository, TicketNumberGenerator ticketNumberGenerator) {
+    public TicketService(SupportTicketRepository repository, TicketNumberGenerator ticketNumberGenerator, be.ap.student.tickets.audit.AuditService auditService) {
         this.repository = repository;
         this.ticketNumberGenerator = ticketNumberGenerator;
+        this.auditService = auditService;
     }
 
     public java.util.Optional<SupportTicket> create(CreateTicketRequest req) {

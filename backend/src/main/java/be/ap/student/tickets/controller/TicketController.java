@@ -39,4 +39,10 @@ public class TicketController {
     public List<String> getAllTickets() {
         return List.of("ticket1", "ticket2");
     }
+
+    @GetMapping("/{id}")
+    public CreateTicketResponse getById(@org.springframework.web.bind.annotation.PathVariable java.util.UUID id) {
+        var ticket = service.findById(id);
+        return new CreateTicketResponse(ticket.getTicketNumber(), ticket.getStatus().name());
+    }
 }
