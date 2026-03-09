@@ -13,7 +13,7 @@ public class BrokenService {
         return "Processed: " + input + count;
     }
 
-    public List<String> getItems() {
+    public List<Integer> getItems() {
         return List.of("item1", "item2");
     }
 

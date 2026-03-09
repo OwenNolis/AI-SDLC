@@ -20,4 +20,10 @@ public class TestController {
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("Service is healthy");
     }
+
+    @GetMapping("/status")
+    public ResponseEntity<String> getStatus() {
+        StatusChecker checker = new StatusChecker();
+        return ResponseEntity.ok(checker.check());
+    }
 }
