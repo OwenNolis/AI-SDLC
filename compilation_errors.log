@@ -1,31 +1,19 @@
 [ERROR] COMPILATION ERROR : 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[14,34] package be.ap.student.tickets.util does not exist
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestController.java:[26,9] cannot find symbol
-  symbol:   class StatusChecker
-  location: class be.ap.student.tickets.controller.TestController
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestController.java:[26,37] cannot find symbol
-  symbol:   class StatusChecker
-  location: class be.ap.student.tickets.controller.TestController
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[37,16] cannot find symbol
-  symbol:   variable TicketFormatter
-  location: class be.ap.student.tickets.controller.TicketController
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[17,23] incompatible types: inference variable E has incompatible bounds
-    equality constraints: java.lang.Integer
-    lower bounds: java.lang.String
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[8,39] cannot find symbol
+  symbol: class Cacheable
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/common/web/GlobalExceptionHandler.java:[48,76] incompatible types: no instance(s) of type variable(s) T exist so that org.springframework.http.ResponseEntity<T> conforms to java.lang.String
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[38,29] cannot find symbol
+  symbol:   method findById(java.util.UUID)
+  location: variable service of type be.ap.student.tickets.service.TicketService
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[41,31] incompatible types: java.lang.String cannot be converted to java.util.UUID
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[14,34] package be.ap.student.tickets.util does not exist
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestController.java:[26,9] cannot find symbol
-[ERROR]   symbol:   class StatusChecker
-[ERROR]   location: class be.ap.student.tickets.controller.TestController
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TestController.java:[26,37] cannot find symbol
-[ERROR]   symbol:   class StatusChecker
-[ERROR]   location: class be.ap.student.tickets.controller.TestController
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[37,16] cannot find symbol
-[ERROR]   symbol:   variable TicketFormatter
-[ERROR]   location: class be.ap.student.tickets.controller.TicketController
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[17,23] incompatible types: inference variable E has incompatible bounds
-[ERROR]     equality constraints: java.lang.Integer
-[ERROR]     lower bounds: java.lang.String
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[8,39] cannot find symbol
+[ERROR]   symbol: class Cacheable
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/common/web/GlobalExceptionHandler.java:[48,76] incompatible types: no instance(s) of type variable(s) T exist so that org.springframework.http.ResponseEntity<T> conforms to java.lang.String
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[38,29] cannot find symbol
+[ERROR]   symbol:   method findById(java.util.UUID)
+[ERROR]   location: variable service of type be.ap.student.tickets.service.TicketService
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[41,31] incompatible types: java.lang.String cannot be converted to java.util.UUID
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
