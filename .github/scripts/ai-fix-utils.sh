@@ -20,7 +20,9 @@ log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
 count_unique_errors() {
     local log_file="$1"
     # Match lines like: [ERROR] /path/File.java:[42,10] message
-    grep -oE '\[ERROR\] [^ ]+\.java:\[[0-9]+,[0-9]+\]' "$log_file" 2>/dev/null \
+    # The { grep ... || true; } ensures exit-code 0 even when grep finds
+    # nothing, which is critical under set -e / set -o pipefail.
+    { grep -oE '\[ERROR\] [^ ]+\.java:\[[0-9]+,[0-9]+\]' "$log_file" 2>/dev/null || true; } \
         | sort -u | wc -l | tr -d ' '
 }
 
