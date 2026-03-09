@@ -147,7 +147,7 @@ PROMPT
     escaped=$(python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" < /tmp/ai_prompt.txt)
 
     # ── API call with retry ─────────────────────────────
-    local model="${GEMINI_MODEL:-gemini-2.5-flash-lite}"
+    local model="${GEMINI_MODEL:-gemini-2.5-flash}"
     local url="https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=$GEMINI_API_KEY"
     local body="{
       \"contents\":[{\"parts\":[{\"text\":$escaped}]}],
@@ -341,12 +341,35 @@ run_fix_pipeline() {
             return 1
         fi
 
+        # ── Regression guard: snapshot & count errors BEFORE fixes ──
+        local savepoint
+        savepoint=$(git stash create 2>/dev/null || true)
+        local errors_before=0
+        (cd backend && mvn test-compile > /tmp/_pre_fix.log 2>&1) || true
+        errors_before=$(grep -cE '^\[ERROR\]' /tmp/_pre_fix.log 2>/dev/null || echo 0)
+        log_info "Error count before iteration $iter fixes: $errors_before"
+
         # Apply
         apply_fixes "$analysis"
 
-        # Verify compilation
+        # ── Verify & regression check ──
         local cc2=0
-        (cd backend && mvn test-compile -q > /dev/null 2>&1) || cc2=$?
+        (cd backend && mvn test-compile > /tmp/_post_fix.log 2>&1) || cc2=$?
+        local errors_after=0
+        errors_after=$(grep -cE '^\[ERROR\]' /tmp/_post_fix.log 2>/dev/null || echo 0)
+        log_info "Error count after iteration $iter fixes: $errors_after"
+
+        # If AI made things WORSE, revert this iteration and stop
+        if [ "$errors_after" -gt "$errors_before" ] && [ "$errors_before" -gt 0 ]; then
+            log_error "🚨 REGRESSION: errors increased from $errors_before → $errors_after"
+            log_error "Reverting iteration $iter fixes to prevent further damage"
+            git checkout -- . 2>/dev/null || true
+            git clean -fd 2>/dev/null || true
+            if [ -n "$savepoint" ]; then
+                git stash apply "$savepoint" 2>/dev/null || true
+            fi
+            break
+        fi
 
         if [ $cc2 -eq 0 ]; then
             log_success "Compilation OK after iteration $iter"
