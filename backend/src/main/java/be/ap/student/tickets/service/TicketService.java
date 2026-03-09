@@ -38,8 +38,8 @@ public class TicketService {
 
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
-                UUID.randomUUID(),
-                ticketNumber,
+                ticketNumber,     // Corrected: String for ticketNumber
+                UUID.randomUUID(),// Corrected: UUID for id
                 req.getSubject(),
                 req.getDescription(),
                 priority,
