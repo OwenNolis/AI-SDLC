@@ -67,18 +67,35 @@ All AI artifacts validated successfully.
 [INFO] -------------------------------------------------------------
 [ERROR] COMPILATION ERROR : 
 [INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[44,32] incompatible types: java.util.UUID cannot be converted to java.lang.String
-[INFO] 1 error
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/common/web/GlobalExceptionHandler.java:[24,22] incompatible types: invalid method reference
+    incompatible types: org.springframework.validation.FieldError cannot be converted to java.lang.String
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[35,90] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.domain.TicketStatus
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[47,92] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.domain.TicketStatus
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[49,29] cannot find symbol
+  symbol:   variable OPEN
+  location: class be.ap.student.tickets.domain.TicketStatus
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[54,63] cannot find symbol
+  symbol:   variable OPEN
+  location: class be.ap.student.tickets.domain.TicketStatus
+[INFO] 5 errors 
 [INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.420 s
-[INFO] Finished at: 2026-03-09T13:54:23Z
+[INFO] Total time:  2.419 s
+[INFO] Finished at: 2026-03-09T14:17:02Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[44,32] incompatible types: java.util.UUID cannot be converted to java.lang.String
-[ERROR] 
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/common/web/GlobalExceptionHandler.java:[24,22] incompatible types: invalid method reference
+[ERROR]     incompatible types: org.springframework.validation.FieldError cannot be converted to java.lang.String
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[35,90] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.domain.TicketStatus
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[47,92] incompatible types: java.lang.String cannot be converted to be.ap.student.tickets.domain.TicketStatus
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[49,29] cannot find symbol
+[ERROR]   symbol:   variable OPEN
+[ERROR]   location: class be.ap.student.tickets.domain.TicketStatus
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[54,63] cannot find symbol
+[ERROR]   symbol:   variable OPEN
+[ERROR]   location: class be.ap.student.tickets.domain.TicketStatus
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
