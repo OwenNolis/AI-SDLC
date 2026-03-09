@@ -4,8 +4,6 @@ on:
   workflow_run:
     workflows: ["Dependabot Auto-merge", "CI"]
     types: [completed]
-  push:
-    branches: ["main"]
   workflow_dispatch:
 
 concurrency:
@@ -19,7 +17,7 @@ env:
 jobs:
   ai-code-fixes:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure') }}
     
     steps:
       - name: Checkout Repository
