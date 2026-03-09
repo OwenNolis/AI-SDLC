@@ -292,6 +292,7 @@ run_fix_pipeline() {
     local error_file="$1"
     local analysis="/tmp/ai_analysis.json"
     local max=3 iter=0
+    local regression_detected=false
 
     log_info "╔══════════════════════════════════════╗"
     log_info "║   AI Fix Pipeline  (max $max iterations)  ║"
@@ -368,6 +369,7 @@ run_fix_pipeline() {
             if [ -n "$savepoint" ]; then
                 git stash apply "$savepoint" 2>/dev/null || true
             fi
+            regression_detected=true
             break
         fi
 
@@ -394,6 +396,12 @@ run_fix_pipeline() {
 
     # Final check: even if we hit max iterations or Gemini failed on a later
     # iteration, previous iterations may have fixed things.
+    # But if regression was detected and no prior iterations succeeded, fail hard.
+    if [ "$regression_detected" = "true" ] && [ $iter -le 1 ]; then
+        log_error "Regression detected on first iteration — no useful fixes to apply"
+        return 1
+    fi
+
     log_info "Running final compilation check..."
     local final_cc=0
     (cd backend && mvn test-compile -q > /dev/null 2>&1) || final_cc=$?
@@ -411,10 +419,10 @@ run_fix_pipeline() {
         fi
     else
         log_warning "Compilation still broken after $iter iteration(s)"
-        # Check if ANY files were changed — if so, still create a PR with partial fixes
-        local changed; changed=$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
+        # Check if ANY source files were changed — if so, still create a PR with partial fixes
+        local changed; changed=$(git diff --name-only 2>/dev/null | grep -cE '\.(java|kt|ts|tsx|js|jsx|py|go|rs|xml)$' || echo 0)
         if [ "$changed" -gt 0 ]; then
-            log_info "$changed file(s) were modified — creating PR with partial fixes"
+            log_info "$changed source file(s) were modified — creating PR with partial fixes"
             return 0  # partial fix is better than nothing
         fi
         return 1
