@@ -67,29 +67,35 @@ All AI artifacts validated successfully.
 [INFO] -------------------------------------------------------------
 [ERROR] COMPILATION ERROR : 
 [INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[8,39] cannot find symbol
-  symbol: class Cacheable
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/common/web/GlobalExceptionHandler.java:[48,76] incompatible types: no instance(s) of type variable(s) T exist so that org.springframework.http.ResponseEntity<T> conforms to java.lang.String
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[38,29] cannot find symbol
-  symbol:   method findById(java.util.UUID)
-  location: variable service of type be.ap.student.tickets.service.TicketService
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[16,31] package be.ap.common.web does not exist
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[16,1] static import only from classes and interfaces
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[44,85] cannot find symbol
+  symbol:   method name()
+  location: class java.lang.String
 [ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[41,31] incompatible types: java.lang.String cannot be converted to java.util.UUID
-[INFO] 4 errors 
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[52,71] cannot find symbol
+  symbol:   variable MDC_KEY
+  location: class be.ap.student.tickets.service.TicketService
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[62,34] incompatible types: java.lang.String cannot be converted to java.util.UUID
+[INFO] 6 errors 
 [INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.250 s
-[INFO] Finished at: 2026-03-09T09:57:50Z
+[INFO] Total time:  1.870 s
+[INFO] Finished at: 2026-03-09T10:02:40Z
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[8,39] cannot find symbol
-[ERROR]   symbol: class Cacheable
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/common/web/GlobalExceptionHandler.java:[48,76] incompatible types: no instance(s) of type variable(s) T exist so that org.springframework.http.ResponseEntity<T> conforms to java.lang.String
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[38,29] cannot find symbol
-[ERROR]   symbol:   method findById(java.util.UUID)
-[ERROR]   location: variable service of type be.ap.student.tickets.service.TicketService
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[16,31] package be.ap.common.web does not exist
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[16,1] static import only from classes and interfaces
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/controller/TicketController.java:[44,85] cannot find symbol
+[ERROR]   symbol:   method name()
+[ERROR]   location: class java.lang.String
 [ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[41,31] incompatible types: java.lang.String cannot be converted to java.util.UUID
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[52,71] cannot find symbol
+[ERROR]   symbol:   variable MDC_KEY
+[ERROR]   location: class be.ap.student.tickets.service.TicketService
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[62,34] incompatible types: java.lang.String cannot be converted to java.util.UUID
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.

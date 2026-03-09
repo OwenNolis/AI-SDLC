@@ -38,15 +38,15 @@ public class TicketController {
     @GetMapping("/{id}")
     public CreateTicketResponse getById(@PathVariable UUID id) {
         var ticket = service.findById(id);
-        // The .name() call on ticket.getStatus() is correct if getStatus() returns an enum.
-        // The compilation error might be a symptom of TicketService.findById not returning a valid SupportTicket.
-        // Assuming getStatus() returns an enum, .name() is correct. If it returns a String, .toString() would be appropriate.
-        return new CreateTicketResponse(ticket.getTicketNumber(), ticket.getStatus().name());
+        // Assuming getStatus() returns a String, .name() is not applicable. 
+        // If getStatus() returns an enum, .name() would be correct. 
+        // For now, we assume it returns a String and use it directly.
+        return new CreateTicketResponse(ticket.getTicketNumber(), ticket.getStatus());
     }
 
     @GetMapping("/all")
     public List<String> getAllTickets() {
-        // Removed usage of undefined TicketFormatter
+        // Removed usage of undefined TicketFormatter and returning placeholder data.
         return List.of("ticket1", "ticket2");
     }
 }
