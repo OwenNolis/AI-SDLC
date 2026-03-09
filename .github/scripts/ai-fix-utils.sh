@@ -13,6 +13,17 @@ log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
 
+# Count UNIQUE compile errors by file:line — ignores Maven boilerplate
+# like "[ERROR] -> [Help 1]", "[ERROR] Re-run Maven...", etc.
+# This prevents the cascade-reveal problem where fixing one error
+# unmasks hidden errors, temporarily increasing raw [ERROR] count.
+count_unique_errors() {
+    local log_file="$1"
+    # Match lines like: [ERROR] /path/File.java:[42,10] message
+    grep -oE '\[ERROR\] [^ ]+\.java:\[[0-9]+,[0-9]+\]' "$log_file" 2>/dev/null \
+        | sort -u | wc -l | tr -d ' '
+}
+
 # ──────────────────────────────────────────────────────────────
 # 1. Extract errors from any build / test log
 # ──────────────────────────────────────────────────────────────
@@ -347,8 +358,8 @@ run_fix_pipeline() {
         savepoint=$(git stash create 2>/dev/null || true)
         local errors_before=0
         (cd backend && mvn test-compile > /tmp/_pre_fix.log 2>&1) || true
-        errors_before=$(grep -cE '^\[ERROR\]' /tmp/_pre_fix.log 2>/dev/null || echo 0)
-        log_info "Error count before iteration $iter fixes: $errors_before"
+        errors_before=$(count_unique_errors /tmp/_pre_fix.log)
+        log_info "Unique error count before iteration $iter fixes: $errors_before"
 
         # Apply
         apply_fixes "$analysis"
@@ -357,8 +368,8 @@ run_fix_pipeline() {
         local cc2=0
         (cd backend && mvn test-compile > /tmp/_post_fix.log 2>&1) || cc2=$?
         local errors_after=0
-        errors_after=$(grep -cE '^\[ERROR\]' /tmp/_post_fix.log 2>/dev/null || echo 0)
-        log_info "Error count after iteration $iter fixes: $errors_after"
+        errors_after=$(count_unique_errors /tmp/_post_fix.log)
+        log_info "Unique error count after iteration $iter fixes: $errors_after"
 
         # If AI made things WORSE, revert this iteration and stop
         if [ "$errors_after" -gt "$errors_before" ] && [ "$errors_before" -gt 0 ]; then
