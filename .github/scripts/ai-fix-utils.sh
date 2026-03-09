@@ -114,6 +114,8 @@ RULES:
 • Each fix must contain the COMPLETE file content (package, imports, class body).
   Never use placeholders like "// … rest of code".
 • Only touch files that are actually broken.  Keep working code intact.
+• NEVER delete or remove source files. Always use action "modify" to fix them.
+  Deleting a file breaks the project. Fix the code inside the file instead.
 • For missing imports → add the right import.
 • For undefined classes/methods used in production code → remove the broken
   usage or replace it with a minimal working alternative.
@@ -149,7 +151,7 @@ PROMPT
     local url="https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=$GEMINI_API_KEY"
     local body="{
       \"contents\":[{\"parts\":[{\"text\":$escaped}]}],
-      \"generationConfig\":{\"temperature\":0.1,\"maxOutputTokens\":8192,\"responseMimeType\":\"application/json\"}
+      \"generationConfig\":{\"temperature\":0.1,\"maxOutputTokens\":16384,\"responseMimeType\":\"application/json\"}
     }"
 
     local resp="" attempt=0 max_attempts=4 wait_secs=5
@@ -163,11 +165,19 @@ PROMPT
         # Check for retryable errors (503, 429, empty)
         if [ -z "$resp" ]; then
             log_warning "  Empty response – retrying in ${wait_secs}s …"
-        elif echo "$resp" | grep -qiE '503|429|overloaded|quota|high demand|temporarily unavailable'; then
+        elif echo "$resp" | jq -e '.error' > /dev/null 2>&1; then
+            local http_code; http_code=$(echo "$resp" | jq -r '.error.code // 0' 2>/dev/null)
             local api_err; api_err=$(echo "$resp" | jq -r '.error.message // empty' 2>/dev/null)
-            log_warning "  Retryable error: ${api_err:-$(head -c200 <<< "$resp")} – retrying in ${wait_secs}s …"
+            if [ "$http_code" = "503" ] || [ "$http_code" = "429" ]; then
+                log_warning "  Retryable API error ($http_code): ${api_err} – retrying in ${wait_secs}s …"
+            else
+                log_warning "  API error ($http_code): ${api_err}"
+                break  # non-retryable API error
+            fi
+        elif ! echo "$resp" | jq -e '.candidates[0]' > /dev/null 2>&1; then
+            log_warning "  Unexpected response format – retrying in ${wait_secs}s …"
         else
-            break   # got a real response
+            break   # got a real response with candidates
         fi
 
         [ $attempt -lt $max_attempts ] && sleep $wait_secs
@@ -257,8 +267,13 @@ apply_fixes() {
                 log_success "  Written $fp"
                 ok=$((ok+1))
                 ;;
-            delete)
-                [ -f "$fp" ] && { rm -f "$fp"; log_success "  Deleted $fp"; ok=$((ok+1)); }
+            delete|remove)
+                # Safety: never delete source files — skip with warning
+                if echo "$fp" | grep -qE '\.(java|kt|ts|tsx|js|jsx|py|go|rs)$'; then
+                    log_warning "  SKIPPED deletion of source file $fp (safety guard)"
+                else
+                    [ -f "$fp" ] && { rm -f "$fp"; log_success "  Deleted $fp"; ok=$((ok+1)); }
+                fi
                 ;;
         esac
     done
