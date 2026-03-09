@@ -6,6 +6,7 @@ import be.ap.student.tickets.service.TicketService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -28,7 +30,13 @@ public class TicketController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
         var saved = service.create(req);
-        return new CreateTicketResponse(saved.getTicketNumber(), saved.getStatus().name());
+        return new CreateTicketResponse(saved.getTicketNumber(), saved.getStatus());
+    }
+
+    @GetMapping("/{id}")
+    public CreateTicketResponse getById(@PathVariable UUID id) {
+        var ticket = service.findById(id);
+        return new CreateTicketResponse(ticket.getTicketNumber(), ticket.getStatus().name());
     }
 
     @GetMapping("/all")

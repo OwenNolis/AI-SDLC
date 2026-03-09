@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Service
-public class BrokenService {
+public class BrokenService implements Cacheable {
 
     public String processData(String input) {
         // Removed reference to undefined MagicCounter.getCount()

@@ -38,13 +38,13 @@ public class TicketService {
 
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
+                req.getSubject(),
                 UUID.randomUUID(),
                 ticketNumber,
-                req.getSubject(),
                 req.getDescription(),
                 priority,
                 TicketStatus.OPEN,
-                Instant.now()
+                "not-an-instant"
         );
 
         SupportTicket saved = repository.save(ticket);
