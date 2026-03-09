@@ -2,12 +2,16 @@ package be.ap.student.tickets.service;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
+import be.ap.student.tickets.controller.TicketController;
 
 @Service
 public class BrokenService /* Removed implements Cacheable */ {
 
-    // Removed reference to CacheManager as the package and class do not exist.
-    // private final CacheManager cacheManager = CacheManager.getInstance();
+    private final TicketController ticketController;
+
+    public BrokenService(TicketController ticketController) {
+        this.ticketController = ticketController;
+    }
 
     public String processData(String input) {
         // Removed reference to undefined MagicCounter.getCount()

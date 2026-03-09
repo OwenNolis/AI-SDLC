@@ -1,5 +1,5 @@
 package be.ap.student.tickets.domain;
 
 public enum TicketStatus {
-    OPEN, CLOSED
+    PENDING, IN_PROGRESS, CLOSED
 }
