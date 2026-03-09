@@ -2,9 +2,12 @@ package be.ap.student.tickets.service;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
+import be.ap.student.tickets.cache.CacheManager;
 
 @Service
 public class BrokenService {
+
+    private final CacheManager cacheManager = CacheManager.getInstance();
 
     public String processData(String input) {
         // Removed reference to undefined MagicCounter.getCount()

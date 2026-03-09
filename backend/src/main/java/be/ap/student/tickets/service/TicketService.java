@@ -28,7 +28,7 @@ public class TicketService {
         this.ticketNumberGenerator = ticketNumberGenerator;
     }
 
-    public SupportTicket create(CreateTicketRequest req) {
+    public java.util.Optional<SupportTicket> create(CreateTicketRequest req) {
         Priority priority;
         try {
             priority = Priority.valueOf(req.getPriority());
@@ -51,6 +51,6 @@ public class TicketService {
         long openCount = repository.countByStatus(TicketStatus.OPEN);
         log.info("ticket_created ticketNumber={} priority={} correlationId={} openTickets={}",
                 saved.getTicketNumber(), saved.getPriority(), MDC.get(MDC_KEY), openCount);
-        return saved;
+        return java.util.Optional.ofNullable(saved);
     }
 }
