@@ -67,7 +67,7 @@ public class TicketService {
     }
 
     // The errors indicate that String values were being passed where UUID was expected.
-    // This method is not directly causing the error based on the provided logs, but if it were, 
+    // This method is not directly causing the error based on the provided logs, but if it were,
     // it would need to parse String to UUID using UUID.fromString(stringId).
     // For example:
     public SupportTicket findByTicketNumber(String ticketNumber) {
