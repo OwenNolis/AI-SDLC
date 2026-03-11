@@ -27,7 +27,7 @@ public class TicketController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
         // Removed service.validate(req); as TicketService does not have this method and @Valid annotation handles validation.
         var optionalSavedTicket = service.create(req);
