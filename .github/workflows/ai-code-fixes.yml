@@ -231,7 +231,7 @@ jobs:
           fi
           
           echo "🔍 Running generic AI fix pipeline (errors + source code → Gemini → fixes)..."
-          if timeout 600 .github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
+          if timeout 900 .github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
             echo "✅ AI-generated fixes applied successfully"
             echo "fixes_applied=true" >> $GITHUB_OUTPUT
             

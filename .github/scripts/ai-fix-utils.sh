@@ -304,7 +304,7 @@ apply_fixes() {
 run_fix_pipeline() {
     local error_file="$1"
     local analysis="/tmp/ai_analysis.json"
-    local max=3 iter=0
+    local max=5 iter=0
     local regression_detected=false
 
     log_info "╔══════════════════════════════════════╗"
