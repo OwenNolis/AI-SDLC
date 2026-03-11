@@ -613,6 +613,157 @@ run_fix_pipeline() {
 }
 
 # ──────────────────────────────────────────────────────────────
+# 7. AI PR Review  – self-review the generated diff
+# ──────────────────────────────────────────────────────────────
+# Usage:  review_ai_pr <repo> <pr_number>
+# Requires: GEMINI_API_KEY, GITHUB_TOKEN
+review_ai_pr() {
+    local repo="$1" pr_number="$2"
+    [ -z "$pr_number" ] && { log_error "review_ai_pr: PR number required"; return 1; }
+    [ -z "$GEMINI_API_KEY" ] && { log_error "review_ai_pr: GEMINI_API_KEY not set"; return 1; }
+    [ -z "$GITHUB_TOKEN" ]  && { log_error "review_ai_pr: GITHUB_TOKEN not set"; return 1; }
+
+    log_info "Running AI self-review on PR #$pr_number …"
+
+    # ── Fetch the PR diff ──
+    local diff
+    diff=$(curl -sf -H "Accept: application/vnd.github.v3.diff" \
+        -H "Authorization: Bearer $GITHUB_TOKEN" \
+        "https://api.github.com/repos/$repo/pulls/$pr_number" 2>/dev/null || true)
+    [ -z "$diff" ] && { log_warning "Could not fetch diff for PR #$pr_number"; return 0; }
+
+    # Truncate very large diffs to fit context window
+    diff=$(head -800 <<< "$diff")
+
+    # ── Build the review prompt ──
+    cat > /tmp/ai_review_prompt.txt << 'REVIEW_PROMPT'
+You are an expert code reviewer for a Java / Spring Boot + React / TypeScript project.
+Review the DIFF below from an AI-generated fix PR.
+
+Focus on:
+1. Correctness: Do the changes actually fix the problem?
+2. Completeness: Are there any missing imports, annotations, or edge cases?
+3. Style: Do the changes follow project conventions?
+4. Safety: Any risk of regressions, NPEs, or broken tests?
+5. Unnecessary changes: Is anything modified that should have been left alone?
+
+Return a JSON object:
+{
+  "summary": "2-3 sentence overall assessment",
+  "verdict": "approve" | "request_changes" | "comment",
+  "comments": [
+    {
+      "severity": "must_fix" | "should_fix" | "nit",
+      "file": "path/to/file",
+      "line": 42,
+      "body": "description of issue and suggestion"
+    }
+  ]
+}
+
+Rules:
+- Return ONLY valid JSON. No markdown fences.
+- If the diff looks correct with no issues, return verdict "approve" with an empty comments array.
+- Be pragmatic: AI-generated fixes often rewrite entire files — focus on functional correctness.
+- "line" should reference the NEW file line number from the diff hunks.
+REVIEW_PROMPT
+
+    printf '\nDIFF:\n' >> /tmp/ai_review_prompt.txt
+    cat <<< "$diff" >> /tmp/ai_review_prompt.txt
+
+    # ── Call Gemini ──
+    local escaped
+    escaped=$(python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" < /tmp/ai_review_prompt.txt)
+
+    local model="${GEMINI_MODEL:-gemini-2.5-flash}"
+    local url="https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=$GEMINI_API_KEY"
+    local body="{
+      \"contents\":[{\"parts\":[{\"text\":$escaped}]}],
+      \"generationConfig\":{\"temperature\":0.2,\"maxOutputTokens\":8192,\"responseMimeType\":\"application/json\"}
+    }"
+
+    local resp
+    resp=$(timeout 120 curl -s -X POST "$url" \
+        -H 'Content-Type: application/json' \
+        -d "$body" 2>&1) || true
+
+    if [ -z "$resp" ] || ! echo "$resp" | jq -e '.candidates[0]' > /dev/null 2>&1; then
+        log_warning "Gemini review call failed — skipping self-review"
+        rm -f /tmp/ai_review_prompt.txt
+        return 0
+    fi
+
+    # ── Extract review JSON ──
+    local raw
+    raw=$(echo "$resp" | jq -r '.candidates[0].content.parts[0].text // empty' 2>/dev/null)
+    [ -z "$raw" ] && { log_warning "Empty review response"; return 0; }
+
+    # Parse through python to handle any leading/trailing noise
+    local review_json
+    review_json=$(python3 -c "
+import sys, json
+try:
+    data = sys.stdin.read()
+    dec = json.JSONDecoder()
+    obj, _ = dec.raw_decode(data.lstrip())
+    print(json.dumps(obj))
+except Exception as e:
+    print('{}', file=sys.stderr)
+    sys.exit(1)
+" <<< "$raw" 2>/dev/null) || { log_warning "Could not parse review JSON"; return 0; }
+
+    local summary verdict
+    summary=$(echo "$review_json" | jq -r '.summary // "No summary"')
+    verdict=$(echo "$review_json" | jq -r '.verdict // "comment"')
+    local num_comments
+    num_comments=$(echo "$review_json" | jq -r '.comments | length // 0')
+
+    log_info "Review verdict: $verdict ($num_comments comment(s))"
+    log_info "Summary: $summary"
+
+    # ── Post as PR comment ──
+    # Build a formatted markdown comment body
+    local review_body=""
+    review_body+="## 🔍 AI Self-Review\n\n"
+    review_body+="**Verdict:** "
+    case "$verdict" in
+        approve)         review_body+="✅ Approved\n\n" ;;
+        request_changes) review_body+="⚠️ Changes Requested\n\n" ;;
+        *)               review_body+="💬 Comments\n\n" ;;
+    esac
+    review_body+="**Summary:** ${summary}\n\n"
+
+    if [ "$num_comments" -gt 0 ]; then
+        review_body+="### Comments\n\n"
+        review_body+=$(echo "$review_json" | jq -r '.comments[] | "- **[\(.severity)]** `\(.file)` L\(.line): \(.body)"' 2>/dev/null || true)
+        review_body+="\n"
+    fi
+
+    review_body+="\n---\n*Self-review generated by Gemini AI (${model}).*"
+
+    # Post as issue comment (simpler & works without fine-grained token scopes)
+    local comment_body_json
+    comment_body_json=$(printf '%s' "$review_body" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+
+    local post_resp
+    post_resp=$(curl -sf -X POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer $GITHUB_TOKEN" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        "https://api.github.com/repos/$repo/issues/$pr_number/comments" \
+        -d "{\"body\": $comment_body_json}" 2>&1) || true
+
+    if echo "$post_resp" | jq -e '.id' > /dev/null 2>&1; then
+        log_success "Posted self-review comment on PR #$pr_number"
+    else
+        log_warning "Failed to post review comment: $(echo "$post_resp" | head -c 200)"
+    fi
+
+    rm -f /tmp/ai_review_prompt.txt
+    return 0
+}
+
+# ──────────────────────────────────────────────────────────────
 # CLI
 # ──────────────────────────────────────────────────────────────
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -627,10 +778,15 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
             [[ $# -eq 2 ]] || { log_error "Usage: $0 apply-ai-fixes <error_file>"; exit 1; }
             run_fix_pipeline "$2"
             ;;
+        review-pr)
+            [[ $# -eq 3 ]] || { log_error "Usage: $0 review-pr <repo> <pr_number>"; exit 1; }
+            review_ai_pr "$2" "$3"
+            ;;
         *)
             log_info "AI Code Fixing Utilities (generic)"
             log_info "  extract-errors <log> <out>     Extract errors from build log"
             log_info "  apply-ai-fixes <error_file>    Full AI-powered fix pipeline"
+            log_info "  review-pr <repo> <pr_number>   AI self-review of a PR"
             ;;
     esac
 fi

@@ -283,6 +283,7 @@ jobs:
 
       - name: Create Pull Request with AI Fixes
         if: steps.apply_fixes.outputs.fixes_applied == 'true'
+        id: create_pr
         run: |
           echo "🚀 Creating pull request with AI-generated fixes..."
           
@@ -366,7 +367,7 @@ jobs:
           
           # Create the pull request using GitHub CLI or API
           pr_body_json=$(cat /tmp/pr_body.txt | jq -Rs .)
-          curl -X POST \
+          pr_response=$(curl -s -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -376,9 +377,24 @@ jobs:
               \"body\": $pr_body_json,
               \"head\": \"$branch_name\", 
               \"base\": \"main\"
-            }"
+            }")
           
-          echo "✅ Pull request created successfully with AI-generated fixes"
+          pr_number=$(echo "$pr_response" | jq -r '.number // empty')
+          if [ -n "$pr_number" ]; then
+            echo "✅ Pull request #$pr_number created successfully"
+            echo "pr_number=$pr_number" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ PR creation response did not contain a number"
+            echo "Response: $(echo "$pr_response" | head -c 500)"
+          fi
+
+      - name: AI Self-Review of PR
+        if: steps.create_pr.outputs.pr_number != ''
+        run: |
+          echo "🔍 Running AI self-review on PR #${{ steps.create_pr.outputs.pr_number }}..."
+          export GEMINI_API_KEY="${{ env.GEMINI_API_KEY }}"
+          export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          .github/scripts/ai-fix-utils.sh review-pr "${{ github.repository }}" "${{ steps.create_pr.outputs.pr_number }}"
 
       - name: Report Results
         if: always()
