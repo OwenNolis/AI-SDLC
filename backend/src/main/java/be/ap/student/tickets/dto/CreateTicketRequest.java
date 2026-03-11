@@ -17,6 +17,9 @@ public class CreateTicketRequest {
     @NotNull
     private String priority;
 
+    @NotBlank
+    private String userId;
+
     public CreateTicketRequest() {}
 
     public String getSubject() { return subject; }
@@ -27,4 +30,7 @@ public class CreateTicketRequest {
 
     public String getPriority() { return priority; }
     public void setPriority(String priority) { this.priority = priority; }
+
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 }

@@ -5,7 +5,6 @@ import be.ap.student.tickets.domain.SupportTicket;
 import be.ap.student.tickets.domain.TicketStatus;
 import be.ap.student.tickets.dto.CreateTicketRequest;
 import be.ap.student.tickets.repo.SupportTicketRepository;
-import be.ap.student.tickets.audit.AuditLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -25,7 +24,6 @@ public class TicketService {
 
     private final SupportTicketRepository repository;
     private final TicketNumberGenerator ticketNumberGenerator;
-    // Removed auditService as the package 'be.ap.student.tickets.audit' does not exist
 
     public TicketService(SupportTicketRepository repository, TicketNumberGenerator ticketNumberGenerator) {
         this.repository = repository;
@@ -43,16 +41,16 @@ public class TicketService {
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
                 ticketNumber,
-                UUID.randomUUID(), // Fix: Pass UUID object directly, not its String representation
+                UUID.fromString(req.getUserId()), // Fix: Convert String userId from request to UUID
                 req.getSubject(),
                 req.getDescription(),
                 priority,
-                TicketStatus.PENDING, // Fix: Changed OPEN to PENDING
+                TicketStatus.PENDING,
                 Instant.now()
         );
 
         SupportTicket saved = repository.save(ticket);
-        long openCount = repository.countByStatus(TicketStatus.PENDING); // Fix: Changed OPEN to PENDING
+        long openCount = repository.countByStatus(TicketStatus.PENDING);
         log.info("ticket_created ticketNumber={} priority={} correlationId={} openTickets={}",
                 saved.getTicketNumber(), saved.getPriority(), MDC.get(MDC_KEY), openCount);
         return Optional.ofNullable(saved);
