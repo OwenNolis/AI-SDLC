@@ -70,6 +70,34 @@ run_frontend_checks() {
     return $fc
 }
 
+# Run static analysis (ESLint). Returns 0 on clean, 1 on findings.
+# Appends lint errors to the given error file.
+run_static_analysis() {
+    local log_file="$1" error_file="$2"
+    local lint_rc=0
+
+    # ── Frontend: ESLint ──
+    if [ -f frontend/package.json ] && grep -q '"lint"' frontend/package.json 2>/dev/null; then
+        log_info "Running ESLint on frontend …"
+        (cd frontend && npm install --legacy-peer-deps --silent > /dev/null 2>&1 || true
+         npx eslint . 2>&1) > "$log_file" 2>&1 || lint_rc=$?
+        if [ $lint_rc -ne 0 ]; then
+            log_info "ESLint found issues – extracting lint errors"
+            # ESLint default (stylish) format:  /path/file.tsx
+            #   10:5  error  message  rule-name
+            # Capture the file header + indented error lines
+            grep -E '^\S.*\.(tsx?|jsx?|css)$' "$log_file" >> "$error_file" 2>/dev/null || true
+            grep -E '^\s+[0-9]+:[0-9]+\s+(error|warning)' "$log_file" >> "$error_file" 2>/dev/null || true
+            # Also grab summary lines (✖ N problems)
+            grep -E '^✖|problems?\s*\(' "$log_file" >> "$error_file" 2>/dev/null || true
+        else
+            log_success "ESLint: no issues found"
+        fi
+    fi
+
+    return $lint_rc
+}
+
 # ──────────────────────────────────────────────────────────────
 # 1. Extract errors from any build / test log
 # ──────────────────────────────────────────────────────────────
@@ -137,6 +165,12 @@ extract_all_errors() {
     grep -A8 'Test suite failed to run\|SyntaxError:\|ReferenceError:\|TypeError:' \
         "$log_file" >> "$output_file" 2>/dev/null || true
 
+    # ── ESLint errors (stylish: indented "10:5 error …"; unix: "file.tsx:10:5: …") ──
+    grep -E '^\s+[0-9]+:[0-9]+\s+(error|warning)' \
+        "$log_file" >> "$output_file" 2>/dev/null || true
+    grep -E '^[^ ]+\.(tsx?|jsx?|css):[0-9]+:[0-9]+:' \
+        "$log_file" >> "$output_file" 2>/dev/null || true
+
     # ── Generic [ERROR] lines ──
     grep "^\[ERROR\]\|^Error:" "$log_file" >> "$output_file" 2>/dev/null || true
 
@@ -197,6 +231,17 @@ extract_affected_files() {
         [ -n "$fefound" ] && files=$(printf '%s\n%s' "$files" "$fefound")
     done
 
+    # ESLint: absolute paths from stylish/unix format → strip to relative
+    # Stylish: /abs/path/file.tsx  (alone on a line)
+    # Unix:    /abs/path/file.tsx:10:5: message
+    local eslint_abs; eslint_abs=$(grep -oE '^/[^ :]+\.(tsx?|jsx?|css)' "$error_file" 2>/dev/null | sort -u || true)
+    for apath in $eslint_abs; do
+        [ -z "$apath" ] && continue
+        # Convert absolute to workspace-relative path
+        local rel; rel=$(echo "$apath" | sed 's|.*/frontend/|frontend/|' 2>/dev/null || true)
+        [ -n "$rel" ] && [ -f "$rel" ] && files=$(printf '%s\n%s' "$files" "$rel")
+    done
+
     # De-duplicate and keep only files that actually exist on disk
     local result=""
     while IFS= read -r f; do
@@ -246,6 +291,9 @@ RULES:
 • For TypeScript/React errors: fix the actual component or test file.
   Preserve existing imports, hooks, and component structure.
   Use proper React/JSX syntax and TypeScript types.
+• For ESLint / static-analysis warnings: fix the root cause, not just suppress.
+  Prefer proper typing over @ts-ignore. Use the correct ESLint-recommended pattern.
+  Only add // eslint-disable as a last resort when the rule is a false positive.
 • For missing imports → add the right import.
 • For undefined classes/methods used in production code → remove the broken
   usage or replace it with a minimal working alternative.
@@ -460,9 +508,12 @@ run_fix_pipeline() {
             # Also check frontend
             run_frontend_checks /tmp/_fe_check.log "$error_file" || true
 
+            # Static analysis (lint)
+            run_static_analysis /tmp/_lint_check.log "$error_file" || true
+
             errs=$(cat "$error_file" 2>/dev/null | head -400 || true)
             if [ -z "$errs" ] || [ "$(wc -l <<< "$errs" | tr -d ' ')" -lt 2 ]; then
-                log_success "Backend + frontend pass – nothing to fix!"
+                log_success "Backend + frontend + lint pass – nothing to fix!"
                 return 0
             fi
         fi
@@ -529,12 +580,23 @@ run_fix_pipeline() {
                 # Backend passes — now check frontend too
                 local fe2=0
                 run_frontend_checks /tmp/_fe_retest.log /tmp/_fe_errors_iter.txt || fe2=$?
-                if [ $fe2 -eq 0 ]; then
-                    log_success "All backend + frontend tests pass after iteration $iter!"
-                    return 0
-                else
+                if [ $fe2 -ne 0 ]; then
                     log_info "Backend passes but frontend still failing – extracting frontend errors"
                     cat /tmp/_fe_errors_iter.txt >> "$error_file" 2>/dev/null || true
+                fi
+
+                # Run lint check
+                local lint2=0
+                : > /tmp/_lint_errors_iter.txt
+                run_static_analysis /tmp/_lint_retest.log /tmp/_lint_errors_iter.txt || lint2=$?
+                if [ $lint2 -ne 0 ]; then
+                    log_info "Static analysis found issues – feeding to next iteration"
+                    cat /tmp/_lint_errors_iter.txt >> "$error_file" 2>/dev/null || true
+                fi
+
+                if [ $fe2 -eq 0 ] && [ $lint2 -eq 0 ]; then
+                    log_success "All tests + lint pass after iteration $iter!"
+                    return 0
                 fi
             else
                 local test_failures_after=0
@@ -598,6 +660,14 @@ run_fix_pipeline() {
             log_success "Frontend checks pass!"
         else
             log_warning "Some frontend checks still fail"
+        fi
+        # Static analysis final check
+        local final_lint=0
+        run_static_analysis /tmp/_final_lint.log /tmp/_final_lint_errors.txt || final_lint=$?
+        if [ $final_lint -eq 0 ]; then
+            log_success "Static analysis clean!"
+        else
+            log_warning "Some lint issues remain"
         fi
         return 0  # fixes were applied, PR should be created
     else
