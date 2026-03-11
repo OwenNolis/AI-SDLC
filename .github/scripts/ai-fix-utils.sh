@@ -275,9 +275,9 @@ RESPONSE FORMAT (strict JSON):
 PROMPT
 
     printf '\nERRORS:\n'            >> /tmp/ai_prompt.txt
-    head -200 <<< "$error_content"  >> /tmp/ai_prompt.txt
+    head -400 <<< "$error_content"  >> /tmp/ai_prompt.txt
     printf '\nSOURCE CODE:\n'       >> /tmp/ai_prompt.txt
-    head -600 <<< "$source_context" >> /tmp/ai_prompt.txt
+    head -1500 <<< "$source_context" >> /tmp/ai_prompt.txt
 
     # Escape for JSON
     local escaped
@@ -288,7 +288,7 @@ PROMPT
     local url="https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=$GEMINI_API_KEY"
     local body="{
       \"contents\":[{\"parts\":[{\"text\":$escaped}]}],
-      \"generationConfig\":{\"temperature\":0.1,\"maxOutputTokens\":16384,\"responseMimeType\":\"application/json\"}
+      \"generationConfig\":{\"temperature\":0.1,\"maxOutputTokens\":65536,\"responseMimeType\":\"application/json\"}
     }"
 
     local resp="" attempt=0 max_attempts=4 wait_secs=5
@@ -440,7 +440,7 @@ run_fix_pipeline() {
         log_info "── iteration $iter/$max ──────────────────────"
 
         # Make sure we have fresh error content
-        local errs; errs=$(cat "$error_file" 2>/dev/null | head -200 || true)
+        local errs; errs=$(cat "$error_file" 2>/dev/null | head -400 || true)
         if [ -z "$errs" ] || [ "$(wc -l <<< "$errs" | tr -d ' ')" -lt 2 ]; then
             log_info "Error file thin – running build to capture errors …"
 
@@ -460,7 +460,7 @@ run_fix_pipeline() {
             # Also check frontend
             run_frontend_checks /tmp/_fe_check.log "$error_file" || true
 
-            errs=$(cat "$error_file" 2>/dev/null | head -200 || true)
+            errs=$(cat "$error_file" 2>/dev/null | head -400 || true)
             if [ -z "$errs" ] || [ "$(wc -l <<< "$errs" | tr -d ' ')" -lt 2 ]; then
                 log_success "Backend + frontend pass – nothing to fix!"
                 return 0
