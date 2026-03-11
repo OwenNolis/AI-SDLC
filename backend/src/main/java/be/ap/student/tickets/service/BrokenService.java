@@ -2,9 +2,16 @@ package be.ap.student.tickets.service;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
+import be.ap.student.tickets.controller.TicketController;
 
 @Service
-public class BrokenService {
+public class BrokenService /* Removed implements Cacheable */ {
+
+    private final TicketController ticketController;
+
+    public BrokenService(TicketController ticketController) {
+        this.ticketController = ticketController;
+    }
 
     public String processData(String input) {
         // Removed reference to undefined MagicCounter.getCount()
@@ -22,7 +29,7 @@ public class BrokenService {
     }
 
     public String validateInput(String data) {
-        // Assuming DataTransformer is a static utility class. 
+        // Assuming DataTransformer is a static utility class.
         // A placeholder implementation is provided as it was not found.
         return DataTransformer.transform(data);
     }

@@ -1,22 +1,15 @@
 [ERROR] COMPILATION ERROR : 
 [INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[10,21] cannot find symbol
-  symbol:   variable MagicCounter
-  location: class be.ap.student.tickets.service.BrokenService
-[INFO] 1 error
-[INFO] -------------------------------------------------------------
---
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[10,21] cannot find symbol
-[ERROR]   symbol:   variable MagicCounter
-[ERROR]   location: class be.ap.student.tickets.service.BrokenService
-[ERROR] 
-[ERROR] -> [Help 1]
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[43,32] constructor SupportTicket in class be.ap.student.tickets.domain.SupportTicket cannot be applied to given types;
+  required: java.lang.String,java.util.UUID,java.lang.String,java.lang.String,be.ap.student.tickets.domain.Priority,be.ap.student.tickets.domain.TicketStatus,java.time.Instant
+  found:    java.lang.String,java.util.UUID,java.lang.String,java.lang.String,be.ap.student.tickets.domain.Priority,be.ap.student.tickets.domain.TicketStatus,java.time.Instant
 [ERROR] COMPILATION ERROR : 
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[10,21] cannot find symbol
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[43,32] constructor SupportTicket in class be.ap.student.tickets.domain.SupportTicket cannot be applied to given types;
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project backend: Compilation failure
-[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/BrokenService.java:[10,21] cannot find symbol
-[ERROR]   symbol:   variable MagicCounter
-[ERROR]   location: class be.ap.student.tickets.service.BrokenService
+[ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/main/java/be/ap/student/tickets/service/TicketService.java:[43,32] constructor SupportTicket in class be.ap.student.tickets.domain.SupportTicket cannot be applied to given types;
+[ERROR]   required: java.lang.String,java.util.UUID,java.lang.String,java.lang.String,be.ap.student.tickets.domain.Priority,be.ap.student.tickets.domain.TicketStatus,java.time.Instant
+[ERROR]   found:    java.lang.String,java.util.UUID,java.lang.String,java.lang.String,be.ap.student.tickets.domain.Priority,be.ap.student.tickets.domain.TicketStatus,java.time.Instant
+[ERROR]   reason: SupportTicket(java.lang.String,java.util.UUID,java.lang.String,java.lang.String,be.ap.student.tickets.domain.Priority,be.ap.student.tickets.domain.TicketStatus,java.time.Instant) has private access in be.ap.student.tickets.domain.SupportTicket
 [ERROR] 
 [ERROR] -> [Help 1]
 [ERROR] 

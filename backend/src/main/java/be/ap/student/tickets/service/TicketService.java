@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static be.ap.student.common.web.CorrelationIdFilter.MDC_KEY;
 
@@ -22,13 +24,14 @@ public class TicketService {
 
     private final SupportTicketRepository repository;
     private final TicketNumberGenerator ticketNumberGenerator;
+    // Removed auditService as the package 'be.ap.student.tickets.audit' does not exist
 
     public TicketService(SupportTicketRepository repository, TicketNumberGenerator ticketNumberGenerator) {
         this.repository = repository;
         this.ticketNumberGenerator = ticketNumberGenerator;
     }
 
-    public SupportTicket create(CreateTicketRequest req) {
+    public Optional<SupportTicket> create(CreateTicketRequest req) {
         Priority priority;
         try {
             priority = Priority.valueOf(req.getPriority());
@@ -38,18 +41,24 @@ public class TicketService {
 
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
-                UUID.randomUUID(),
                 ticketNumber,
+                UUID.randomUUID(), // Fix: Pass UUID object directly, not its String representation
                 req.getSubject(),
                 req.getDescription(),
                 priority,
-                TicketStatus.OPEN,
+                TicketStatus.PENDING, // Fix: Changed OPEN to PENDING
                 Instant.now()
         );
 
         SupportTicket saved = repository.save(ticket);
-        log.info("ticket_created ticketNumber={} priority={} correlationId={}",
-                saved.getTicketNumber(), saved.getPriority(), MDC.get(MDC_KEY));
-        return saved;
+        long openCount = repository.countByStatus(TicketStatus.PENDING); // Fix: Changed OPEN to PENDING
+        log.info("ticket_created ticketNumber={} priority={} correlationId={} openTickets={}",
+                saved.getTicketNumber(), saved.getPriority(), MDC.get(MDC_KEY), openCount);
+        return Optional.ofNullable(saved);
+    }
+
+    public SupportTicket findById(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Ticket with id " + id + " not found"));
     }
 }

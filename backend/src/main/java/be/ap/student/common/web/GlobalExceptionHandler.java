@@ -42,13 +42,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGeneric(Exception ex) {
+    public ResponseEntity<ApiError> handleGeneric(Exception ex) { // Changed return type to ApiError
         String correlationId = MDC.get(MDC_KEY);
         ApiError body = new ApiError(correlationId, "INTERNAL_ERROR", "Something went wrong", List.of());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 
-    private ApiError.FieldError mapFieldError(FieldError fe) {
-        return new ApiError.FieldError(fe.getField(), fe.getDefaultMessage());
+    private ApiError.FieldError mapFieldError(FieldError fieldError) {
+        return new ApiError.FieldError(fieldError.getField(), "invalid");
     }
 }

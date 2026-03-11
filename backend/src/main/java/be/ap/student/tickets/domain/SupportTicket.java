@@ -34,7 +34,7 @@ public class SupportTicket {
 
     protected SupportTicket() {}
 
-    public SupportTicket(UUID id, String ticketNumber, String subject, String description, Priority priority, TicketStatus status, Instant createdAt) {
+    public SupportTicket(String ticketNumber, UUID id, String subject, String description, Priority priority, TicketStatus status, Instant createdAt) {
         this.id = id;
         this.ticketNumber = ticketNumber;
         this.subject = subject;
@@ -49,6 +49,10 @@ public class SupportTicket {
     public String getSubject() { return subject; }
     public String getDescription() { return description; }
     public Priority getPriority() { return priority; }
-    public TicketStatus getStatus() { return status; }
+    public String getStatus() { return status.name(); }
     public Instant getCreatedAt() { return createdAt; }
+
+    public String getFormattedStatus() {
+        return this.status.name();
+    }
 }

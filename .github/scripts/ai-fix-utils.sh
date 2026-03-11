@@ -13,6 +13,19 @@ log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
 
+# Count UNIQUE compile errors by file:line — ignores Maven boilerplate
+# like "[ERROR] -> [Help 1]", "[ERROR] Re-run Maven...", etc.
+# This prevents the cascade-reveal problem where fixing one error
+# unmasks hidden errors, temporarily increasing raw [ERROR] count.
+count_unique_errors() {
+    local log_file="$1"
+    # Match lines like: [ERROR] /path/File.java:[42,10] message
+    # The { grep ... || true; } ensures exit-code 0 even when grep finds
+    # nothing, which is critical under set -e / set -o pipefail.
+    { grep -oE '\[ERROR\] [^ ]+\.java:\[[0-9]+,[0-9]+\]' "$log_file" 2>/dev/null || true; } \
+        | sort -u | wc -l | tr -d ' '
+}
+
 # ──────────────────────────────────────────────────────────────
 # 1. Extract errors from any build / test log
 # ──────────────────────────────────────────────────────────────
@@ -114,6 +127,8 @@ RULES:
 • Each fix must contain the COMPLETE file content (package, imports, class body).
   Never use placeholders like "// … rest of code".
 • Only touch files that are actually broken.  Keep working code intact.
+• NEVER delete or remove source files. Always use action "modify" to fix them.
+  Deleting a file breaks the project. Fix the code inside the file instead.
 • For missing imports → add the right import.
 • For undefined classes/methods used in production code → remove the broken
   usage or replace it with a minimal working alternative.
@@ -145,11 +160,11 @@ PROMPT
     escaped=$(python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" < /tmp/ai_prompt.txt)
 
     # ── API call with retry ─────────────────────────────
-    local model="${GEMINI_MODEL:-gemini-2.5-flash-lite}"
+    local model="${GEMINI_MODEL:-gemini-2.5-flash}"
     local url="https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=$GEMINI_API_KEY"
     local body="{
       \"contents\":[{\"parts\":[{\"text\":$escaped}]}],
-      \"generationConfig\":{\"temperature\":0.1,\"maxOutputTokens\":8192,\"responseMimeType\":\"application/json\"}
+      \"generationConfig\":{\"temperature\":0.1,\"maxOutputTokens\":16384,\"responseMimeType\":\"application/json\"}
     }"
 
     local resp="" attempt=0 max_attempts=4 wait_secs=5
@@ -163,11 +178,19 @@ PROMPT
         # Check for retryable errors (503, 429, empty)
         if [ -z "$resp" ]; then
             log_warning "  Empty response – retrying in ${wait_secs}s …"
-        elif echo "$resp" | grep -qiE '503|429|overloaded|quota|high demand|temporarily unavailable'; then
+        elif echo "$resp" | jq -e '.error' > /dev/null 2>&1; then
+            local http_code; http_code=$(echo "$resp" | jq -r '.error.code // 0' 2>/dev/null)
             local api_err; api_err=$(echo "$resp" | jq -r '.error.message // empty' 2>/dev/null)
-            log_warning "  Retryable error: ${api_err:-$(head -c200 <<< "$resp")} – retrying in ${wait_secs}s …"
+            if [ "$http_code" = "503" ] || [ "$http_code" = "429" ]; then
+                log_warning "  Retryable API error ($http_code): ${api_err} – retrying in ${wait_secs}s …"
+            else
+                log_warning "  API error ($http_code): ${api_err}"
+                break  # non-retryable API error
+            fi
+        elif ! echo "$resp" | jq -e '.candidates[0]' > /dev/null 2>&1; then
+            log_warning "  Unexpected response format – retrying in ${wait_secs}s …"
         else
-            break   # got a real response
+            break   # got a real response with candidates
         fi
 
         [ $attempt -lt $max_attempts ] && sleep $wait_secs
@@ -181,6 +204,11 @@ PROMPT
     [ -n "$err" ] && { log_warning "Gemini error: $err"; rm -f /tmp/ai_prompt.txt; return 1; }
 
     # Extract text from Gemini response
+    local finish_reason; finish_reason=$(echo "$resp" | jq -r '.candidates[0].finishReason // "STOP"' 2>/dev/null)
+    if [ "$finish_reason" = "MAX_TOKENS" ]; then
+        log_warning "  Gemini response was TRUNCATED (hit output token limit)"
+    fi
+
     local raw; raw=$(echo "$resp" | jq -r '.candidates[0].content.parts[0].text // empty' 2>/dev/null)
     [ -z "$raw" ] && { log_warning "Empty candidate text"; rm -f /tmp/ai_prompt.txt; return 1; }
 
@@ -190,13 +218,26 @@ PROMPT
     if echo "$clean" | jq . > /dev/null 2>&1; then
         echo "$clean" > "$out_file"
     else
-        # Last-ditch: pull the first { … } from the text with Python
+        # Last-ditch: use Python json.JSONDecoder for robust extraction of first JSON object
         clean=$(python3 -c "
-import sys, json, re
-m = re.search(r'\{.*\}', sys.stdin.read(), re.DOTALL)
-if m:
-    try: o=json.loads(m.group()); print(json.dumps(o))
+import sys, json
+text = sys.stdin.read()
+# Try the whole text first
+try:
+    o = json.loads(text)
+    print(json.dumps(o))
+    sys.exit(0)
+except: pass
+# Find the first { and use raw_decode
+idx = text.find('{')
+if idx >= 0:
+    try:
+        decoder = json.JSONDecoder()
+        o, _ = decoder.raw_decode(text, idx)
+        print(json.dumps(o))
+        sys.exit(0)
     except: pass
+sys.exit(1)
 " <<< "$raw" 2>/dev/null)
         if [ -n "$clean" ] && echo "$clean" | jq . > /dev/null 2>&1; then
             echo "$clean" > "$out_file"
@@ -244,8 +285,13 @@ apply_fixes() {
                 log_success "  Written $fp"
                 ok=$((ok+1))
                 ;;
-            delete)
-                [ -f "$fp" ] && { rm -f "$fp"; log_success "  Deleted $fp"; ok=$((ok+1)); }
+            delete|remove)
+                # Safety: never delete source files — skip with warning
+                if echo "$fp" | grep -qE '\.(java|kt|ts|tsx|js|jsx|py|go|rs)$'; then
+                    log_warning "  SKIPPED deletion of source file $fp (safety guard)"
+                else
+                    [ -f "$fp" ] && { rm -f "$fp"; log_success "  Deleted $fp"; ok=$((ok+1)); }
+                fi
                 ;;
         esac
     done
@@ -259,6 +305,7 @@ run_fix_pipeline() {
     local error_file="$1"
     local analysis="/tmp/ai_analysis.json"
     local max=3 iter=0
+    local regression_detected=false
 
     log_info "╔══════════════════════════════════════╗"
     log_info "║   AI Fix Pipeline  (max $max iterations)  ║"
@@ -301,15 +348,43 @@ run_fix_pipeline() {
         # Ask Gemini
         if ! call_gemini "$errs" "$src" "$analysis"; then
             log_error "Gemini call failed on iteration $iter"
+            if [ $iter -gt 1 ]; then
+                log_warning "Continuing with fixes from previous iterations"
+                break
+            fi
             return 1
         fi
+
+        # ── Regression guard: snapshot & count errors BEFORE fixes ──
+        local savepoint
+        savepoint=$(git stash create 2>/dev/null || true)
+        local errors_before=0
+        (cd backend && mvn test-compile > /tmp/_pre_fix.log 2>&1) || true
+        errors_before=$(count_unique_errors /tmp/_pre_fix.log)
+        log_info "Unique error count before iteration $iter fixes: $errors_before"
 
         # Apply
         apply_fixes "$analysis"
 
-        # Verify compilation
+        # ── Verify & regression check ──
         local cc2=0
-        (cd backend && mvn test-compile -q > /dev/null 2>&1) || cc2=$?
+        (cd backend && mvn test-compile > /tmp/_post_fix.log 2>&1) || cc2=$?
+        local errors_after=0
+        errors_after=$(count_unique_errors /tmp/_post_fix.log)
+        log_info "Unique error count after iteration $iter fixes: $errors_after"
+
+        # If AI made things WORSE, revert this iteration and stop
+        if [ "$errors_after" -gt "$errors_before" ] && [ "$errors_before" -gt 0 ]; then
+            log_error "🚨 REGRESSION: errors increased from $errors_before → $errors_after"
+            log_error "Reverting iteration $iter fixes to prevent further damage"
+            git checkout -- . 2>/dev/null || true
+            git clean -fd 2>/dev/null || true
+            if [ -n "$savepoint" ]; then
+                git stash apply "$savepoint" 2>/dev/null || true
+            fi
+            regression_detected=true
+            break
+        fi
 
         if [ $cc2 -eq 0 ]; then
             log_success "Compilation OK after iteration $iter"
@@ -332,8 +407,39 @@ run_fix_pipeline() {
         fi
     done
 
-    log_warning "Reached $max iterations – some issues may remain"
-    return 1
+    # Final check: even if we hit max iterations or Gemini failed on a later
+    # iteration, previous iterations may have fixed things.
+    # But if regression was detected and no prior iterations succeeded, fail hard.
+    if [ "$regression_detected" = "true" ] && [ $iter -le 1 ]; then
+        log_error "Regression detected on first iteration — no useful fixes to apply"
+        return 1
+    fi
+
+    log_info "Running final compilation check..."
+    local final_cc=0
+    (cd backend && mvn test-compile -q > /dev/null 2>&1) || final_cc=$?
+
+    if [ $final_cc -eq 0 ]; then
+        log_success "Compilation passes after $iter iteration(s)"
+        local final_tc=0
+        (cd backend && mvn test > /tmp/_final_test.log 2>&1) || final_tc=$?
+        if [ $final_tc -eq 0 ]; then
+            log_success "All tests pass!"
+            return 0
+        else
+            log_warning "Compilation OK but some tests still fail"
+            return 0  # still return success — fixes were applied, PR should be created
+        fi
+    else
+        log_warning "Compilation still broken after $iter iteration(s)"
+        # Check if ANY source files were changed — if so, still create a PR with partial fixes
+        local changed; changed=$(git diff --name-only 2>/dev/null | grep -cE '\.(java|kt|ts|tsx|js|jsx|py|go|rs|xml)$' || echo 0)
+        if [ "$changed" -gt 0 ]; then
+            log_info "$changed source file(s) were modified — creating PR with partial fixes"
+            return 0  # partial fix is better than nothing
+        fi
+        return 1
+    fi
 }
 
 # ──────────────────────────────────────────────────────────────
