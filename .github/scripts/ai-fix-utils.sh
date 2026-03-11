@@ -26,6 +26,20 @@ count_unique_errors() {
         | sort -u | wc -l | tr -d ' '
 }
 
+# Count test failures from Maven surefire output.
+# Looks for the summary line: "Tests run: X, Failures: Y, Errors: Z"
+# Returns total of Failures + Errors across all test classes.
+count_test_failures() {
+    local log_file="$1"
+    { grep 'Tests run:' "$log_file" 2>/dev/null || true; } \
+        | awk -F'[, ]+' '{
+            for(i=1;i<=NF;i++) {
+                if($i=="Failures:") f+=$(i+1);
+                if($i=="Errors:")   e+=$(i+1);
+            }
+          } END { print f+e+0 }'
+}
+
 # ──────────────────────────────────────────────────────────────
 # 1. Extract errors from any build / test log
 # ──────────────────────────────────────────────────────────────
@@ -177,6 +191,13 @@ RULES:
   usage or replace it with a minimal working alternative.
 • For test failures caused by missing endpoints → create the endpoint or fix
   the test expectation so the test passes.
+• When compilation passes but TESTS FAIL: focus on the test output carefully.
+  – If the test expectations are wrong (e.g. wrong status code, wrong field name),
+    fix the TEST file.
+  – If the production code has a logic bug (e.g. NPE, wrong return value,
+    missing null check), fix the PRODUCTION file.
+  – Include both test and production files in your fixes when both need changes.
+  – NEVER just delete or skip a failing test to make the build pass.
 • Return ONLY valid JSON. No markdown fences, no explanation outside the JSON.
 
 RESPONSE FORMAT (strict JSON):
@@ -432,7 +453,10 @@ run_fix_pipeline() {
         if [ $cc2 -eq 0 ]; then
             log_success "Compilation OK after iteration $iter"
 
-            # Now check tests
+            # ── Test-only mode: compilation passed, run tests ──
+            local test_failures_before=0
+            test_failures_before=$(count_test_failures /tmp/_post_fix.log)
+
             local tc2=0
             (cd backend && mvn test > /tmp/_retest.log 2>&1) || tc2=$?
 
@@ -440,8 +464,31 @@ run_fix_pipeline() {
                 log_success "All tests pass after iteration $iter!"
                 return 0
             else
-                log_info "Tests still failing – feeding new errors to next iteration"
+                local test_failures_after=0
+                test_failures_after=$(count_test_failures /tmp/_retest.log)
+                log_info "Test failures: $test_failures_after (was $test_failures_before before this iteration)"
+
+                # Test regression guard: if we made test results worse, revert
+                if [ "$test_failures_after" -gt "$test_failures_before" ] && [ "$test_failures_before" -gt 0 ]; then
+                    log_error "🚨 TEST REGRESSION: failures increased from $test_failures_before → $test_failures_after"
+                    log_error "Reverting iteration $iter fixes"
+                    git checkout -- . 2>/dev/null || true
+                    git clean -fd 2>/dev/null || true
+                    if [ -n "$savepoint" ]; then
+                        git stash apply "$savepoint" 2>/dev/null || true
+                    fi
+                    regression_detected=true
+                    break
+                fi
+
+                log_info "Tests still failing – extracting errors for next iteration"
                 extract_all_errors /tmp/_retest.log "$error_file"
+
+                # Include test source files in the context for next iteration
+                local test_files; test_files=$(extract_affected_files "$error_file" | grep '/test/' || true)
+                if [ -n "$test_files" ]; then
+                    log_info "Test-only mode: including $(echo "$test_files" | wc -l | tr -d ' ') test file(s) in next iteration context"
+                fi
             fi
         else
             log_info "Compilation still broken – feeding new errors to next iteration"
