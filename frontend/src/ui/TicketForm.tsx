@@ -26,7 +26,7 @@ function validate(values: TicketFormValues) {
   return errors;
 }
 
-export function TicketForm({ loading, error, onSubmit }: Props) {
+export function TicketForm({ loading, error, handleSubmit }: Props) {
   const [values, setValues] = useState<TicketFormValues>({
     subject: "",
     description: "",

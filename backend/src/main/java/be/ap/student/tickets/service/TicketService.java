@@ -5,6 +5,7 @@ import be.ap.student.tickets.domain.SupportTicket;
 import be.ap.student.tickets.domain.TicketStatus;
 import be.ap.student.tickets.dto.CreateTicketRequest;
 import be.ap.student.tickets.repo.SupportTicketRepository;
+import be.ap.student.tickets.audit.AuditLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
