@@ -40,6 +40,36 @@ count_test_failures() {
           } END { print f+e+0 }'
 }
 
+# Count frontend errors: unique TypeScript compile errors + Jest test failures.
+count_frontend_errors() {
+    local log_file="$1"
+    local ts_errors=0 jest_failures=0
+    ts_errors=$({ grep -c 'error TS[0-9]' "$log_file" 2>/dev/null || true; })
+    jest_failures=$({ grep -oE '[0-9]+ failed' "$log_file" 2>/dev/null | head -1 | grep -oE '[0-9]+' || true; })
+    [ -z "$ts_errors" ] && ts_errors=0
+    [ -z "$jest_failures" ] && jest_failures=0
+    echo $(( ts_errors + jest_failures ))
+}
+
+# Run frontend checks (npm test). Returns 0 on success, 1 on failure.
+# Appends errors to the given error file and logs to the given log file.
+run_frontend_checks() {
+    local log_file="$1" error_file="$2"
+    if [ ! -f frontend/package.json ]; then
+        return 0  # no frontend in this project
+    fi
+    log_info "Running frontend checks …"
+    local fc=0
+    (cd frontend && npm install --legacy-peer-deps --silent > /dev/null 2>&1 || true
+     npm test -- --passWithNoTests --no-coverage 2>&1) > "$log_file" 2>&1 || fc=$?
+    if [ $fc -ne 0 ]; then
+        log_info "Frontend checks failed – extracting frontend errors"
+        extract_all_errors "$log_file" /tmp/_fe_errors.txt
+        cat /tmp/_fe_errors.txt >> "$error_file"
+    fi
+    return $fc
+}
+
 # ──────────────────────────────────────────────────────────────
 # 1. Extract errors from any build / test log
 # ──────────────────────────────────────────────────────────────
@@ -96,6 +126,17 @@ extract_all_errors() {
     grep -A6 "npm ERR\|TS[0-9]\+:\|Cannot find module\|FAIL.*\.test\.\|SyntaxError" \
         "$log_file" >> "$output_file" 2>/dev/null || true
 
+    # ── TypeScript compiler errors (tsc output:  src/File.tsx(10,5): error TS2xxx) ──
+    grep -A3 'error TS[0-9]\+:' "$log_file" >> "$output_file" 2>/dev/null || true
+
+    # ── Jest detailed failures: FAIL line + expect / received blocks ──
+    grep -B1 -A10 'Expected\|Received\|expect(.*)\.\|● ' \
+        "$log_file" >> "$output_file" 2>/dev/null || true
+
+    # ── Jest test suite errors (crash before tests run) ──
+    grep -A8 'Test suite failed to run\|SyntaxError:\|ReferenceError:\|TypeError:' \
+        "$log_file" >> "$output_file" 2>/dev/null || true
+
     # ── Generic [ERROR] lines ──
     grep "^\[ERROR\]\|^Error:" "$log_file" >> "$output_file" 2>/dev/null || true
 
@@ -140,6 +181,22 @@ extract_affected_files() {
         [ -n "$found" ] && files=$(printf '%s\n%s' "$files" "$found")
     done
 
+    # ── Frontend: relative paths from TypeScript / Jest output ──
+    # TSC output:  frontend/src/ui/TicketForm.tsx(10,5): error TS2xxx
+    local fe_paths; fe_paths=$(grep -oE 'frontend/src/[^ (:]+\.(tsx?|jsx?|css)' "$error_file" 2>/dev/null | sort -u || true)
+    [ -n "$fe_paths" ] && files=$(printf '%s\n%s' "$files" "$fe_paths")
+
+    # Jest FAIL lines:  FAIL src/ui/BrokenComponent.test.tsx
+    local jest_files; jest_files=$(grep -oE 'FAIL [^ ]+\.(tsx?|jsx?)' "$error_file" 2>/dev/null | sed 's/^FAIL /frontend\//' | sort -u || true)
+    [ -n "$jest_files" ] && files=$(printf '%s\n%s' "$files" "$jest_files")
+
+    # Simple component names from Jest/TS errors (e.g. "TicketForm.tsx")
+    local fe_simple; fe_simple=$(grep -oE '[A-Z][A-Za-z0-9]*\.tsx?' "$error_file" 2>/dev/null | sort -u || true)
+    for fname in $fe_simple; do
+        local fefound; fefound=$(find frontend/src -name "$fname" 2>/dev/null | head -3)
+        [ -n "$fefound" ] && files=$(printf '%s\n%s' "$files" "$fefound")
+    done
+
     # De-duplicate and keep only files that actually exist on disk
     local result=""
     while IFS= read -r f; do
@@ -176,7 +233,7 @@ call_gemini() {
 
     # ── build prompt ────────────────────────────────────
     cat > /tmp/ai_prompt.txt << 'PROMPT'
-You are an expert Java / Spring Boot developer.
+You are an expert Java / Spring Boot and React / TypeScript developer.
 Analyse the ERRORS below together with the SOURCE CODE of the affected files
 and return a JSON object with concrete fixes.
 
@@ -186,6 +243,9 @@ RULES:
 • Only touch files that are actually broken.  Keep working code intact.
 • NEVER delete or remove source files. Always use action "modify" to fix them.
   Deleting a file breaks the project. Fix the code inside the file instead.
+• For TypeScript/React errors: fix the actual component or test file.
+  Preserve existing imports, hooks, and component structure.
+  Use proper React/JSX syntax and TypeScript types.
 • For missing imports → add the right import.
 • For undefined classes/methods used in production code → remove the broken
   usage or replace it with a minimal working alternative.
@@ -394,17 +454,22 @@ run_fix_pipeline() {
                 (cd backend && mvn test > /tmp/_test.log 2>&1) || tc=$?
                 if [ $tc -ne 0 ]; then
                     extract_all_errors /tmp/_test.log "$error_file"
-                else
-                    log_success "Build + tests pass – nothing to fix!"
-                    return 0
                 fi
             fi
-            errs=$(cat "$error_file" | head -200 || true)
+
+            # Also check frontend
+            run_frontend_checks /tmp/_fe_check.log "$error_file" || true
+
+            errs=$(cat "$error_file" 2>/dev/null | head -200 || true)
+            if [ -z "$errs" ] || [ "$(wc -l <<< "$errs" | tr -d ' ')" -lt 2 ]; then
+                log_success "Backend + frontend pass – nothing to fix!"
+                return 0
+            fi
         fi
 
         # Discover affected files & read their source
         local files; files=$(extract_affected_files "$error_file")
-        [ -z "$files" ] && files=$(grep -oE 'backend/src/[^ ]*\.java' "$error_file" 2>/dev/null | sort -u || true)
+        [ -z "$files" ] && files=$(grep -oE '(backend/src/[^ ]*\.java|frontend/src/[^ ]*\.tsx?)' "$error_file" 2>/dev/null | sort -u || true)
         log_info "Affected files: $(echo $files | tr '\n' ', ')"
 
         local src; src=$(build_source_context "$files")
@@ -461,8 +526,16 @@ run_fix_pipeline() {
             (cd backend && mvn test > /tmp/_retest.log 2>&1) || tc2=$?
 
             if [ $tc2 -eq 0 ]; then
-                log_success "All tests pass after iteration $iter!"
-                return 0
+                # Backend passes — now check frontend too
+                local fe2=0
+                run_frontend_checks /tmp/_fe_retest.log /tmp/_fe_errors_iter.txt || fe2=$?
+                if [ $fe2 -eq 0 ]; then
+                    log_success "All backend + frontend tests pass after iteration $iter!"
+                    return 0
+                else
+                    log_info "Backend passes but frontend still failing – extracting frontend errors"
+                    cat /tmp/_fe_errors_iter.txt >> "$error_file" 2>/dev/null || true
+                fi
             else
                 local test_failures_after=0
                 test_failures_after=$(count_test_failures /tmp/_retest.log)
@@ -514,12 +587,19 @@ run_fix_pipeline() {
         local final_tc=0
         (cd backend && mvn test > /tmp/_final_test.log 2>&1) || final_tc=$?
         if [ $final_tc -eq 0 ]; then
-            log_success "All tests pass!"
-            return 0
+            log_success "Backend tests pass!"
         else
-            log_warning "Compilation OK but some tests still fail"
-            return 0  # still return success — fixes were applied, PR should be created
+            log_warning "Compilation OK but some backend tests still fail"
         fi
+        # Also run frontend final check
+        local final_fe=0
+        run_frontend_checks /tmp/_final_fe.log /tmp/_final_fe_errors.txt || final_fe=$?
+        if [ $final_fe -eq 0 ]; then
+            log_success "Frontend checks pass!"
+        else
+            log_warning "Some frontend checks still fail"
+        fi
+        return 0  # fixes were applied, PR should be created
     else
         log_warning "Compilation still broken after $iter iteration(s)"
         # Check if ANY source files were changed — if so, still create a PR with partial fixes
