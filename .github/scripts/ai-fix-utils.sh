@@ -34,24 +34,60 @@ extract_all_errors() {
     log_info "Extracting errors from build output..."
     : > "$output_file"
 
-    # Maven compilation errors
+    # ── Maven compilation errors ──
     grep -A4 "cannot find symbol\|package.*does not exist\|incompatible types\|COMPILATION ERROR\|method.*cannot be applied" \
         "$log_file" >> "$output_file" 2>/dev/null || true
 
-    # Maven / JUnit test failures
+    # ── Maven / JUnit test failures (summary + immediate context) ──
     grep -A10 "<<< FAILURE\|<<< ERROR\|Tests run:.*Failures:\|Tests run:.*Errors:" \
         "$log_file" >> "$output_file" 2>/dev/null || true
 
-    # HTTP errors surfacing in integration tests
+    # ── HTTP errors surfacing in integration tests ──
     grep -A6 "HttpServerErrorException\|HttpClientErrorException\|500.*Internal Server\|404.*Not Found" \
         "$log_file" >> "$output_file" 2>/dev/null || true
 
-    # NPM / TypeScript / Jest
+    # ── Runtime stacktraces: "Caused by" chains (most informative part) ──
+    grep -A5 "^Caused by:\|^[[:space:]]*Caused by:" \
+        "$log_file" >> "$output_file" 2>/dev/null || true
+
+    # ── Spring context failures ──
+    grep -A8 "BeanCreationException\|UnsatisfiedDependencyException\|NoSuchBeanDefinitionException\|BeanCurrentlyInCreationException\|ApplicationContextException\|circular reference\|Error creating bean" \
+        "$log_file" >> "$output_file" 2>/dev/null || true
+
+    # ── NullPointerException / ClassCast / NoSuchMethod / ClassNotFound ──
+    grep -A6 "NullPointerException\|ClassCastException\|NoSuchMethodError\|NoSuchMethodException\|ClassNotFoundException\|NoClassDefFoundError\|IllegalArgumentException\|IllegalStateException" \
+        "$log_file" >> "$output_file" 2>/dev/null || true
+
+    # ── JUnit assertion failures with expected/actual values ──
+    grep -A6 "AssertionError\|AssertionFailedError\|expected:.*but was:\|Expected.*but.*got\|org\.opentest4j\.\|ComparisonFailure" \
+        "$log_file" >> "$output_file" 2>/dev/null || true
+
+    # ── Stack frames from project source (useful for locating the bug) ──
+    grep "at be\.ap\.student\.\|at ${FEATURE_ID:-be\.ap}.*(" \
+        "$log_file" >> "$output_file" 2>/dev/null || true
+
+    # ── Surefire XML failure messages (richest test failure info) ──
+    if [ -d backend/target/surefire-reports ]; then
+        for xml in backend/target/surefire-reports/TEST-*.xml; do
+            [ -f "$xml" ] || continue
+            # Extract <failure> and <error> elements with message + type
+            grep -oP '(failure|error) message="\K[^"]*' "$xml" >> "$output_file" 2>/dev/null || true
+            # Extract the text content of failure/error elements (stacktrace)
+            sed -n '/<failure\|<error/,/<\/failure\|<\/error/p' "$xml" \
+                | head -30 >> "$output_file" 2>/dev/null || true
+        done
+    fi
+
+    # ── NPM / TypeScript / Jest ──
     grep -A6 "npm ERR\|TS[0-9]\+:\|Cannot find module\|FAIL.*\.test\.\|SyntaxError" \
         "$log_file" >> "$output_file" 2>/dev/null || true
 
-    # Generic [ERROR] lines
+    # ── Generic [ERROR] lines ──
     grep "^\[ERROR\]\|^Error:" "$log_file" >> "$output_file" 2>/dev/null || true
+
+    # Deduplicate while preserving order (removes exact duplicate lines)
+    local tmp; tmp=$(mktemp)
+    awk '!seen[$0]++' "$output_file" > "$tmp" && mv "$tmp" "$output_file"
 
     local n; n=$(wc -l < "$output_file" | tr -d ' ')
     log_info "Extracted $n lines of error context"
@@ -72,7 +108,7 @@ extract_affected_files() {
     local rel; rel=$(grep -oE 'backend/src/[^ ]*\.java' "$error_file" 2>/dev/null | sort -u || true)
     files=$(printf '%s\n%s' "$files" "$rel" | sort -u | grep -v '^$' || true)
 
-    # Fully-qualified class names → file paths
+    # Fully-qualified class names → file paths  (covers stacktrace frames)
     local classes; classes=$(grep -oE 'be(\.[a-zA-Z_]+)+' "$error_file" 2>/dev/null | sort -u || true)
     for cls in $classes; do
         local p; p=$(echo "$cls" | tr '.' '/')
@@ -81,6 +117,13 @@ extract_affected_files() {
                 files=$(printf '%s\n%s' "$files" "$base/$p.java")
             fi
         done
+    done
+
+    # Simple class names from stacktraces  (e.g. "TicketService.java:45")
+    local simple; simple=$(grep -oE '[A-Z][A-Za-z0-9]*\.java' "$error_file" 2>/dev/null | sort -u || true)
+    for sname in $simple; do
+        local found; found=$(find backend/src -name "$sname" 2>/dev/null | head -3)
+        [ -n "$found" ] && files=$(printf '%s\n%s' "$files" "$found")
     done
 
     # De-duplicate and keep only files that actually exist on disk
