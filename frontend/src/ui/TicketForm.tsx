@@ -4,11 +4,11 @@ import type { CreateTicketRequest } from "../api/ticket";
 
 export type TicketFormValues = CreateTicketRequest;
 
-type Props = {
+type Props = Readonly<{
   loading: boolean;
   error: ApiError | null;
   onSubmit: (values: TicketFormValues) => void | Promise<void>;
-};
+}>;
 
 function validate(values: TicketFormValues) {
   const errors: Partial<Record<keyof TicketFormValues, string>> = {};
