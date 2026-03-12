@@ -25,8 +25,8 @@
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running be.ap.student.tickets.BrokenTest
-12:12:41.570 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [be.ap.student.tickets.BrokenTest]: BrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-12:12:41.675 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.BrokenTest
+12:27:30.972 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [be.ap.student.tickets.BrokenTest]: BrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+12:27:31.062 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.BrokenTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -37,21 +37,21 @@
 
  :: Spring Boot ::                (v4.0.3)
 
-2026-03-12T12:12:42.075Z  INFO 3548 --- [           main] be.ap.student.tickets.BrokenTest         : Starting BrokenTest using Java 21.0.10 with PID 3548 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
-2026-03-12T12:12:42.077Z  INFO 3548 --- [           main] be.ap.student.tickets.BrokenTest         : No active profile set, falling back to 1 default profile: "default"
-2026-03-12T12:12:42.690Z  INFO 3548 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-12T12:12:42.738Z  INFO 3548 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 39 ms. Found 1 JPA repository interface.
-2026-03-12T12:12:43.156Z  INFO 3548 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
-2026-03-12T12:12:43.168Z  INFO 3548 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-03-12T12:12:43.169Z  INFO 3548 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
-2026-03-12T12:12:43.201Z  INFO 3548 --- [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1107 ms
-2026-03-12T12:12:43.310Z  INFO 3548 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-03-12T12:12:43.475Z  INFO 3548 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:demo user=SA
-2026-03-12T12:12:43.476Z  INFO 3548 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-03-12T12:12:43.576Z  INFO 3548 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
-2026-03-12T12:12:43.624Z  INFO 3548 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.4.Final
-2026-03-12T12:12:44.049Z  INFO 3548 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-03-12T12:12:44.135Z  INFO 3548 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+2026-03-12T12:27:31.430Z  INFO 3580 --- [           main] be.ap.student.tickets.BrokenTest         : Starting BrokenTest using Java 21.0.10 with PID 3580 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
+2026-03-12T12:27:31.432Z  INFO 3580 --- [           main] be.ap.student.tickets.BrokenTest         : No active profile set, falling back to 1 default profile: "default"
+2026-03-12T12:27:32.038Z  INFO 3580 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-12T12:27:32.082Z  INFO 3580 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 35 ms. Found 1 JPA repository interface.
+2026-03-12T12:27:32.529Z  INFO 3580 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-03-12T12:27:32.539Z  INFO 3580 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-12T12:27:32.540Z  INFO 3580 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-12T12:27:32.574Z  INFO 3580 --- [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1113 ms
+2026-03-12T12:27:32.685Z  INFO 3580 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-03-12T12:27:32.842Z  INFO 3580 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:demo user=SA
+2026-03-12T12:27:32.844Z  INFO 3580 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-03-12T12:27:32.938Z  INFO 3580 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-03-12T12:27:32.986Z  INFO 3580 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.4.Final
+2026-03-12T12:27:33.416Z  INFO 3580 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-12T12:27:33.495Z  INFO 3580 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
 	Database JDBC URL [jdbc:h2:mem:demo]
 	Database driver: H2 JDBC Driver
 	Database dialect: H2Dialect
@@ -63,34 +63,34 @@
 	Pool: DataSourceConnectionProvider
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-03-12T12:12:44.752Z  INFO 3548 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-03-12T12:12:44.757Z  INFO 3548 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-03-12T12:12:44.821Z  INFO 3548 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-03-12T12:12:45.004Z  WARN 3548 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-03-12T12:12:45.317Z  INFO 3548 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 43243 (http) with context path '/'
-2026-03-12T12:12:45.323Z  INFO 3548 --- [           main] be.ap.student.tickets.BrokenTest         : Started BrokenTest in 3.511 seconds (process running for 4.555)
+2026-03-12T12:27:34.178Z  INFO 3580 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-03-12T12:27:34.184Z  INFO 3580 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-12T12:27:34.257Z  INFO 3580 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-12T12:27:34.439Z  WARN 3580 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-12T12:27:34.715Z  INFO 3580 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 43847 (http) with context path '/'
+2026-03-12T12:27:34.720Z  INFO 3580 --- [           main] be.ap.student.tickets.BrokenTest         : Started BrokenTest in 3.541 seconds (process running for 4.564)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/runner/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 RestTemplate injected: true
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.329 s -- in be.ap.student.tickets.BrokenTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.298 s -- in be.ap.student.tickets.BrokenTest
 [INFO] Running be.ap.student.tickets.TestControllerIT
-2026-03-12T12:12:45.726Z  INFO 3548 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.TestControllerIT]: TestControllerIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-12T12:12:45.730Z  INFO 3548 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.TestControllerIT
-2026-03-12T12:12:45.869Z  INFO 3548 --- [o-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-03-12T12:12:45.869Z  INFO 3548 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-03-12T12:12:45.871Z  INFO 3548 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-03-12T12:27:35.134Z  INFO 3580 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.TestControllerIT]: TestControllerIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-12T12:27:35.137Z  INFO 3580 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.TestControllerIT
+2026-03-12T12:27:35.256Z  INFO 3580 --- [o-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-12T12:27:35.257Z  INFO 3580 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-03-12T12:27:35.258Z  INFO 3580 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
 RestTemplate injected: true
 Test endpoint result: Test endpoint works!
 This should fail: Non-existent endpoint working
 Broken endpoint result: Broken endpoint fixed
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.222 s -- in be.ap.student.tickets.TestControllerIT
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.210 s -- in be.ap.student.tickets.TestControllerIT
 [INFO] Running be.ap.student.tickets.integration.BrokenIntegrationTest
-2026-03-12T12:12:45.950Z  INFO 3548 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.integration.BrokenIntegrationTest]: BrokenIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-12T12:12:45.959Z  INFO 3548 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.integration.BrokenIntegrationTest
+2026-03-12T12:27:35.346Z  INFO 3580 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.integration.BrokenIntegrationTest]: BrokenIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-12T12:27:35.360Z  INFO 3580 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.integration.BrokenIntegrationTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -101,16 +101,16 @@ Broken endpoint result: Broken endpoint fixed
 
  :: Spring Boot ::                (v4.0.3)
 
-2026-03-12T12:12:46.007Z  INFO 3548 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : Starting BrokenIntegrationTest using Java 21.0.10 with PID 3548 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
-2026-03-12T12:12:46.008Z  INFO 3548 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : No active profile set, falling back to 1 default profile: "default"
-2026-03-12T12:12:46.166Z  INFO 3548 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-12T12:12:46.174Z  INFO 3548 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 6 ms. Found 1 JPA repository interface.
-2026-03-12T12:12:46.231Z  INFO 3548 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
-2026-03-12T12:12:46.232Z  INFO 3548 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:demo user=SA
-2026-03-12T12:12:46.233Z  INFO 3548 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
-2026-03-12T12:12:46.246Z  INFO 3548 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
-2026-03-12T12:12:46.267Z  INFO 3548 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-03-12T12:12:46.268Z  INFO 3548 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+2026-03-12T12:27:35.394Z  INFO 3580 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : Starting BrokenIntegrationTest using Java 21.0.10 with PID 3580 (started by runner in /home/runner/work/AI-SDLC/AI-SDLC/backend)
+2026-03-12T12:27:35.395Z  INFO 3580 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : No active profile set, falling back to 1 default profile: "default"
+2026-03-12T12:27:35.538Z  INFO 3580 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-12T12:27:35.548Z  INFO 3580 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 7 ms. Found 1 JPA repository interface.
+2026-03-12T12:27:35.609Z  INFO 3580 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-03-12T12:27:35.611Z  INFO 3580 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:demo user=SA
+2026-03-12T12:27:35.611Z  INFO 3580 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-03-12T12:27:35.624Z  INFO 3580 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-03-12T12:27:35.647Z  INFO 3580 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-12T12:27:35.649Z  INFO 3580 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
 	Database JDBC URL [jdbc:h2:mem:demo]
 	Database driver: H2 JDBC Driver
 	Database dialect: H2Dialect
@@ -122,26 +122,26 @@ Broken endpoint result: Broken endpoint fixed
 	Pool: DataSourceConnectionProvider
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-03-12T12:12:46.297Z  INFO 3548 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-03-12T12:12:46.297Z  INFO 3548 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-03-12T12:12:46.350Z  WARN 3548 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-03-12T12:12:46.446Z  INFO 3548 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : Started BrokenIntegrationTest in 0.475 seconds (process running for 5.677)
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.507 s -- in be.ap.student.tickets.integration.BrokenIntegrationTest
+2026-03-12T12:27:35.679Z  INFO 3580 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-03-12T12:27:35.679Z  INFO 3580 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-12T12:27:35.731Z  WARN 3580 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-12T12:27:35.828Z  INFO 3580 --- [           main] b.a.s.t.i.BrokenIntegrationTest          : Started BrokenIntegrationTest in 0.459 seconds (process running for 5.672)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.494 s -- in be.ap.student.tickets.integration.BrokenIntegrationTest
 [INFO] Running be.ap.student.tickets.TicketStatusCodeTest
-2026-03-12T12:12:46.460Z  INFO 3548 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.TicketStatusCodeTest]: TicketStatusCodeTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-12T12:12:46.461Z  INFO 3548 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.TicketStatusCodeTest
-2026-03-12T12:12:46.935Z  INFO 3548 --- [o-auto-1-exec-4] b.a.s.tickets.service.TicketService      : ticket_created ticketNumber=TCK-2026-000001 priority=LOW correlationId=5d7f8d6f-6e4e-49b3-965b-3297068ea719 openTickets=1
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.527 s -- in be.ap.student.tickets.TicketStatusCodeTest
+2026-03-12T12:27:35.842Z  INFO 3580 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.TicketStatusCodeTest]: TicketStatusCodeTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-12T12:27:35.843Z  INFO 3580 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.TicketStatusCodeTest
+2026-03-12T12:27:36.459Z  INFO 3580 --- [o-auto-1-exec-4] b.a.s.tickets.service.TicketService      : ticket_created ticketNumber=TCK-2026-000001 priority=LOW correlationId=a5e33c59-c420-4ff5-89c0-22f3a1f3daa6 openTickets=1
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.666 s -- in be.ap.student.tickets.TicketStatusCodeTest
 [INFO] Running be.ap.student.tickets.NewBrokenTest
-2026-03-12T12:12:46.988Z  INFO 3548 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.NewBrokenTest]: NewBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-12T12:12:46.989Z  INFO 3548 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.NewBrokenTest
+2026-03-12T12:27:36.511Z  INFO 3580 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.NewBrokenTest]: NewBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-12T12:27:36.514Z  INFO 3580 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.NewBrokenTest
 RestTemplate injected: true
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in be.ap.student.tickets.NewBrokenTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in be.ap.student.tickets.NewBrokenTest
 [INFO] Running be.ap.student.tickets.PersistentBrokenTest
-2026-03-12T12:12:47.001Z  INFO 3548 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.PersistentBrokenTest]: PersistentBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-03-12T12:12:47.005Z  INFO 3548 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.PersistentBrokenTest
+2026-03-12T12:27:36.533Z  INFO 3580 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [be.ap.student.tickets.PersistentBrokenTest]: PersistentBrokenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-03-12T12:27:36.535Z  INFO 3580 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration be.ap.student.BackendApplication for test class be.ap.student.tickets.PersistentBrokenTest
 RestTemplate injected: true
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in be.ap.student.tickets.PersistentBrokenTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in be.ap.student.tickets.PersistentBrokenTest
 [INFO] 
 [INFO] Results:
 [INFO] 
@@ -150,6 +150,6 @@ RestTemplate injected: true
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  7.518 s
-[INFO] Finished at: 2026-03-12T12:12:47Z
+[INFO] Total time:  7.652 s
+[INFO] Finished at: 2026-03-12T12:27:36Z
 [INFO] ------------------------------------------------------------------------
