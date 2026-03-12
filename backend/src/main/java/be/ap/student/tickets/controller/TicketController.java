@@ -1,29 +1,24 @@
 package be.ap.student.tickets.controller;
 
-import be.ap.student.tickets.dto.CreateTicketRequest;
-import be.ap.student.tickets.dto.CreateTicketResponse;
-import be.ap.student.tickets.service.TicketService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 import be.ap.student.tickets.domain.SupportTicket;
-import be.ap.student.tickets.domain.TicketStatus; // Added import for TicketStatus
+import be.ap.student.tickets.dto.CreateTicketRequest;
+import be.ap.student.tickets.service.TicketService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tickets")
 public class TicketController {
 
-    private final TicketService service;
+    private final TicketService ticketService;
 
-    public TicketController(TicketService service) {
-        this.service = service;
+    @Autowired
+    public TicketController(TicketService ticketService) {
+        this.ticketService = ticketService;
     }
 
     @PostMapping
