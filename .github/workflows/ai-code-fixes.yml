@@ -203,8 +203,8 @@ jobs:
         continue-on-error: true
         run: |
           echo "🔎 Running SonarQube analysis..."
-          # Build backend classes so Sonar can analyse bytecode
-          cd backend && mvn compile -q 2>/dev/null || echo "⚠️ Backend compile for Sonar skipped"
+          # Build + test + copy deps so Sonar has bytecode, coverage & libraries
+          cd backend && mvn verify dependency:copy-dependencies -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues"
           cd ..
 
       - name: SonarQube Scan

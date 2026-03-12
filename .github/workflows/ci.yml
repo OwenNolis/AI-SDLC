@@ -107,9 +107,57 @@ jobs:
 
       - name: SonarQube Scan
         if: always()
+        id: sonar_scan
         uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Wait for SonarCloud processing
+        if: steps.sonar_scan.outcome == 'success'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          # The scanner writes a task URL we can poll
+          TASK_URL=$(sed -n 's/^ceTaskUrl=//p' .scannerwork/report-task.txt 2>/dev/null)
+          if [ -z "$TASK_URL" ]; then
+            echo "⚠️ No CE task URL found – skipping wait"
+            exit 0
+          fi
+
+          echo "⏳ Waiting for SonarCloud to finish processing..."
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s -u "$SONAR_TOKEN:" "$TASK_URL" | jq -r '.task.status // "PENDING"')
+            echo "  Attempt $i/30: $STATUS"
+            case "$STATUS" in
+              SUCCESS) echo "✅ Analysis processed"; break ;;
+              FAILED|CANCELED) echo "⚠️ Analysis $STATUS"; break ;;
+              *) sleep 10 ;;
+            esac
+          done
+
+      - name: Check SonarQube Issues
+        if: steps.sonar_scan.outcome == 'success'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          PROJECT_KEY="OwenNolis_AI-SDLC"
+          API="https://sonarcloud.io/api/issues/search"
+
+          RESPONSE=$(curl -s -u "$SONAR_TOKEN:" \
+            "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&ps=1")
+          TOTAL=$(echo "$RESPONSE" | jq '.total // 0')
+
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "❌ SonarQube reports $TOTAL open issue(s):"
+            curl -s -u "$SONAR_TOKEN:" \
+              "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&ps=10&s=SEVERITY&asc=false" \
+              | jq -r '.issues[] | "  [\(.severity)] \(.message)  (\(.component | split(":") | last):\(.line // "?"))"'
+            echo ""
+            echo "🤖 AI Code Fixes workflow will attempt to resolve these issues."
+            exit 1
+          else
+            echo "✅ No open SonarQube issues"
+          fi
 
       - name: Upload generated artifacts
         if: always()
