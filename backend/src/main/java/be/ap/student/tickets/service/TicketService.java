@@ -38,10 +38,17 @@ public class TicketService {
             throw new IllegalArgumentException("priority must be one of LOW, MEDIUM, HIGH");
         }
 
+        UUID userId;
+        try {
+            userId = UUID.fromString(req.getUserId());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid userId format: '" + req.getUserId() + "'. userId must be a valid UUID");
+        }
+
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
                 ticketNumber,
-                req.getUserId(), // Fix: Changed from UUID.fromString(req.getUserId()) to req.getUserId() assuming SupportTicket constructor expects String for userId
+                userId,
                 req.getSubject(),
                 req.getDescription(),
                 priority,
