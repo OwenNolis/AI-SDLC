@@ -138,12 +138,12 @@ fetch_sonar_issues() {
     while true; do
         local resp
         resp=$(curl -sf -u "${SONAR_TOKEN}:" \
-            "${api_url}?componentKeys=${project_key}&statuses=OPEN,CONFIRMED,REOPENED&types=BUG,VULNERABILITY,CODE_SMELL&severities=BLOCKER,CRITICAL,MAJOR&ps=${page_size}&p=${page}" \
+            "${api_url}?componentKeys=${project_key}&statuses=OPEN,CONFIRMED,REOPENED&types=BUG,VULNERABILITY,CODE_SMELL&severities=BLOCKER,CRITICAL,MAJOR,MINOR,INFO&ps=${page_size}&p=${page}" \
             2>/dev/null) || { log_warning "SonarQube API request failed"; break; }
 
         if [ $page -eq 1 ]; then
             total=$(echo "$resp" | jq '.total // 0' 2>/dev/null)
-            log_info "SonarQube reports $total issue(s) (BLOCKER/CRITICAL/MAJOR)"
+            log_info "SonarQube reports $total issue(s)"
         fi
 
         # Append issues from this page
@@ -187,7 +187,7 @@ extract_sonar_errors() {
     {
         echo ""
         echo "## SonarQube Static Analysis Issues"
-        echo "The following issues were detected by SonarQube (severity: BLOCKER/CRITICAL/MAJOR)."
+        echo "The following issues were detected by SonarQube."
         echo "Fix the root cause of each issue. Do NOT suppress with @SuppressWarnings or // NOSONAR."
         echo ""
         jq -r '.issues[] |
