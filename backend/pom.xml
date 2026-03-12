@@ -65,20 +65,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Spring Boot RestTestClient for TestRestTemplate (used by AI-generated tests) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-resttestclient</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Required by TestRestTemplate auto-configuration (RestTemplateBuilder) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-restclient</artifactId>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
