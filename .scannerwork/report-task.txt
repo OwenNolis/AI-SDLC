@@ -1,0 +1,7 @@
+organization=owennolis
+projectKey=OwenNolis_AI-SDLC
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.82854
+dashboardUrl=https://sonarcloud.io/dashboard?id=OwenNolis_AI-SDLC
+ceTaskId=AZziUM2N1dn5hHlGAIs_
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZziUM2N1dn5hHlGAIs_
