@@ -2,15 +2,12 @@ package be.ap.student.tickets.service;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
-import be.ap.student.tickets.controller.TicketController;
 
 @Service
 public class BrokenService /* Removed implements Cacheable */ {
 
-    private final TicketController ticketController;
-
-    public BrokenService(TicketController ticketController) {
-        this.ticketController = ticketController;
+    public BrokenService() {
+        // ticketController field and its injection removed as it was unused.
     }
 
     public String processData(String input) {

@@ -41,7 +41,7 @@ public class TicketService {
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
                 ticketNumber,
-                UUID.fromString(req.getUserId()),
+                UUID.fromString(req.getUserId()), // Fixed: Convert String userId to UUID
                 req.getSubject(),
                 req.getDescription(),
                 priority,
@@ -50,9 +50,12 @@ public class TicketService {
         );
 
         SupportTicket saved = repository.save(ticket);
-        long openCount = repository.countByStatus(TicketStatus.PENDING);
-        log.info("ticket_created ticketNumber={} priority={} correlationId={} openTickets={}",
-                saved.getTicketNumber(), saved.getPriority(), MDC.get(MDC_KEY), openCount);
+        // SonarQube: Invoke method(s) only conditionally. (java:S2629)
+        if (log.isInfoEnabled()) {
+            long openCount = repository.countByStatus(TicketStatus.PENDING);
+            log.info("ticket_created ticketNumber={} priority={} correlationId={} openTickets={}",
+                    saved.getTicketNumber(), saved.getPriority(), MDC.get(MDC_KEY), openCount);
+        }
         return Optional.ofNullable(saved);
     }
 
