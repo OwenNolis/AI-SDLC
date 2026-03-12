@@ -85,8 +85,8 @@ All AI artifacts validated successfully.
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  3.347 s
-[INFO] Finished at: 2026-03-12T09:37:29Z
+[INFO] Total time:  3.273 s
+[INFO] Finished at: 2026-03-12T09:50:53Z
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project backend: Compilation failure: Compilation failure: 
 [ERROR] /home/runner/work/AI-SDLC/AI-SDLC/backend/src/test/java/be/ap/student/tickets/Feature001SupportTicketGeneratedIT.java:[6,47] package org.springframework.boot.resttestclient does not exist
