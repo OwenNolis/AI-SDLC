@@ -105,6 +105,11 @@ jobs:
         run: |
           cd backend && mvn verify dependency:copy-dependencies -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues (coverage may be partial)"
 
+      - name: Run frontend tests with coverage
+        if: always()
+        run: |
+          cd frontend && npm ci && npx jest --coverage --ci 2>/dev/null || echo "⚠️ Frontend tests had issues (coverage may be partial)"
+
       - name: SonarQube Scan
         if: always()
         id: sonar_scan

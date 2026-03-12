@@ -11,6 +11,13 @@ const config: Config = {
   },
   testMatch: ["<rootDir>/src/**/*.test.(ts|tsx)"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
+  collectCoverageFrom: [
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.test.{ts,tsx}",
+    "!src/setupTests.ts",
+    "!src/main.tsx",
+  ],
+  coverageReporters: ["lcov", "text-summary"],
 };
 
 export default config;
