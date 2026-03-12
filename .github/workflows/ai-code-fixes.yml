@@ -340,8 +340,15 @@ jobs:
           branch_name="ai-fixes/gemini-analysis-$timestamp"
           git checkout -b "$branch_name"
           
-          # Add all changes
-          git add .
+          # Clean up temp/scanner files before staging
+          rm -rf .scannerwork/
+          rm -f flow_output.log flow_output_fixed.log sonar_issues.json
+          rm -f error_analysis.md extracted_errors.md fix_context.md fix_summary.md generated_fixes.md ai_suggestions.md
+          rm -f compilation_errors.log test_failures.log
+          rm -f backend/direct_test_results.log backend/post_flow_test_results.log backend/compile_check.log
+
+          # Add only source code changes
+          git add backend/src/ frontend/src/
           
           # Create detailed commit message
           echo "🤖 AI-Powered Code Fixes via Gemini Analysis" > /tmp/commit_msg.txt
