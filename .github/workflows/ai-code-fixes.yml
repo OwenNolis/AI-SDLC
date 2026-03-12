@@ -211,7 +211,7 @@ jobs:
         if: always()
         id: sonar_action
         continue-on-error: true
-        uses: SonarSource/sonarqube-scan-action@v7.0.0
+        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -219,9 +219,10 @@ jobs:
         if: always()
         id: sonar_issues
         continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           echo "📋 Fetching SonarQube issues..."
-          export SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
           .github/scripts/ai-fix-utils.sh fetch-sonar-issues error_analysis.md
           
           # If Sonar found issues, make sure has_errors is true
@@ -255,12 +256,11 @@ jobs:
         if: steps.analyze_errors.outputs.has_errors == 'true' || steps.sonar_issues.outputs.sonar_has_issues == 'true'
         id: apply_fixes
         timeout-minutes: 15
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           echo "🤖 Analyzing errors with Gemini AI and applying intelligent fixes..."
-          
-          # Export environment for the script  
-          export GEMINI_API_KEY="${{ env.GEMINI_API_KEY }}"
-          export SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
           
           if [ -z "$GEMINI_API_KEY" ]; then
             echo "❌ GEMINI_API_KEY not available - cannot apply AI fixes"
@@ -428,10 +428,11 @@ jobs:
 
       - name: AI Self-Review of PR
         if: steps.create_pr.outputs.pr_number != ''
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🔍 Running AI self-review on PR #${{ steps.create_pr.outputs.pr_number }}..."
-          export GEMINI_API_KEY="${{ env.GEMINI_API_KEY }}"
-          export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           .github/scripts/ai-fix-utils.sh review-pr "${{ github.repository }}" "${{ steps.create_pr.outputs.pr_number }}"
 
       - name: Report Results
