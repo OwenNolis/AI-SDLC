@@ -41,7 +41,7 @@ public class TicketService {
         String ticketNumber = ticketNumberGenerator.nextTicketNumber();
         SupportTicket ticket = new SupportTicket(
                 ticketNumber,
-                UUID.fromString(req.getUserId()), // Fix: Convert String userId from request to UUID
+                req.getUserId(), // Fix: Changed from UUID.fromString(req.getUserId()) to req.getUserId() assuming SupportTicket constructor expects String for userId
                 req.getSubject(),
                 req.getDescription(),
                 priority,
