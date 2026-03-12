@@ -99,6 +99,117 @@ run_static_analysis() {
 }
 
 # ──────────────────────────────────────────────────────────────
+# SonarQube Cloud Integration
+# ──────────────────────────────────────────────────────────────
+
+# Read the project key from sonar-project.properties.
+_sonar_project_key() {
+    if [ -f sonar-project.properties ]; then
+        grep -E '^sonar\.projectKey=' sonar-project.properties 2>/dev/null \
+            | head -1 | cut -d= -f2- | tr -d ' '
+    fi
+}
+
+# Fetch open issues from SonarQube Cloud API and save as JSON.
+# Usage:  fetch_sonar_issues [output_json]
+# Requires: SONAR_TOKEN env var
+fetch_sonar_issues() {
+    local out_json="${1:-sonar_issues.json}"
+    local project_key
+    project_key=$(_sonar_project_key)
+
+    if [ -z "$project_key" ] || echo "$project_key" | grep -q '<replace'; then
+        log_warning "SonarQube project key not configured – skipping issue fetch"
+        echo '{"total":0,"issues":[]}' > "$out_json"
+        return 0
+    fi
+    if [ -z "$SONAR_TOKEN" ]; then
+        log_warning "SONAR_TOKEN not set – skipping SonarQube issue fetch"
+        echo '{"total":0,"issues":[]}' > "$out_json"
+        return 0
+    fi
+
+    log_info "Fetching SonarQube issues for project: $project_key"
+
+    local api_url="https://sonarcloud.io/api/issues/search"
+    local page=1 page_size=100 total=0
+    : > "$out_json.tmp"
+
+    while true; do
+        local resp
+        resp=$(curl -sf -u "${SONAR_TOKEN}:" \
+            "${api_url}?componentKeys=${project_key}&statuses=OPEN,CONFIRMED,REOPENED&types=BUG,VULNERABILITY,CODE_SMELL&severities=BLOCKER,CRITICAL,MAJOR&ps=${page_size}&p=${page}" \
+            2>/dev/null) || { log_warning "SonarQube API request failed"; break; }
+
+        if [ $page -eq 1 ]; then
+            total=$(echo "$resp" | jq '.total // 0' 2>/dev/null)
+            log_info "SonarQube reports $total issue(s) (BLOCKER/CRITICAL/MAJOR)"
+        fi
+
+        # Append issues from this page
+        echo "$resp" | jq -c '.issues[]?' >> "$out_json.tmp" 2>/dev/null || true
+
+        # Check if there are more pages
+        local fetched; fetched=$(wc -l < "$out_json.tmp" | tr -d ' ')
+        if [ "$fetched" -ge "$total" ] || [ "$fetched" -ge 500 ]; then
+            break
+        fi
+        page=$((page + 1))
+    done
+
+    # Build final JSON
+    local count; count=$(wc -l < "$out_json.tmp" | tr -d ' ')
+    echo "{\"total\":${count},\"issues\":[" > "$out_json"
+    if [ "$count" -gt 0 ]; then
+        # Join lines with commas
+        sed '$!s/$/,/' "$out_json.tmp" >> "$out_json"
+    fi
+    echo "]}" >> "$out_json"
+    rm -f "$out_json.tmp"
+
+    log_success "Saved $count SonarQube issue(s) to $out_json"
+    return 0
+}
+
+# Convert SonarQube issues JSON into human-readable error lines
+# and append them to the error file used by the fix pipeline.
+# Usage:  extract_sonar_errors <sonar_json> <error_file>
+extract_sonar_errors() {
+    local sonar_json="${1:-sonar_issues.json}" error_file="$2"
+    [ ! -f "$sonar_json" ] && return 0
+
+    local count
+    count=$(jq '.total // 0' "$sonar_json" 2>/dev/null)
+    [ "$count" -eq 0 ] && return 0
+
+    log_info "Formatting $count SonarQube issue(s) for AI analysis …"
+
+    {
+        echo ""
+        echo "## SonarQube Static Analysis Issues"
+        echo "The following issues were detected by SonarQube (severity: BLOCKER/CRITICAL/MAJOR)."
+        echo "Fix the root cause of each issue. Do NOT suppress with @SuppressWarnings or // NOSONAR."
+        echo ""
+        jq -r '.issues[] |
+            "[\(.severity)] \(.type) in \(.component | split(":") | last) (line \(.line // "?")):\n" +
+            "  Rule: \(.rule)\n" +
+            "  Message: \(.message)\n"' "$sonar_json" 2>/dev/null || true
+    } >> "$error_file"
+
+    log_success "Appended SonarQube issues to error file"
+}
+
+# ──────────────────────────────────────────────────────────────
+# CLI sub-command: fetch Sonar issues and append to error file
+# Usage:  ai-fix-utils.sh fetch-sonar-issues <error_file>
+# ──────────────────────────────────────────────────────────────
+_cmd_fetch_sonar_issues() {
+    local error_file="${1:-error_analysis.md}"
+    fetch_sonar_issues sonar_issues.json
+    extract_sonar_errors sonar_issues.json "$error_file"
+}
+
+# ──────────────────────────────────────────────────────────────
 # 1. Extract errors from any build / test log
 # ──────────────────────────────────────────────────────────────
 extract_all_errors() {
@@ -294,6 +405,13 @@ RULES:
 • For ESLint / static-analysis warnings: fix the root cause, not just suppress.
   Prefer proper typing over @ts-ignore. Use the correct ESLint-recommended pattern.
   Only add // eslint-disable as a last resort when the rule is a false positive.
+• For SonarQube issues (BUG, VULNERABILITY, CODE_SMELL):
+  – Fix the ROOT CAUSE. Do NOT add @SuppressWarnings or // NOSONAR to suppress.
+  – For null-pointer bugs: add proper null checks or use Optional.
+  – For security vulnerabilities: apply the recommended secure coding pattern.
+  – For code smells: refactor to follow clean-code principles.
+  – The SonarQube rule ID is provided (e.g. java:S1854) — use it to understand
+    the exact issue type and apply the correct fix pattern.
 • For missing imports → add the right import.
 • For undefined classes/methods used in production code → remove the broken
   usage or replace it with a minimal working alternative.
@@ -483,6 +601,12 @@ run_fix_pipeline() {
     log_info "║   AI Fix Pipeline  (max $max iterations)  ║"
     log_info "╚══════════════════════════════════════╝"
 
+    # ── Pre-loop: Fetch SonarQube issues (once) and append to error file ──
+    if [ -n "$SONAR_TOKEN" ]; then
+        fetch_sonar_issues /tmp/_sonar_issues.json
+        extract_sonar_errors /tmp/_sonar_issues.json "$error_file"
+    fi
+
     while [ $iter -lt $max ]; do
         iter=$((iter+1))
         log_info "── iteration $iter/$max ──────────────────────"
@@ -511,9 +635,15 @@ run_fix_pipeline() {
             # Static analysis (lint)
             run_static_analysis /tmp/_lint_check.log "$error_file" || true
 
+            # Re-fetch SonarQube issues (may have changed after previous iteration's fixes)
+            if [ -n "$SONAR_TOKEN" ] && [ $iter -gt 1 ]; then
+                fetch_sonar_issues /tmp/_sonar_issues.json
+                extract_sonar_errors /tmp/_sonar_issues.json "$error_file"
+            fi
+
             errs=$(cat "$error_file" 2>/dev/null | head -400 || true)
             if [ -z "$errs" ] || [ "$(wc -l <<< "$errs" | tr -d ' ')" -lt 2 ]; then
-                log_success "Backend + frontend + lint pass – nothing to fix!"
+                log_success "Backend + frontend + lint + Sonar pass – nothing to fix!"
                 return 0
             fi
         fi
@@ -852,11 +982,16 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
             [[ $# -eq 3 ]] || { log_error "Usage: $0 review-pr <repo> <pr_number>"; exit 1; }
             review_ai_pr "$2" "$3"
             ;;
+        fetch-sonar-issues)
+            [[ $# -ge 1 ]] || { log_error "Usage: $0 fetch-sonar-issues [error_file]"; exit 1; }
+            _cmd_fetch_sonar_issues "${2:-error_analysis.md}"
+            ;;
         *)
             log_info "AI Code Fixing Utilities (generic)"
             log_info "  extract-errors <log> <out>     Extract errors from build log"
             log_info "  apply-ai-fixes <error_file>    Full AI-powered fix pipeline"
             log_info "  review-pr <repo> <pr_number>   AI self-review of a PR"
+            log_info "  fetch-sonar-issues [err_file]  Fetch SonarQube issues & append"
             ;;
     esac
 fi

@@ -197,14 +197,51 @@ jobs:
             echo "::notice::Codebase is healthy - no AI fixes required"
           fi
 
+      - name: Run SonarQube Analysis
+        if: always()
+        id: sonar_scan
+        continue-on-error: true
+        run: |
+          echo "🔎 Running SonarQube analysis..."
+          # Build backend classes so Sonar can analyse bytecode
+          cd backend && mvn compile -q 2>/dev/null || echo "⚠️ Backend compile for Sonar skipped"
+          cd ..
+
+      - name: SonarQube Scan
+        if: always()
+        id: sonar_action
+        continue-on-error: true
+        uses: SonarSource/sonarqube-scan-action@v7.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Fetch SonarQube Issues
+        if: always()
+        id: sonar_issues
+        continue-on-error: true
+        run: |
+          echo "📋 Fetching SonarQube issues..."
+          export SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
+          .github/scripts/ai-fix-utils.sh fetch-sonar-issues error_analysis.md
+          
+          # If Sonar found issues, make sure has_errors is true
+          if [ -f sonar_issues.json ] && [ "$(jq '.total // 0' sonar_issues.json 2>/dev/null)" -gt 0 ]; then
+            echo "🔎 SonarQube found issues — ensuring AI fix pipeline will run"
+            echo "has_errors=true" >> $GITHUB_OUTPUT
+            echo "sonar_has_issues=true" >> $GITHUB_OUTPUT
+          else
+            echo "sonar_has_issues=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Success - No Errors Detected
-        if: steps.analyze_errors.outputs.has_errors == 'false'
+        if: steps.analyze_errors.outputs.has_errors == 'false' && steps.sonar_issues.outputs.sonar_has_issues != 'true'
         run: |
           echo "🎉 SUCCESS: No errors detected in the codebase!"
           echo "==============================================="
           echo "✅ SDLC flow executed successfully"
           echo "✅ All compilation checks passed"
           echo "✅ All tests are passing"
+          echo "✅ SonarQube analysis clean"
           echo "✅ No AI fixes required"
           echo ""
           echo "The codebase is healthy. AI Code Fixes workflow completed successfully."
@@ -215,7 +252,7 @@ jobs:
           echo "Workflow completing successfully..."
 
       - name: Apply AI-Generated Fixes
-        if: steps.analyze_errors.outputs.has_errors == 'true'
+        if: steps.analyze_errors.outputs.has_errors == 'true' || steps.sonar_issues.outputs.sonar_has_issues == 'true'
         id: apply_fixes
         timeout-minutes: 15
         run: |
@@ -223,6 +260,7 @@ jobs:
           
           # Export environment for the script  
           export GEMINI_API_KEY="${{ env.GEMINI_API_KEY }}"
+          export SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
           
           if [ -z "$GEMINI_API_KEY" ]; then
             echo "❌ GEMINI_API_KEY not available - cannot apply AI fixes"

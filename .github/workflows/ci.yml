@@ -97,6 +97,18 @@ jobs:
           echo "❌ flow.sh failed (exit code ${EXIT_CODE}). Failing CI."
           exit "$EXIT_CODE"
 
+      # ── SonarQube Cloud Analysis ──────────────────────────────
+      - name: Build backend classes for Sonar analysis
+        if: always()
+        run: |
+          cd backend && mvn compile -q 2>/dev/null || echo "⚠️ Backend compile for Sonar skipped (may have pre-existing errors)"
+
+      - name: SonarQube Scan
+        if: always()
+        uses: SonarSource/sonarqube-scan-action@v7.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: Upload generated artifacts
         if: always()
         uses: actions/upload-artifact@v7
