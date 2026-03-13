@@ -1,16 +1,11 @@
 package be.ap.student.tickets.controller;
 
-import be.ap.student.tickets.domain.SupportTicket;
-import be.ap.student.tickets.domain.TicketStatus;
 import be.ap.student.tickets.dto.CreateTicketRequest;
-import be.ap.student.tickets.dto.CreateTicketResponse;
+import be.ap.student.tickets.dto.TicketResponse;
 import be.ap.student.tickets.service.TicketService;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -23,24 +18,8 @@ public class TicketController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
-        var optionalSavedTicket = ticketService.create(req);
-        SupportTicket saved = optionalSavedTicket.orElseThrow(() -> new IllegalStateException("Failed to create ticket"));
-        // Introduce a null pointer dereference error
-        String ticketNumber = null;
-        int length = ticketNumber.length(); // This will throw NullPointerException
-        return new CreateTicketResponse(saved.getTicketNumber(), TicketStatus.valueOf(saved.getFormattedStatus()));
-    }
-
-    @GetMapping("/all")
-    public List<String> getAllTickets() {
-        return List.of("ticket1", "ticket2");
-    }
-
-    @GetMapping("/{id}")
-    public CreateTicketResponse getById(@PathVariable UUID id) {
-        var ticket = ticketService.findById(id);
-        return new CreateTicketResponse(ticket.getTicketNumber(), TicketStatus.valueOf(ticket.getFormattedStatus()));
+    public ResponseEntity<TicketResponse> createTicket(@RequestBody CreateTicketRequest request) {
+        TicketResponse response = ticketService.createTicket(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

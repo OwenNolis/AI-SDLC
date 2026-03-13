@@ -1,10 +1,20 @@
 package be.ap.student.tickets.dto;
 
-public class CreateTicketRequest {
+public class TicketResponse {
+    private String ticketNumber;
     private String subject;
     private String description;
     private String priority;
     private String userId;
+    private String status;
+
+    public String getTicketNumber() {
+        return ticketNumber;
+    }
+
+    public void setTicketNumber(String ticketNumber) {
+        this.ticketNumber = ticketNumber;
+    }
 
     public String getSubject() {
         return subject;
@@ -36,5 +46,13 @@ public class CreateTicketRequest {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
