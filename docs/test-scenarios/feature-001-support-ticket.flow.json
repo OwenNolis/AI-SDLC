@@ -174,7 +174,12 @@
       "id": "REQ-034-high-priority-visible-immediately",
       "title": "REQ-034: A ticket with priority HIGH must always be visible immediately after creation.",
       "type": "happy-path"
-    }
+    },
+    {
+      "id": "view_ticket_after_creation",
+      "title": "User can view the ticket details immediately after creating a new support ticket",
+      "type": "happy-path"
+} 
   ],
   "flows": [
     {

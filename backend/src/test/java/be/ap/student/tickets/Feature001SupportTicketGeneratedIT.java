@@ -817,6 +817,29 @@ class Feature001SupportTicketGeneratedIT {
     }
 
 
+    /**
+     * GENERATED (FLOW)
+     * Traceability:
+     * - Feature: feature-001-support-ticket
+     * - Scenario: view_ticket_after_creation - User can view the ticket details immediately after creating a new support ticket
+     * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
+     */
+    @Test
+    void viewTicketAfterCreation_returns201_created() {
+
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("subject", "Cannot login to portal");
+        payload.put("description", "I cannot login since yesterday. Please investigate.");
+        payload.put("priority", "HIGH");
+
+        ResponseEntity<String> res = postTicket(payload);
+
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().getFirst("X-Correlation-Id")).isNotBlank();
+        assertThat(res.getBody()).contains("ticketNumber");
+    }
+
+
     // (Tip) Run with --matrix to also generate TA validation-matrix tests:
     //   node ai/testgen/generate-backend-tests.mjs feature-001-support-ticket --matrix
 
