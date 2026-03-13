@@ -27,8 +27,10 @@ public class TicketController {
     public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
         var optionalSavedTicket = ticketService.create(req);
         SupportTicket saved = optionalSavedTicket.orElseThrow(() -> new IllegalStateException("Failed to create ticket"));
-        // Introduce logic bug: return null for ticket number
-        return new CreateTicketResponse(null, TicketStatus.valueOf(saved.getFormattedStatus()));
+        // Introduce a null pointer dereference error
+        String ticketNumber = null;
+        int length = ticketNumber.length(); // This will throw NullPointerException
+        return new CreateTicketResponse(saved.getTicketNumber(), TicketStatus.valueOf(saved.getFormattedStatus()));
     }
 
     @GetMapping("/all")
