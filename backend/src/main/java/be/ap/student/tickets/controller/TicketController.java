@@ -27,8 +27,6 @@ public class TicketController {
     public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
         var optionalSavedTicket = ticketService.create(req);
         SupportTicket saved = optionalSavedTicket.orElseThrow(() -> new IllegalStateException("Failed to create ticket"));
-        // Introduce an unused variable (code smell for SonarQube)
-        String unused = "this variable is never used";
         return new CreateTicketResponse(saved.getTicketNumber(), TicketStatus.valueOf(saved.getFormattedStatus()));
     }
 
