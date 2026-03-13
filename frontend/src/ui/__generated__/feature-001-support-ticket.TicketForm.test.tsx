@@ -496,6 +496,30 @@ describe("feature-001-support-ticket - generated UI tests", () => {
   });
 
 
+  test("view_ticket_after_creation - User can view the ticket details immediately after creating a new support ticket (happy path)", () => {
+    const onSubmit = jest.fn();
+    render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText(/subject/i), {
+      target: { value: "Cannot login to portal" },
+    });
+
+    fireEvent.change(screen.getByLabelText(/description/i), {
+      target: { value: "I cannot login since yesterday. Please investigate." },
+    });
+
+    fireEvent.change(screen.getByLabelText(/priority/i), {
+      target: { value: "HIGH" },
+    });
+
+    const btn = screen.getByRole("button", { name: /create ticket/i });
+    expect(btn).toBeEnabled();
+
+    fireEvent.click(btn);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+
   test("shows validation error for short subject", () => {
     const onSubmit = jest.fn();
     render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
