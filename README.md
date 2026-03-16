@@ -26,8 +26,8 @@ Deze opdracht sluit aan bij de standaard stack binnen de organisatie:
 - **Frontend:** React 18 (TypeScript)  
 - **API:** REST, JSON, OpenAPI  
 - **Testing:** JUnit 5, Spring Boot Test, Flow-based testing  
-- **CI/CD:** GitHub Actions, Jenkins  
-- **Version control:** GitHub (optioneel Azure DevOps)  
+- **CI/CD:** GitHub Actions, SonarQube Cloud, Jira, Jenkins  
+- **Version control:** GitHub, Dependabot  
 - **AI tooling:** LLMs, agent-based workflows, prompt-engineering  
 
 ---
@@ -131,6 +131,8 @@ AI integreren in het build- en deliveryproces.
   - Jenkins
 - Automatische:
   - build
+  - error fixing
+  - issue assignment
   - packaging
   - (optioneel) deployment
 
