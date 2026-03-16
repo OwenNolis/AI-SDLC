@@ -121,9 +121,13 @@ Automatisch kwaliteitscontrole toevoegen via AI.
 AI integreren in het build- en deliveryproces.
 
 **Functionaliteiten:**
-- Configuratie van **Dependabot** in combinatie met AI
+- Configuratie van **Dependabot**, **SonarQube Cloud** en **Jira** in combinatie met AI
 - Onderzoek naar:
   - GitHub Actions
+  - Workflows
+  - Dependabot
+  - SonarQube Cloud
+  - Jira
   - Jenkins
 - Automatische:
   - build
