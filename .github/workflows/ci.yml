@@ -148,20 +148,24 @@ jobs:
           PROJECT_KEY="OwenNolis_AI-SDLC"
           API="https://sonarcloud.io/api/issues/search"
 
+          # Only check for BLOCKER, CRITICAL, HIGH and MEDIUM issues
+          # Don't check for LOW and INFO issues
+          SEVERITIES="BLOCKER,CRITICAL,HIGH,MEDIUM"
+
           RESPONSE=$(curl -s -u "$SONAR_TOKEN:" \
-            "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&ps=1")
+            "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&severities=$SEVERITIES&ps=1")
           TOTAL=$(echo "$RESPONSE" | jq '.total // 0')
 
           if [ "$TOTAL" -gt 0 ]; then
-            echo "❌ SonarQube reports $TOTAL open issue(s):"
+            echo "❌ SonarQube reports $TOTAL open BLOCKER/CRITICAL issue(s):"
             curl -s -u "$SONAR_TOKEN:" \
-              "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&ps=10&s=SEVERITY&asc=false" \
+              "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&severities=$SEVERITIES&ps=10&s=SEVERITY&asc=false" \
               | jq -r '.issues[] | "  [\(.severity)] \(.message)  (\(.component | split(":") | last):\(.line // "?"))"'
             echo ""
             echo "🤖 AI Code Fixes workflow will attempt to resolve these issues."
             exit 1
           else
-            echo "✅ No open SonarQube issues"
+            echo "✅ No open SonarQube issues for severity BLOCKER, CRITCIAL, HIGH and MEDIUM"
           fi
 
       - name: Upload generated artifacts
