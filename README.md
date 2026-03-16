@@ -197,6 +197,21 @@ http://localhost:5173
 
 ---
 
+## 🥽 Tests creëren
+
+### 🖥️ Backend
+```
+node ai/testgen/generate-backend-tests.mjs feature-001-support-ticket
+```
+
+### 🖥️ Frontend
+```
+stgen/generate-frontend-tests.mjs feature-001-support-ticket
+
+```
+
+---
+
 ## 🧪 Tests uitvoeren
 
 ### 🖥️ Backend
