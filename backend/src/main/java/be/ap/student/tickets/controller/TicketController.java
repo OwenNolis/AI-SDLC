@@ -1,3 +1,11 @@
+    // This method introduces a SonarQube MAJOR issue: empty catch block (java:S108)
+    public void triggerMajorSonarIssue() {
+        try {
+            int x = 1 / 0;
+        } catch (Exception e) {
+            // empty catch block - SonarQube will flag this as MAJOR
+        }
+    }
 package be.ap.student.tickets.controller;
 
 import be.ap.student.tickets.domain.SupportTicket;
