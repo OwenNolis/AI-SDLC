@@ -289,8 +289,8 @@ jobs:
             echo "### 🛠️ Fixed Issues" >> fix_summary.md
             if [ -f sonar_issues.json ]; then
               issues=$(jq -c '.issues // [] | .[]' sonar_issues.json)
-              if [ -n "$issues" ]; then
-                echo "$issues" | while read issue; do
+              if echo "$issues" | grep -q '[^[:space:]]'; then
+                echo "$issues" | grep -v '^[[:space:]]*$' | while read -r issue; do
                   MSG=$(echo "$issue" | jq -r '.message')
                   SEV=$(echo "$issue" | jq -r '.severity')
                   FILE=$(echo "$issue" | jq -r '.component | split(":") | last')
