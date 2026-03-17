@@ -292,7 +292,7 @@ jobs:
             echo "**Automated code fixes were applied to resolve SonarQube and build issues.**" >> fix_summary.md
             echo "" >> fix_summary.md
             echo "### 📝 Files Changed" >> fix_summary.md
-            git diff --name-only | while read file; do echo "- $file" >> fix_summary.md; done
+            git diff --name-only | while read file; do [ -n "$file" ] && echo "- $file" >> fix_summary.md; done
             echo "" >> fix_summary.md
             echo "### 🛠️ Fixed Issues" >> fix_summary.md
             if [ -f sonar_issues.json ]; then
@@ -460,7 +460,7 @@ jobs:
           echo "" >> /tmp/pr_body.txt
           echo "### 🔄 Files Modified" >> /tmp/pr_body.txt
           echo '```' >> /tmp/pr_body.txt
-          git diff --name-only HEAD~1 | sed 's/^/- /' >> /tmp/pr_body.txt || echo "- See commit for details" >> /tmp/pr_body.txt
+          git diff --name-only HEAD~1 | while read file; do [ -n "$file" ] && echo "- $file" >> /tmp/pr_body.txt; done || echo "- See commit for details" >> /tmp/pr_body.txt
           echo '```' >> /tmp/pr_body.txt
           echo "" >> /tmp/pr_body.txt
           echo "---" >> /tmp/pr_body.txt
