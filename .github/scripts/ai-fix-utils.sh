@@ -159,12 +159,13 @@ fetch_sonar_issues() {
 
     # Build final JSON
     local count; count=$(wc -l < "$out_json.tmp" | tr -d ' ')
-    echo "{\"total\":${count},\"issues\":[" > "$out_json"
-    if [ "$count" -gt 0 ]; then
-        # Join lines with commas
+    if [ -z "$count" ] || ! [[ "$count" =~ ^[0-9]+$ ]] || [ "$count" -eq 0 ]; then
+        echo '{"total":0,"issues":[]}' > "$out_json"
+    else
+        echo "{\"total\":${count},\"issues\":[" > "$out_json"
         sed '$!s/$/,/' "$out_json.tmp" >> "$out_json"
+        echo "]}" >> "$out_json"
     fi
-    echo "]}" >> "$out_json"
     rm -f "$out_json.tmp"
 
     log_success "Saved $count SonarQube issue(s) to $out_json"
