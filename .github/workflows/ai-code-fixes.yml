@@ -287,7 +287,7 @@ jobs:
             git diff --name-only | while read file; do echo "- $file" >> fix_summary.md; done
             echo "" >> fix_summary.md
             echo "### 🛠️ Fixed Issues" >> fix_summary.md
-            if [ -f sonar_issues.json ] && jq -e '.issues | type == "array" and (. | length > 0)' sonar_issues.json > /dev/null; then
+            if [ -f sonar_issues.json ] && jq -e '.issues and (.issues | type == "array") and (.issues | length > 0)' sonar_issues.json > /dev/null; then
               jq -c '.issues[]' sonar_issues.json | while read issue; do
                 MSG=$(echo "$issue" | jq -r '.message')
                 SEV=$(echo "$issue" | jq -r '.severity')
