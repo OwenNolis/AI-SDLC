@@ -54,6 +54,7 @@ jobs:
           chmod +x ai/flow.sh
           chmod +x ai/generate-tests.sh
           chmod +x .github/scripts/ai-fix-utils.sh
+          chmod +x .github/scripts/sonar-rule-details.sh
 
       - name: Skip Dependabot Check for AI Workflow
         run: |

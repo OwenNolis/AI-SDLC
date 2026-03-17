@@ -51,7 +51,7 @@ jobs:
         working-directory: ai/validator
 
       - name: Make scripts executable
-        run: chmod +x ai/flow.sh ai/sync-from-fa.sh ai/generate-tests.sh
+        run: chmod +x ai/flow.sh ai/sync-from-fa.sh ai/generate-tests.sh .github/scripts/sonar-rule-details.sh
 
       - name: Preflight info
         run: |
