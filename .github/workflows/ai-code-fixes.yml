@@ -54,7 +54,6 @@ jobs:
           chmod +x ai/flow.sh
           chmod +x ai/generate-tests.sh
           chmod +x .github/scripts/ai-fix-utils.sh
-          chmod +x .github/scripts/sonar-rule-details.sh
 
       - name: Skip Dependabot Check for AI Workflow
         run: |
@@ -92,8 +91,6 @@ jobs:
             cd backend
             set +e
             mvn test > direct_test_results.log 2>&1
-              # Use preview features
-              mvn test --enable-preview > direct_test_results.log 2>&1
             test_exit=$?
             cd ..
             
@@ -121,8 +118,6 @@ jobs:
             cd backend
             set +e
             mvn test > post_flow_test_results.log 2>&1
-              # Use preview features
-              mvn test --enable-preview > post_flow_test_results.log 2>&1
             test_exit=$?
             cd ..
             
@@ -140,8 +135,6 @@ jobs:
           cd backend
           set +e
           timeout 120 mvn test-compile -q > compile_check.log 2>&1
-            # Use preview features
-            timeout 120 mvn test-compile --enable-preview -q > compile_check.log 2>&1
           compile_exit=$?
           cd ..
           
@@ -212,8 +205,6 @@ jobs:
           echo "🔎 Running SonarQube analysis..."
           # Build + test + copy deps so Sonar has bytecode, coverage & libraries
           cd backend && mvn verify dependency:copy-dependencies -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues"
-            # Use preview features
-            cd backend && mvn verify --enable-preview dependency:copy-dependencies -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues"
           cd ..
 
       - name: SonarQube Scan
@@ -292,28 +283,23 @@ jobs:
             echo "**Automated code fixes were applied to resolve SonarQube and build issues.**" >> fix_summary.md
             echo "" >> fix_summary.md
             echo "### 📝 Files Changed" >> fix_summary.md
-            git diff --name-only | while read file; do [ -n "$file" ] && echo "- $file" >> fix_summary.md; done
+            git diff --name-only | while read file; do echo "- $file" >> fix_summary.md; done
             echo "" >> fix_summary.md
             echo "### 🛠️ Fixed Issues" >> fix_summary.md
             if [ -f sonar_issues.json ]; then
-              issues=$(jq -c '.issues // [] | .[]' sonar_issues.json)
-              if echo "$issues" | grep -q '[^[:space:]]'; then
-                echo "$issues" | grep -v '^[[:space:]]*$' | while read -r issue; do
-                  MSG=$(echo "$issue" | jq -r '.message')
-                  SEV=$(echo "$issue" | jq -r '.severity')
-                  FILE=$(echo "$issue" | jq -r '.component | split(":") | last')
-                  LINE=$(echo "$issue" | jq -r '.line // "?"')
-                  RULE=$(echo "$issue" | jq -r '.rule')
-                  echo "- [$SEV] $MSG ($FILE:$LINE)" >> fix_summary.md
-                  echo "    - What was wrong: $MSG" >> fix_summary.md
-                  echo "    - Why: $RULE" >> fix_summary.md
-                  # Fetch and append rule details
-                  .github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md
-                  echo "" >> fix_summary.md
-                done
-              else
-                echo "- No SonarQube issues found or file missing." >> fix_summary.md
-              fi
+              jq -c '.issues[]' sonar_issues.json | while read issue; do
+                MSG=$(echo "$issue" | jq -r '.message')
+                SEV=$(echo "$issue" | jq -r '.severity')
+                FILE=$(echo "$issue" | jq -r '.component | split(":") | last')
+                LINE=$(echo "$issue" | jq -r '.line // "?"')
+                RULE=$(echo "$issue" | jq -r '.rule')
+                echo "- [$SEV] $MSG ($FILE:$LINE)" >> fix_summary.md
+                echo "    - What was wrong: $MSG" >> fix_summary.md
+                echo "    - Why: $RULE" >> fix_summary.md
+                # Fetch and append rule details
+                .github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md
+                echo "" >> fix_summary.md
+              done
             else
               echo "- No SonarQube issues found or file missing." >> fix_summary.md
             fi
@@ -357,8 +343,6 @@ jobs:
           echo "Double-checking compilation status..."
           cd backend
           mvn compile -q > compile_check.log 2>&1
-            # Use preview features
-            mvn compile --enable-preview -q > compile_check.log 2>&1
           compile_exit=$?
           cd ..
           
@@ -460,7 +444,7 @@ jobs:
           echo "" >> /tmp/pr_body.txt
           echo "### 🔄 Files Modified" >> /tmp/pr_body.txt
           echo '```' >> /tmp/pr_body.txt
-          git diff --name-only HEAD~1 | while read file; do [ -n "$file" ] && echo "- $file" >> /tmp/pr_body.txt; done || echo "- See commit for details" >> /tmp/pr_body.txt
+          git diff --name-only HEAD~1 | sed 's/^/- /' >> /tmp/pr_body.txt || echo "- See commit for details" >> /tmp/pr_body.txt
           echo '```' >> /tmp/pr_body.txt
           echo "" >> /tmp/pr_body.txt
           echo "---" >> /tmp/pr_body.txt
