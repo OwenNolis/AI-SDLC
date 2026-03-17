@@ -288,8 +288,8 @@ jobs:
             echo "" >> fix_summary.md
             echo "### 🛠️ Detailed Issue & Fix Report" >> fix_summary.md
             if [ -f sonar_issues.json ]; then
-              if [ -s sonar_issues.json ] && jq -e '.issues | type == "array" and length > 0' sonar_issues.json >/dev/null 2>&1; then
-                jq -c '.issues[]' sonar_issues.json | while read issue; do
+              if [ -s sonar_issues.json ] && jq -e '(.issues // []) | type == "array" and length > 0' sonar_issues.json >/dev/null 2>&1; then
+                jq -c '(.issues // []) | .[]' sonar_issues.json | while read issue; do
                   MSG=$(echo "$issue" | jq -r '.message')
                   SEV=$(echo "$issue" | jq -r '.severity')
                   FILE=$(echo "$issue" | jq -r '.component | split(":") | last')

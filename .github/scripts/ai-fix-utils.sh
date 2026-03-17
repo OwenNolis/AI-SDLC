@@ -191,7 +191,7 @@ extract_sonar_errors() {
         echo "The following issues were detected by SonarQube."
         echo "Fix the root cause of each issue. Do NOT suppress with @SuppressWarnings or // NOSONAR."
         echo ""
-        jq -r '.issues[] |
+        jq -r '(.issues // []) | .[] |
             "[\(.severity)] \(.type) in \(.component | split(":") | last) (line \(.line // "?")):\n" +
             "  Rule: \(.rule)\n" +
             "  Message: \(.message)\n"' "$sonar_json" 2>/dev/null || true
