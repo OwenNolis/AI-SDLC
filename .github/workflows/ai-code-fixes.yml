@@ -288,31 +288,32 @@ jobs:
             echo "" >> fix_summary.md
             echo "### 🛠️ Detailed Issue & Fix Report" >> fix_summary.md
             if [ -f sonar_issues.json ]; then
-              jq -c '.issues[]' sonar_issues.json | while read issue; do
-                MSG=$(echo "$issue" | jq -r '.message')
-                SEV=$(echo "$issue" | jq -r '.severity')
-                FILE=$(echo "$issue" | jq -r '.component | split(":") | last')
-                LINE=$(echo "$issue" | jq -r '.line // "?"')
-                RULE=$(echo "$issue" | jq -r '.rule')
-                STATUS=$(echo "$issue" | jq -r '.status // "open"')
-                TYPE=$(echo "$issue" | jq -r '.type // ""')
-                AUTHOR=$(echo "$issue" | jq -r '.author // "unknown"')
-                echo "#### $FILE:$LINE ($SEV)" >> fix_summary.md
-                echo "- **Issue:** $MSG" >> fix_summary.md
-                echo "- **Rule:** $RULE" >> fix_summary.md
-                echo "- **Type:** $TYPE" >> fix_summary.md
-                echo "- **Status:** $STATUS" >> fix_summary.md
-                echo "- **Author:** $AUTHOR" >> fix_summary.md
-                echo "- **What was wrong:** $MSG" >> fix_summary.md
-                echo "- **Why was this wrong:**" >> fix_summary.md
-                .github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md
-                echo "- **How it was fixed:**" >> fix_summary.md
-                echo "  - AI-generated code changes were applied to resolve this issue. See below for diff." >> fix_summary.md
-                echo "" >> fix_summary.md
-              done
-            else
-              echo "- No SonarQube issues found or file missing." >> fix_summary.md
-            fi
+              if [ -s sonar_issues.json ] && jq -e '.issues | type == "array" and length > 0' sonar_issues.json >/dev/null 2>&1; then
+                jq -c '.issues[]' sonar_issues.json | while read issue; do
+                  MSG=$(echo "$issue" | jq -r '.message')
+                  SEV=$(echo "$issue" | jq -r '.severity')
+                  FILE=$(echo "$issue" | jq -r '.component | split(":") | last')
+                  LINE=$(echo "$issue" | jq -r '.line // "?"')
+                  RULE=$(echo "$issue" | jq -r '.rule')
+                  STATUS=$(echo "$issue" | jq -r '.status // "open"')
+                  TYPE=$(echo "$issue" | jq -r '.type // ""')
+                  AUTHOR=$(echo "$issue" | jq -r '.author // "unknown"')
+                  echo "#### $FILE:$LINE ($SEV)" >> fix_summary.md
+                  echo "- **Issue:** $MSG" >> fix_summary.md
+                  echo "- **Rule:** $RULE" >> fix_summary.md
+                  echo "- **Type:** $TYPE" >> fix_summary.md
+                  echo "- **Status:** $STATUS" >> fix_summary.md
+                  echo "- **Author:** $AUTHOR" >> fix_summary.md
+                  echo "- **What was wrong:** $MSG" >> fix_summary.md
+                  echo "- **Why was this wrong:**" >> fix_summary.md
+                  .github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md
+                  echo "- **How it was fixed:**" >> fix_summary.md
+                  echo "  - AI-generated code changes were applied to resolve this issue. See below for diff." >> fix_summary.md
+                  echo "" >> fix_summary.md
+                done
+              else
+                echo "- No SonarQube issues found or file missing." >> fix_summary.md
+              fi
             echo "" >> fix_summary.md
             echo "### 🔧 Code Changes (Diff)" >> fix_summary.md
             echo '\`\`\`diff' >> fix_summary.md
