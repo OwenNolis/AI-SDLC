@@ -140,13 +140,22 @@ jobs:
             esac
           done
 
-      - name: Check SonarQube Issues
+      - name: Check SonarQube Quality Gate and Issues
         if: steps.sonar_scan.outcome == 'success'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           PROJECT_KEY="OwenNolis_AI-SDLC"
           API="https://sonarcloud.io/api/issues/search"
+          QG_API="https://sonarcloud.io/api/qualitygates/project_status?projectKey=$PROJECT_KEY"
+
+          # Check Quality Gate status
+          QG_STATUS=$(curl -s -u "$SONAR_TOKEN:" "$QG_API" | jq -r '.projectStatus.status')
+          echo "SonarQube Quality Gate status: $QG_STATUS"
+          if [ "$QG_STATUS" != "OK" ]; then
+            echo "❌ SonarQube Quality Gate failed!"
+            exit 1
+          fi
 
           # Only check for BLOCKER, CRITICAL, HIGH and MEDIUM issues
           # Don't check for LOW and INFO issues
@@ -157,7 +166,7 @@ jobs:
           TOTAL=$(echo "$RESPONSE" | jq '.total // 0')
 
           if [ "$TOTAL" -gt 0 ]; then
-            echo "❌ SonarQube reports $TOTAL open BLOCKER/CRITICAL issue(s):"
+            echo "❌ SonarQube reports $TOTAL open BLOCKER/CRITICAL/HIGH/MEDIUM issue(s):"
             curl -s -u "$SONAR_TOKEN:" \
               "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&severities=$SEVERITIES&ps=10&s=SEVERITY&asc=false" \
               | jq -r '.issues[] | "  [\(.severity)] \(.message)  (\(.component | split(":") | last):\(.line // "?"))"'
