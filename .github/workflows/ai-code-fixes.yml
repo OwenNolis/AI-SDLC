@@ -292,7 +292,7 @@ jobs:
                 MSG=$(echo "$issue" | jq -r '.message')
                 SEV=$(echo "$issue" | jq -r '.severity')
                 FILE=$(echo "$issue" | jq -r '.component | split(":") | last')
-                LINE=$(echo "$issue" | jq -r '.line // "?")')
+                  LINE=$(echo "$issue" | jq -r '.line // "?')
                 RULE=$(echo "$issue" | jq -r '.rule')
                 echo "- [$SEV] $MSG ($FILE:$LINE)" >> fix_summary.md
                 echo "    - What was wrong: $MSG" >> fix_summary.md
