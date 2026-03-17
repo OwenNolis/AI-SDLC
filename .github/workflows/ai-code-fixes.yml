@@ -92,6 +92,8 @@ jobs:
             cd backend
             set +e
             mvn test > direct_test_results.log 2>&1
+              # Use preview features
+              mvn test --enable-preview > direct_test_results.log 2>&1
             test_exit=$?
             cd ..
             
@@ -119,6 +121,8 @@ jobs:
             cd backend
             set +e
             mvn test > post_flow_test_results.log 2>&1
+              # Use preview features
+              mvn test --enable-preview > post_flow_test_results.log 2>&1
             test_exit=$?
             cd ..
             
@@ -136,6 +140,8 @@ jobs:
           cd backend
           set +e
           timeout 120 mvn test-compile -q > compile_check.log 2>&1
+            # Use preview features
+            timeout 120 mvn test-compile --enable-preview -q > compile_check.log 2>&1
           compile_exit=$?
           cd ..
           
@@ -206,6 +212,8 @@ jobs:
           echo "🔎 Running SonarQube analysis..."
           # Build + test + copy deps so Sonar has bytecode, coverage & libraries
           cd backend && mvn verify dependency:copy-dependencies -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues"
+            # Use preview features
+            cd backend && mvn verify --enable-preview dependency:copy-dependencies -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues"
           cd ..
 
       - name: SonarQube Scan
@@ -349,6 +357,8 @@ jobs:
           echo "Double-checking compilation status..."
           cd backend
           mvn compile -q > compile_check.log 2>&1
+            # Use preview features
+            mvn compile --enable-preview -q > compile_check.log 2>&1
           compile_exit=$?
           cd ..
           
