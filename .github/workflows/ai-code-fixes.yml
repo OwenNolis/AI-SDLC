@@ -287,20 +287,25 @@ jobs:
             git diff --name-only | while read file; do echo "- $file" >> fix_summary.md; done
             echo "" >> fix_summary.md
             echo "### 🛠️ Fixed Issues" >> fix_summary.md
-            if [ -f sonar_issues.json ] && jq -e '.issues and (.issues | type == "array") and (.issues | length > 0)' sonar_issues.json > /dev/null; then
-              jq -c '.issues[]' sonar_issues.json | while read issue; do
-                MSG=$(echo "$issue" | jq -r '.message')
-                SEV=$(echo "$issue" | jq -r '.severity')
-                FILE=$(echo "$issue" | jq -r '.component | split(":") | last')
-                LINE=$(echo "$issue" | jq -r '.line // "?"')
-                RULE=$(echo "$issue" | jq -r '.rule')
-                echo "- [$SEV] $MSG ($FILE:$LINE)" >> fix_summary.md
-                echo "    - What was wrong: $MSG" >> fix_summary.md
-                echo "    - Why: $RULE" >> fix_summary.md
-                # Fetch and append rule details
-                .github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md
-                echo "" >> fix_summary.md
-              done
+            if [ -f sonar_issues.json ]; then
+              issues=$(jq -c '.issues // [] | .[]' sonar_issues.json)
+              if [ -n "$issues" ]; then
+                echo "$issues" | while read issue; do
+                  MSG=$(echo "$issue" | jq -r '.message')
+                  SEV=$(echo "$issue" | jq -r '.severity')
+                  FILE=$(echo "$issue" | jq -r '.component | split(":") | last')
+                  LINE=$(echo "$issue" | jq -r '.line // "?"')
+                  RULE=$(echo "$issue" | jq -r '.rule')
+                  echo "- [$SEV] $MSG ($FILE:$LINE)" >> fix_summary.md
+                  echo "    - What was wrong: $MSG" >> fix_summary.md
+                  echo "    - Why: $RULE" >> fix_summary.md
+                  # Fetch and append rule details
+                  .github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md
+                  echo "" >> fix_summary.md
+                done
+              else
+                echo "- No SonarQube issues found or file missing." >> fix_summary.md
+              fi
             else
               echo "- No SonarQube issues found or file missing." >> fix_summary.md
             fi
