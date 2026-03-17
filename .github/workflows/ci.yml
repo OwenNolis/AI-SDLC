@@ -160,7 +160,7 @@ jobs:
             echo "❌ SonarQube reports $TOTAL open BLOCKER/CRITICAL issue(s):"
             curl -s -u "$SONAR_TOKEN:" \
               "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&severities=$SEVERITIES&ps=10&s=SEVERITY&asc=false" \
-              | jq -r '.issues[] | "  [\(.severity)] \(.message)  (\(.component | split(":") | last):\(.line // "?"))"'
+                | jq -r '.issues // [] | .[] | "  [\(.severity)] \(.message)  (\(.component | split(":") | last):\(.line // "?"))"'
             echo ""
             echo "🤖 AI Code Fixes workflow will attempt to resolve these issues."
             exit 1
