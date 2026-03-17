@@ -314,6 +314,7 @@ jobs:
               else
                 echo "- No SonarQube issues found or file missing." >> fix_summary.md
               fi
+            fi
             echo "" >> fix_summary.md
             echo "### 🔧 Code Changes (Diff)" >> fix_summary.md
             echo '\`\`\`diff' >> fix_summary.md
