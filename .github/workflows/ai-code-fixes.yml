@@ -330,7 +330,7 @@ jobs:
           fi
 
       - name: Boost Coverage with AI Tests
-        if: steps.apply_fixes.outputs.fixes_applied == 'true'
+        if: always() && steps.sonar_action.outcome != 'cancelled' && steps.sonar_action.outcome != 'skipped'
         id: boost_coverage
         continue-on-error: true
         timeout-minutes: 15
