@@ -33,7 +33,7 @@ QG_STATUS=$(echo "$QG_RESP" | jq -r '.projectStatus.status // "UNKNOWN"')
 # ── 2. Open issues scoped to this PR ────────────────────────
 echo "Fetching issues for PR #$PR_NUMBER..."
 ISSUES_RESP=$(curl -sf -u "$SONAR_TOKEN:" \
-    "$SONAR_BASE/issues/search?componentKeys=$PROJECT_KEY&pullRequest=$PR_NUMBER&statuses=OPEN&ps=20&s=SEVERITY&asc=false" \
+    "$SONAR_BASE/issues/search?componentKeys=$PROJECT_KEY&pullRequest=$PR_NUMBER&statuses=OPEN&impactSeverities=HIGH,MEDIUM,LOW&ps=20" \
     2>/dev/null || echo '{"issues":[],"total":0}')
 TOTAL=$(echo "$ISSUES_RESP" | jq '.total // 0')
 echo "$ISSUES_RESP" | jq '.issues // []' > "$ISSUES_FILE"

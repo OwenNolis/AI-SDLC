@@ -138,7 +138,7 @@ fetch_sonar_issues() {
     while true; do
         local resp
         resp=$(curl -sf -u "${SONAR_TOKEN}:" \
-            "${api_url}?componentKeys=${project_key}&statuses=OPEN,CONFIRMED,REOPENED&types=BUG,VULNERABILITY,CODE_SMELL&severities=BLOCKER,CRITICAL,MAJOR,MINOR,INFO&ps=${page_size}&p=${page}" \
+            "${api_url}?componentKeys=${project_key}&statuses=OPEN,CONFIRMED,REOPENED&types=BUG,VULNERABILITY,CODE_SMELL&impactSeverities=HIGH,MEDIUM,LOW&ps=${page_size}&p=${page}" \
             2>/dev/null) || { log_warning "SonarQube API request failed"; break; }
 
         if [ $page -eq 1 ]; then
