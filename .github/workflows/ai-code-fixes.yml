@@ -329,6 +329,40 @@ jobs:
             echo "fixes_applied=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Boost Coverage with AI Tests
+        if: steps.apply_fixes.outputs.fixes_applied == 'true'
+        id: boost_coverage
+        continue-on-error: true
+        timeout-minutes: 15
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          echo "📊 Checking code coverage after AI fixes..."
+          cd backend && mvn verify -q 2>/dev/null || true && cd ..
+
+          COVERAGE=$(.github/scripts/ai-fix-utils.sh get-coverage)
+          echo "📈 Current line coverage: ${COVERAGE}%"
+          echo "coverage_before=${COVERAGE}" >> $GITHUB_OUTPUT
+
+          if [ "${COVERAGE}" -ge 80 ]; then
+            echo "✅ Coverage ${COVERAGE}% already meets the 80% threshold"
+            echo "coverage_boosted=false" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Coverage ${COVERAGE}% is below 80% — running AI test generation pipeline..."
+            set +e
+            timeout 840 .github/scripts/ai-fix-utils.sh boost-coverage 80
+            set -e
+            COVERAGE_AFTER=$(.github/scripts/ai-fix-utils.sh get-coverage)
+            echo "coverage_after=${COVERAGE_AFTER}" >> $GITHUB_OUTPUT
+            echo "coverage_boosted=true" >> $GITHUB_OUTPUT
+            if [ "${COVERAGE_AFTER}" -ge 80 ]; then
+              echo "✅ Coverage improved: ${COVERAGE}% to ${COVERAGE_AFTER}% (meets 80% threshold)"
+            else
+              echo "⚠️ Coverage improved: ${COVERAGE}% to ${COVERAGE_AFTER}% (still below 80%)"
+            fi
+          fi
+
       - name: Test Fixes
         if: steps.apply_fixes.outputs.fixes_applied == 'true'
         id: test_fixes

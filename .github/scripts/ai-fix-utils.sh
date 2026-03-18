@@ -965,6 +965,276 @@ except Exception as e:
 }
 
 # ──────────────────────────────────────────────────────────────
+# 8. Coverage Boost Pipeline
+#    Reads JaCoCo XML, finds uncovered classes, asks Gemini to
+#    write tests, loops until coverage meets the threshold.
+# ──────────────────────────────────────────────────────────────
+
+# Parse JaCoCo report-level LINE counter → integer 0-100
+_get_line_coverage() {
+    local xml="backend/target/site/jacoco/jacoco.xml"
+    [ ! -f "$xml" ] && echo "0" && return
+    python3 - "$xml" << 'PY'
+import xml.etree.ElementTree as ET, sys
+try:
+    root = ET.parse(sys.argv[1]).getroot()
+    for c in root.findall('counter'):
+        if c.get('type') == 'LINE':
+            missed  = int(c.get('missed',  0))
+            covered = int(c.get('covered', 0))
+            total   = missed + covered
+            print(int(covered * 100 / total) if total else 0)
+            sys.exit(0)
+    print(0)
+except Exception:
+    print(0)
+PY
+}
+
+# Return source file paths whose line coverage < threshold (up to 10 files).
+_uncovered_classes() {
+    local threshold="${1:-80}"
+    local xml="backend/target/site/jacoco/jacoco.xml"
+    [ ! -f "$xml" ] && return
+    python3 - "$xml" "$threshold" << 'PY'
+import xml.etree.ElementTree as ET, sys, os
+xml_path, threshold = sys.argv[1], int(sys.argv[2])
+try:
+    root = ET.parse(xml_path).getroot()
+    low = []
+    for pkg in root.iter('package'):
+        pkg_path = pkg.get('name', '')
+        for cls in pkg.iter('class'):
+            src = cls.get('sourcefilename', '')
+            missed = covered = 0
+            for c in cls.findall('counter'):
+                if c.get('type') == 'LINE':
+                    missed  = int(c.get('missed',  0))
+                    covered = int(c.get('covered', 0))
+            total = missed + covered
+            if total == 0:
+                continue
+            pct = int(covered * 100 / total)
+            if pct < threshold:
+                path = 'backend/src/main/java/' + pkg_path + '/' + src
+                if os.path.exists(path):
+                    low.append((pct, path))
+    low.sort()
+    for _, path in low[:10]:
+        print(path)
+except Exception:
+    pass
+PY
+}
+
+# Call Gemini with a completely custom prompt (no fixed template).
+# Usage: _call_gemini_raw <prompt_text> <out_file>
+_call_gemini_raw() {
+    local prompt="$1" out_file="$2"
+    [ -z "$GEMINI_API_KEY" ] && { log_error "GEMINI_API_KEY not set"; return 1; }
+
+    local escaped
+    escaped=$(python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" <<< "$prompt")
+
+    local model="${GEMINI_MODEL:-gemini-2.5-flash}"
+    local url="https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=$GEMINI_API_KEY"
+    local body="{
+      \"contents\":[{\"parts\":[{\"text\":$escaped}]}],
+      \"generationConfig\":{\"temperature\":0.2,\"maxOutputTokens\":65536,\"responseMimeType\":\"application/json\"}
+    }"
+
+    local resp="" attempt=0 max_attempts=4 wait_secs=5
+    while [ $attempt -lt $max_attempts ]; do
+        attempt=$((attempt + 1))
+        log_info "  Gemini request attempt $attempt/$max_attempts (model: $model)"
+        resp=$(timeout 180 curl -s -X POST "$url" \
+            -H 'Content-Type: application/json' \
+            -d "$body" 2>&1) || true
+
+        if [ -z "$resp" ]; then
+            log_warning "  Empty response – retrying in ${wait_secs}s …"
+        elif echo "$resp" | jq -e '.error' > /dev/null 2>&1; then
+            local code; code=$(echo "$resp" | jq -r '.error.code // 0')
+            local msg;  msg=$(echo  "$resp" | jq -r '.error.message // empty')
+            if [ "$code" = "503" ] || [ "$code" = "429" ]; then
+                log_warning "  Retryable API error ($code): $msg – retrying in ${wait_secs}s …"
+            else
+                log_warning "  API error ($code): $msg"; break
+            fi
+        elif echo "$resp" | jq -e '.candidates[0]' > /dev/null 2>&1; then
+            break
+        else
+            log_warning "  Unexpected response – retrying in ${wait_secs}s …"
+        fi
+        [ $attempt -lt $max_attempts ] && sleep $wait_secs
+        wait_secs=$((wait_secs * 2))
+    done
+
+    [ -z "$resp" ] && { log_warning "Gemini returned nothing after $max_attempts attempts"; return 1; }
+
+    local raw; raw=$(echo "$resp" | jq -r '.candidates[0].content.parts[0].text // empty' 2>/dev/null)
+    [ -z "$raw" ] && { log_warning "Empty candidate text from Gemini"; return 1; }
+
+    local clean; clean=$(echo "$raw" | sed 's/^```json//;s/^```//;s/```$//' | sed '/^[[:space:]]*$/d')
+    if echo "$clean" | jq . > /dev/null 2>&1; then
+        echo "$clean" > "$out_file"
+    else
+        clean=$(python3 -c "
+import sys, json
+text = sys.stdin.read()
+try:
+    print(json.dumps(json.loads(text))); sys.exit(0)
+except: pass
+idx = text.find('{')
+if idx >= 0:
+    try:
+        o, _ = json.JSONDecoder().raw_decode(text, idx)
+        print(json.dumps(o)); sys.exit(0)
+    except: pass
+sys.exit(1)
+" <<< "$raw" 2>/dev/null)
+        if [ -n "$clean" ] && echo "$clean" | jq . > /dev/null 2>&1; then
+            echo "$clean" > "$out_file"
+        else
+            log_warning "Could not parse Gemini JSON response"; return 1
+        fi
+    fi
+
+    local cnt; cnt=$(jq '.fixes|length' "$out_file" 2>/dev/null || echo 0)
+    log_success "Gemini returned $cnt test file(s)"
+    return 0
+}
+
+# Orchestrate the coverage boost loop.
+# Usage: run_coverage_boost_pipeline [threshold%]
+run_coverage_boost_pipeline() {
+    local threshold="${1:-80}"
+    local max_iters=3 iter=0
+
+    log_info "╔══════════════════════════════════════╗"
+    log_info "║  Coverage Boost Pipeline  (≥${threshold}%)   ║"
+    log_info "╚══════════════════════════════════════╝"
+
+    while [ $iter -lt $max_iters ]; do
+        iter=$((iter + 1))
+        log_info "── coverage iteration $iter/$max_iters ────────────────"
+
+        # Generate JaCoCo report
+        log_info "Running mvn verify to measure coverage …"
+        local verify_rc=0
+        (cd backend && mvn verify -q 2>/dev/null) || verify_rc=$?
+
+        local coverage; coverage=$(_get_line_coverage)
+        log_info "Current line coverage: ${coverage}%  (threshold: ${threshold}%)"
+
+        if [ "$coverage" -ge "$threshold" ]; then
+            log_success "Coverage ${coverage}% meets the ${threshold}% threshold!"
+            return 0
+        fi
+
+        log_info "Coverage ${coverage}% is below ${threshold}% — asking Gemini for tests …"
+
+        # Identify the worst-covered production classes
+        local low_files; low_files=$(_uncovered_classes "$threshold")
+        if [ -z "$low_files" ]; then
+            log_warning "Could not identify low-coverage classes from JaCoCo XML — stopping"
+            break
+        fi
+
+        log_info "Low-coverage files to target:"
+        while IFS= read -r f; do log_info "  - $f"; done <<< "$low_files"
+
+        # Build context: production source + a sample of existing tests
+        local src_ctx; src_ctx=$(build_source_context "$low_files")
+
+        local test_ctx=""
+        while IFS= read -r tf; do
+            [ -f "$tf" ] || continue
+            test_ctx+="--- EXISTING TEST: $tf ---
+$(cat "$tf")
+--- END EXISTING TEST ---
+"
+        done < <(find backend/src/test -name "*.java" 2>/dev/null | head -5)
+
+        # Build the prompt
+        local prompt
+        prompt=$(cat << COVPROMPT
+You are an expert Java / Spring Boot developer whose job is to write JUnit 5 tests
+that increase line coverage for the source files listed below.
+
+COVERAGE GOAL: bring overall line coverage from ${coverage}% up to at least ${threshold}%.
+
+RULES:
+• Write COMPLETE, COMPILABLE test classes. Include every import and annotation.
+• Match the style used in EXISTING TESTS (use @SpringBootTest + TestRestTemplate for
+  controller/integration tests, or @ExtendWith(MockitoExtension.class) for unit tests).
+• Test class package must mirror the production class package but live in
+  backend/src/test/java (e.g. be.ap.student.tickets.service → same package in test).
+• DO NOT duplicate tests that already exist in EXISTING TESTS.
+• DO NOT use @SuppressWarnings, // NOSONAR or any suppression annotations.
+• Cover as many untested methods and branches as practical.
+• Return ONLY valid JSON — no markdown fences, no text outside the JSON.
+
+RESPONSE FORMAT (strict JSON):
+{
+  "analysis": "one paragraph: which classes were under-covered and what tests you wrote",
+  "fixes": [
+    {
+      "file": "backend/src/test/java/be/ap/student/tickets/service/TicketServiceTest.java",
+      "issue": "TicketService had 12% line coverage",
+      "action": "create",
+      "content": "/* full compilable test class */"
+    }
+  ]
+}
+
+SOURCE FILES WITH LOW COVERAGE:
+${src_ctx}
+
+EXISTING TESTS (for style reference, do not duplicate):
+${test_ctx}
+COVPROMPT
+)
+
+        local cov_analysis="/tmp/coverage_fixes_${iter}.json"
+        if ! _call_gemini_raw "$prompt" "$cov_analysis"; then
+            log_error "Gemini call failed on coverage iteration $iter"
+            break
+        fi
+
+        local n_tests; n_tests=$(jq '.fixes|length' "$cov_analysis" 2>/dev/null || echo 0)
+        if [ "$n_tests" -eq 0 ]; then
+            log_warning "Gemini returned 0 test files — stopping coverage boost"
+            break
+        fi
+
+        apply_fixes "$cov_analysis"
+
+        # Verify the new tests compile before looping
+        local compile_rc=0
+        (cd backend && mvn test-compile -q > /tmp/_cov_compile.log 2>&1) || compile_rc=$?
+        if [ $compile_rc -ne 0 ]; then
+            log_warning "Generated tests do not compile — reverting and stopping"
+            git checkout -- backend/src/test/ 2>/dev/null || true
+            break
+        fi
+        log_success "$n_tests test file(s) compiled — re-measuring coverage …"
+    done
+
+    # Final measurement
+    (cd backend && mvn verify -q 2>/dev/null) || true
+    local final_cov; final_cov=$(_get_line_coverage)
+    log_info "Final line coverage: ${final_cov}%"
+    if [ "$final_cov" -ge "$threshold" ]; then
+        log_success "Coverage target met after boost pipeline!"
+        return 0
+    else
+        log_warning "Coverage ${final_cov}% still below ${threshold}% after $iter iteration(s)"
+        return 1
+    fi
+}
+
+# ──────────────────────────────────────────────────────────────
 # CLI
 # ──────────────────────────────────────────────────────────────
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -987,12 +1257,22 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
             [[ $# -ge 1 ]] || { log_error "Usage: $0 fetch-sonar-issues [error_file]"; exit 1; }
             _cmd_fetch_sonar_issues "${2:-error_analysis.md}"
             ;;
+        get-coverage)
+            # Print current JaCoCo line coverage as an integer (0-100)
+            _get_line_coverage
+            ;;
+        boost-coverage)
+            threshold="${2:-80}"
+            run_coverage_boost_pipeline "$threshold"
+            ;;
         *)
             log_info "AI Code Fixing Utilities (generic)"
             log_info "  extract-errors <log> <out>     Extract errors from build log"
             log_info "  apply-ai-fixes <error_file>    Full AI-powered fix pipeline"
             log_info "  review-pr <repo> <pr_number>   AI self-review of a PR"
             log_info "  fetch-sonar-issues [err_file]  Fetch SonarQube issues & append"
+            log_info "  get-coverage                   Print current JaCoCo line coverage %"
+            log_info "  boost-coverage [threshold%]    Generate tests to reach coverage goal"
             ;;
     esac
 fi
