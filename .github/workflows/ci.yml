@@ -51,7 +51,7 @@ jobs:
         working-directory: ai/validator
 
       - name: Make scripts executable
-        run: chmod +x ai/flow.sh ai/sync-from-fa.sh ai/generate-tests.sh .github/scripts/sonar-rule-details.sh
+        run: chmod +x ai/flow.sh ai/sync-from-fa.sh ai/generate-tests.sh .github/scripts/sonar-rule-details.sh .github/scripts/sonar-pr-comment.sh
 
       - name: Preflight info
         run: |
@@ -139,6 +139,20 @@ jobs:
               *) sleep 10 ;;
             esac
           done
+
+      - name: Post Detailed Sonar Analysis on PR
+        if: github.event_name == 'pull_request' && steps.sonar_scan.outcome == 'success'
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: |
+          .github/scripts/sonar-pr-comment.sh \
+            "OwenNolis_AI-SDLC" \
+            "${{ github.event.pull_request.number }}" \
+            "${{ github.repository }}"
 
       - name: Check SonarQube Quality Gate and Issues
         if: steps.sonar_scan.outcome == 'success'
