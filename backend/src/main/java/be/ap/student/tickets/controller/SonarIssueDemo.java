@@ -1,5 +1,8 @@
 package be.ap.student.tickets.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Deliberate SonarQube MAJOR issues for testing the detailed PR comment feature.
  *
@@ -9,25 +12,26 @@ package be.ap.student.tickets.controller;
  */
 public class SonarIssueDemo {
 
-    // java:S1192 — "ticket-service" repeated 4 times (threshold is 3)
+    private static final String SERVICE_NAME = "ticket-service"; // Fix for java:S1192
+    private static final Logger log = LoggerFactory.getLogger(SonarIssueDemo.class); // Fix for java:S106
+
     public String getServiceName() {
-        return "ticket-service";
+        return SERVICE_NAME;
     }
 
     public String getServiceId() {
-        return "ticket-service";
+        return SERVICE_NAME;
     }
 
     public String getServiceLabel() {
-        return "ticket-service";
+        return SERVICE_NAME;
     }
 
     public String getServiceTag() {
-        return "ticket-service";
+        return SERVICE_NAME;
     }
 
-    // java:S106 — System.out used instead of a proper logger
     public void reportStatus(String status) {
-        System.out.println("Service status: " + status);
+        log.info("Service status: {}", status); // Fix for java:S106
     }
 }
