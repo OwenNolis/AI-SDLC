@@ -27,7 +27,6 @@ public class TicketController {
     public CreateTicketResponse create(@Valid @RequestBody CreateTicketRequest req) {
         var optionalSavedTicket = ticketService.create(req);
         SupportTicket saved = optionalSavedTicket.orElseThrow(() -> new IllegalStateException("Failed to create ticket"));
-        // SonarQube java:S1135 - Complete the task associated to this TODO comment. (Removed the TODO comment)
         return new CreateTicketResponse(saved.getTicketNumber(), TicketStatus.valueOf(saved.getFormattedStatus()));
     }
 
