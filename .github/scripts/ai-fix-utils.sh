@@ -571,6 +571,11 @@ apply_fixes() {
 
         case "$act" in
             create|modify)
+                # Safety: only allow writes to source trees
+                if ! echo "$fp" | grep -qE '^(backend/src/|frontend/src/)'; then
+                    log_warning "  SKIPPED write to non-source path $fp (safety guard)"
+                    continue
+                fi
                 mkdir -p "$(dirname "$fp")"
                 printf '%s\n' "$con" > "$fp"
                 log_success "  Written $fp"
