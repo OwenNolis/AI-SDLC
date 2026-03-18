@@ -157,17 +157,17 @@ fetch_sonar_issues() {
         page=$((page + 1))
     done
 
-    # Build final JSON
-    local count; count=$(wc -l < "$out_json.tmp" | tr -d ' ')
-    if [ -z "$count" ] || ! [[ "$count" =~ ^[0-9]+$ ]] || [ "$count" -eq 0 ]; then
+    # Build final JSON using jq -s for robust array construction
+    if [ ! -s "$out_json.tmp" ]; then
         echo '{"total":0,"issues":[]}' > "$out_json"
-    else
-        echo "{\"total\":${count},\"issues\":[" > "$out_json"
-        sed '$!s/$/,/' "$out_json.tmp" >> "$out_json"
-        echo "]}" >> "$out_json"
+        rm -f "$out_json.tmp"
+        log_success "Saved 0 SonarQube issue(s) to $out_json"
+        return 0
     fi
+    jq -s '{"total": length, "issues": .}' "$out_json.tmp" > "$out_json"
     rm -f "$out_json.tmp"
 
+    local count; count=$(jq '.total' "$out_json" 2>/dev/null || echo 0)
     log_success "Saved $count SonarQube issue(s) to $out_json"
     return 0
 }
