@@ -14,3 +14,4 @@ generated_fixes.md
 ai_suggestions.md
 compilation_errors.log
 test_failures.log
+sonar_issues.json
