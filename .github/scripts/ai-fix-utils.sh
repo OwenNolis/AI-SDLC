@@ -1212,13 +1212,38 @@ COVPROMPT
 
         # Verify the new tests compile before looping
         local compile_rc=0
-        (cd backend && mvn test-compile -q > /tmp/_cov_compile.log 2>&1) || compile_rc=$?
+        (cd backend && mvn test-compile > /tmp/_cov_compile.log 2>&1) || compile_rc=$?
         if [ $compile_rc -ne 0 ]; then
-            log_warning "Generated tests do not compile — reverting and stopping"
-            git checkout -- backend/src/test/ 2>/dev/null || true
-            break
+            log_warning "Some generated tests have compilation errors — reverting only broken files"
+
+            # Extract the specific broken test files from the compiler output
+            local bad_files
+            bad_files=$(grep -oE '[^ ]+src/test[^ ]*\.java' /tmp/_cov_compile.log 2>/dev/null \
+                | sed 's|.*/AI-SDLC/||' | sort -u || true)
+
+            if [ -n "$bad_files" ]; then
+                while IFS= read -r bad; do
+                    [ -f "$bad" ] && git checkout -- "$bad" 2>/dev/null \
+                        && log_info "Reverted broken test: $bad"
+                done <<< "$bad_files"
+
+                # Retry compilation with the broken files removed
+                local retry_rc=0
+                (cd backend && mvn test-compile -q > /tmp/_cov_compile_retry.log 2>&1) || retry_rc=$?
+                if [ $retry_rc -ne 0 ]; then
+                    log_warning "Compilation still broken after targeted revert — reverting all generated tests"
+                    git checkout -- backend/src/test/ 2>/dev/null || true
+                    break
+                fi
+                log_success "Compilation OK after reverting $(echo "$bad_files" | wc -l | tr -d ' ') broken file(s) — keeping the rest"
+            else
+                log_warning "Could not identify broken files — reverting all generated tests"
+                git checkout -- backend/src/test/ 2>/dev/null || true
+                break
+            fi
+        else
+            log_success "$n_tests test file(s) compiled cleanly"
         fi
-        log_success "$n_tests test file(s) compiled — re-measuring coverage …"
     done
 
     # Final measurement
