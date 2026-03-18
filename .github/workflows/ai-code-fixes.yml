@@ -306,7 +306,7 @@ jobs:
                   echo "- **Author:** $AUTHOR" >> fix_summary.md
                   echo "- **What was wrong:** $MSG" >> fix_summary.md
                   echo "- **Why was this wrong:**" >> fix_summary.md
-                  .github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md
+                  .github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md 2>/dev/null || true
                   echo "- **How it was fixed:**" >> fix_summary.md
                   echo "  - AI-generated code changes were applied to resolve this issue. See below for diff." >> fix_summary.md
                   echo "" >> fix_summary.md
