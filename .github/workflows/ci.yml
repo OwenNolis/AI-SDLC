@@ -171,9 +171,9 @@ jobs:
             exit 1
           fi
 
-          # Only check for BLOCKER, CRITICAL, HIGH and MEDIUM issues
-          # Don't check for LOW and INFO issues
-          SEVERITIES="BLOCKER,CRITICAL,HIGH,MEDIUM"
+          # Check for BLOCKER, CRITICAL, HIGH, MAJOR and MEDIUM issues
+          # Don't check for MINOR, LOW and INFO issues
+          SEVERITIES="BLOCKER,CRITICAL,HIGH,MAJOR,MEDIUM"
 
           RESPONSE=$(curl -s -u "$SONAR_TOKEN:" \
             "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&severities=$SEVERITIES&ps=1")
