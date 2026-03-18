@@ -1208,7 +1208,31 @@ COVPROMPT
             break
         fi
 
+        # Snapshot which test files exist BEFORE applying (to distinguish new vs modified)
+        local pre_snap="/tmp/_cov_pre_tests_${iter}.txt"
+        find backend/src/test -name "*.java" 2>/dev/null | sort > "$pre_snap"
+
         apply_fixes "$cov_analysis"
+
+        # Revert a single file: rm if new, git checkout if pre-existing
+        _revert_file() {
+            local f="$1"
+            [ -f "$f" ] || return 0
+            if grep -qF "$f" "$pre_snap" 2>/dev/null; then
+                git checkout -- "$f" 2>/dev/null && log_info "Restored original: $f"
+            else
+                rm -f "$f" && log_info "Removed new broken test: $f"
+            fi
+        }
+
+        # Undo ALL files written this iteration
+        _revert_all_generated() {
+            git checkout -- backend/src/test/ 2>/dev/null || true
+            # Delete newly created test files (untracked, so git checkout ignored them)
+            find backend/src/test -name "*.java" 2>/dev/null | while IFS= read -r f; do
+                grep -qF "$f" "$pre_snap" 2>/dev/null || rm -f "$f"
+            done
+        }
 
         # Verify the new tests compile before looping
         local compile_rc=0
@@ -1223,8 +1247,7 @@ COVPROMPT
 
             if [ -n "$bad_files" ]; then
                 while IFS= read -r bad; do
-                    [ -f "$bad" ] && git checkout -- "$bad" 2>/dev/null \
-                        && log_info "Reverted broken test: $bad"
+                    _revert_file "$bad"
                 done <<< "$bad_files"
 
                 # Retry compilation with the broken files removed
@@ -1232,13 +1255,13 @@ COVPROMPT
                 (cd backend && mvn test-compile -q > /tmp/_cov_compile_retry.log 2>&1) || retry_rc=$?
                 if [ $retry_rc -ne 0 ]; then
                     log_warning "Compilation still broken after targeted revert — reverting all generated tests"
-                    git checkout -- backend/src/test/ 2>/dev/null || true
+                    _revert_all_generated
                     break
                 fi
-                log_success "Compilation OK after reverting $(echo "$bad_files" | wc -l | tr -d ' ') broken file(s) — keeping the rest"
+                log_success "Compilation OK after removing $(echo "$bad_files" | wc -l | tr -d ' ') broken file(s) — keeping the rest"
             else
                 log_warning "Could not identify broken files — reverting all generated tests"
-                git checkout -- backend/src/test/ 2>/dev/null || true
+                _revert_all_generated
                 break
             fi
         else
