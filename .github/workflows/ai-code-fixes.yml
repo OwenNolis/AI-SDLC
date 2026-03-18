@@ -284,20 +284,20 @@ jobs:
             echo "**Automated code fixes were applied to resolve SonarQube and build issues.**" >> fix_summary.md
             echo "" >> fix_summary.md
             echo "### 📝 Files Changed" >> fix_summary.md
-            git diff --name-only | while read file; do [ -n "$file" ] && echo "- $file" >> fix_summary.md; done
+            git diff --name-only | while IFS= read -r file; do [ -n "$file" ] && echo "- $file" >> fix_summary.md; done
             echo "" >> fix_summary.md
             echo "### 🛠️ Detailed Issue & Fix Report" >> fix_summary.md
             if [ -f sonar_issues.json ]; then
               if [ -s sonar_issues.json ] && jq -e '(.issues // []) | type == "array" and length > 0' sonar_issues.json >/dev/null 2>&1; then
-                jq -c '(.issues // []) | .[]' sonar_issues.json | while read issue; do
-                  MSG=$(echo "$issue" | jq -r '.message')
-                  SEV=$(echo "$issue" | jq -r '.severity')
-                  FILE=$(echo "$issue" | jq -r '(.component // "") | split(":") | last')
-                  LINE=$(echo "$issue" | jq -r '.line // "?"')
-                  RULE=$(echo "$issue" | jq -r '.rule')
-                  STATUS=$(echo "$issue" | jq -r '.status // "open"')
-                  TYPE=$(echo "$issue" | jq -r '.type // ""')
-                  AUTHOR=$(echo "$issue" | jq -r '.author // "unknown"')
+                jq -c '(.issues // []) | .[]' sonar_issues.json | while IFS= read -r issue; do
+                  MSG=$(printf '%s' "$issue" | jq -r '.message // ""')
+                  SEV=$(printf '%s' "$issue" | jq -r '.severity // ""')
+                  FILE=$(printf '%s' "$issue" | jq -r '(.component // "") | split(":") | last')
+                  LINE=$(printf '%s' "$issue" | jq -r '.line // "?"')
+                  RULE=$(printf '%s' "$issue" | jq -r '.rule // ""')
+                  STATUS=$(printf '%s' "$issue" | jq -r '.status // "open"')
+                  TYPE=$(printf '%s' "$issue" | jq -r '.type // ""')
+                  AUTHOR=$(printf '%s' "$issue" | jq -r '.author // "unknown"')
                   echo "#### $FILE:$LINE ($SEV)" >> fix_summary.md
                   echo "- **Issue:** $MSG" >> fix_summary.md
                   echo "- **Rule:** $RULE" >> fix_summary.md
