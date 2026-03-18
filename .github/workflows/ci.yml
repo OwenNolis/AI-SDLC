@@ -103,7 +103,8 @@ jobs:
       - name: Build backend + generate coverage for Sonar
         if: always()
         run: |
-          cd backend && mvn verify dependency:copy-dependencies -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues (coverage may be partial)"
+          cd backend && mvn dependency:copy-dependencies -q 2>/dev/null || true
+          mvn verify -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues (coverage may be partial)"
 
       - name: Run frontend tests with coverage
         if: always()

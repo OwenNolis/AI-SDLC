@@ -204,8 +204,10 @@ jobs:
         continue-on-error: true
         run: |
           echo "🔎 Running SonarQube analysis..."
-          # Build + test + copy deps so Sonar has bytecode, coverage & libraries
-          cd backend && mvn verify dependency:copy-dependencies -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues"
+          # Download dependencies first (even if compilation fails, Sonar needs the jars)
+          cd backend && mvn dependency:copy-dependencies -q 2>/dev/null || true
+          # Build + test for bytecode and coverage (failure is OK — Sonar still runs)
+          mvn verify -q 2>/dev/null || echo "⚠️ Backend verify for Sonar had issues"
           cd ..
 
       - name: SonarQube Scan
