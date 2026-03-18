@@ -363,6 +363,53 @@ jobs:
             fi
           fi
 
+      - name: Re-scan SonarQube with Improved Coverage
+        if: steps.boost_coverage.outputs.coverage_boosted == 'true'
+        id: sonar_rescan
+        continue-on-error: true
+        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Wait for SonarCloud Rescan
+        if: steps.sonar_rescan.outcome == 'success'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          TASK_URL=$(sed -n 's/^ceTaskUrl=//p' .scannerwork/report-task.txt 2>/dev/null)
+          if [ -z "$TASK_URL" ]; then echo "⚠️ No CE task URL — skipping wait"; exit 0; fi
+          echo "⏳ Waiting for SonarCloud to process rescan..."
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s -u "$SONAR_TOKEN:" "$TASK_URL" | jq -r '.task.status // "PENDING"')
+            echo "  Attempt $i/30: $STATUS"
+            case "$STATUS" in
+              SUCCESS) echo "✅ Rescan processed"; break ;;
+              FAILED|CANCELED) echo "⚠️ Rescan $STATUS"; break ;;
+              *) sleep 10 ;;
+            esac
+          done
+
+      - name: Check Quality Gate after Rescan
+        if: steps.sonar_rescan.outcome == 'success'
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          PROJECT_KEY="OwenNolis_AI-SDLC"
+          QG_STATUS=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=$PROJECT_KEY" \
+            | jq -r '.projectStatus.status')
+          echo "📊 Quality Gate after coverage boost: $QG_STATUS"
+          if [ "$QG_STATUS" = "OK" ]; then
+            echo "✅ Quality Gate now passes after coverage boost!"
+          else
+            COVERAGE=$(curl -s -u "$SONAR_TOKEN:" \
+              "https://sonarcloud.io/api/measures/component?component=$PROJECT_KEY&metricKeys=coverage,new_coverage" \
+              | jq -r '.component.measures[] | "\(.metric): \(.value // .period.value // "n/a")"')
+            echo "⚠️ Quality Gate still failing. Coverage metrics:"
+            echo "$COVERAGE"
+          fi
+
       - name: Test Fixes
         if: steps.apply_fixes.outputs.fixes_applied == 'true'
         id: test_fixes
@@ -394,7 +441,7 @@ jobs:
           fi
 
       - name: Create Pull Request with AI Fixes
-        if: steps.apply_fixes.outputs.fixes_applied == 'true'
+        if: steps.apply_fixes.outputs.fixes_applied == 'true' || steps.boost_coverage.outputs.coverage_boosted == 'true'
         id: create_pr
         run: |
           echo "🚀 Creating pull request with AI-generated fixes..."
@@ -508,7 +555,7 @@ jobs:
           fi
 
       - name: Post AI Fix Summary as PR Comment
-        if: steps.create_pr.outputs.pr_number != '' && steps.apply_fixes.outputs.fixes_applied == 'true'
+        if: steps.create_pr.outputs.pr_number != '' && (steps.apply_fixes.outputs.fixes_applied == 'true' || steps.boost_coverage.outputs.coverage_boosted == 'true')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.create_pr.outputs.pr_number }}
