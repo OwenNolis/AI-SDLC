@@ -20,15 +20,15 @@ public class SonarIssueDemo {
     }
 
     public String getServiceId() {
-        return SERVICE_NAME;
+        return SERVICE_NAME + "-id"; // Made distinct from getServiceName
     }
 
     public String getServiceLabel() {
-        return SERVICE_NAME;
+        return "Ticket Service Label"; // Made distinct from getServiceName
     }
 
     public String getServiceTag() {
-        return SERVICE_NAME;
+        return "ticket-tag"; // Made distinct from getServiceName
     }
 
     public void reportStatus(String status) {
