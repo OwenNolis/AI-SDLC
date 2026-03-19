@@ -1,0 +1,108 @@
+name: Dependabot → Jira
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  create-jira-issue:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create Jira Task for Dependabot PR
+        id: create_issue
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          SUMMARY="[Dependabot] ${PR_TITLE}"
+
+          # Build the Jira issue body in Atlassian Document Format (ADF)
+          PAYLOAD=$(python3 - <<PYEOF
+          import json, os
+
+          summary  = os.environ["SUMMARY"] if "SUMMARY" in os.environ else os.environ["PR_TITLE"]
+          pr_url   = os.environ["PR_URL"]
+          pr_num   = os.environ["PR_NUMBER"]
+          pr_title = os.environ["PR_TITLE"]
+          pr_body  = os.environ.get("PR_BODY", "")[:1500]  # cap to avoid oversized payloads
+
+          payload = {
+            "fields": {
+              "project":     {"key": "SCRUM"},
+              "summary":     f"[Dependabot] {pr_title}",
+              "issuetype":   {"name": "Task"},
+              "description": {
+                "type": "doc", "version": 1,
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {"type": "text", "text": "Dependabot opened PR #" + pr_num + " to update a dependency."}
+                    ]
+                  },
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {"type": "text", "text": "GitHub PR: ", "marks": [{"type": "strong"}]},
+                      {"type": "text", "text": pr_url,
+                       "marks": [{"type": "link", "attrs": {"href": pr_url}}]}
+                    ]
+                  },
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {"type": "text", "text": "PR description:", "marks": [{"type": "strong"}]}
+                    ]
+                  },
+                  {
+                    "type": "codeBlock",
+                    "attrs": {},
+                    "content": [{"type": "text", "text": pr_body or "(no description)"}]
+                  }
+                ]
+              }
+            }
+          }
+          print(json.dumps(payload))
+          PYEOF
+          )
+
+          RESPONSE=$(curl -s -X POST \
+            "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue" \
+            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          ISSUE_KEY=$(echo "$RESPONSE" | jq -r '.key // empty')
+
+          if [ -n "$ISSUE_KEY" ]; then
+            echo "✅ Jira issue created: $ISSUE_KEY"
+            ISSUE_URL="https://agentic-ai-sdlc.atlassian.net/browse/$ISSUE_KEY"
+            echo "🔗 $ISSUE_URL"
+            echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+            echo "issue_url=$ISSUE_URL" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Failed to create Jira issue"
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
+
+      - name: Comment Jira link on the PR
+        if: steps.create_issue.outputs.issue_key != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_KEY: ${{ steps.create_issue.outputs.issue_key }}
+          ISSUE_URL: ${{ steps.create_issue.outputs.issue_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          curl -s -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            -d "{\"body\": \"🎫 Jira task created: [**${ISSUE_KEY}**](${ISSUE_URL})\"}"
