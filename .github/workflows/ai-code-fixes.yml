@@ -492,7 +492,14 @@ jobs:
 
           # Add only source code changes
           git add backend/src/ frontend/src/
-          
+
+          # Exit gracefully if nothing was staged (e.g. coverage boost ran but
+          # only touched non-source files like package-lock.json)
+          if git diff --staged --quiet; then
+            echo "No source code changes to commit — skipping PR creation"
+            exit 0
+          fi
+
           # Create detailed commit message
           echo "🤖 AI-Powered Code Fixes via Gemini Analysis" > /tmp/commit_msg.txt
           echo "" >> /tmp/commit_msg.txt
