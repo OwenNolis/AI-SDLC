@@ -320,7 +320,7 @@ jobs:
             echo "" >> fix_summary.md
             echo "### 🔧 Code Changes (Diff)" >> fix_summary.md
             echo '\`\`\`diff' >> fix_summary.md
-            git diff >> fix_summary.md
+            git diff -- backend/src/ frontend/src/ >> fix_summary.md
             echo '\`\`\`' >> fix_summary.md
             echo "" >> fix_summary.md
             echo "---" >> fix_summary.md
