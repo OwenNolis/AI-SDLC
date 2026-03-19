@@ -16,18 +16,18 @@ public class EscalationService {
      *
      * @param priority   ticket priority: "LOW", "MEDIUM", "HIGH", "CRITICAL"
      * @param reopenCount number of times the ticket has been reopened
-     * @throws RuntimeException if the priority value is unrecognised   // java:S112
+     * @throws IllegalArgumentException if the priority value is unrecognised or blank
      */
     public boolean shouldEscalate(String priority, int reopenCount) {
         if (priority == null || priority.isBlank()) {
-            throw new RuntimeException("Priority must not be blank");  // java:S112
+            throw new IllegalArgumentException("Priority must not be blank");
         }
         return switch (priority.toUpperCase()) {
             case "CRITICAL" -> true;
             case "HIGH"     -> reopenCount >= 1;
             case "MEDIUM"   -> reopenCount >= REOPEN_THRESHOLD;
             case "LOW"      -> false;
-            default -> throw new RuntimeException("Unknown priority: " + priority);  // java:S112
+            default -> throw new IllegalArgumentException("Unknown priority: " + priority);
         };
     }
 
@@ -40,7 +40,7 @@ public class EscalationService {
             case "HIGH"     -> "Escalate within 1 hour.";
             case "MEDIUM"   -> "Escalate within 4 hours.";
             case "LOW"      -> "No escalation required.";
-            default -> throw new RuntimeException("Unknown priority: " + priority);  // java:S112
+            default -> throw new IllegalArgumentException("Unknown priority: " + priority);
         };
     }
 }
