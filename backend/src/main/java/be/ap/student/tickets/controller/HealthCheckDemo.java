@@ -12,7 +12,7 @@ public class HealthCheckDemo {
     // java:S112 — RuntimeException is too generic; should use a specific subclass
     public String checkHealth(String component) {
         if (component == null || component.isBlank()) {
-            throw new RuntimeException("Component name must not be blank");
+            throw new IllegalArgumentException("Component name must not be blank");
         }
         return "OK: " + component;
     }
