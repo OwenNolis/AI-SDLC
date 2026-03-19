@@ -347,11 +347,26 @@ jobs:
           echo "📈 Current line coverage: ${COVERAGE}%"
           echo "coverage_before=${COVERAGE}" >> $GITHUB_OUTPUT
 
-          if [ "${COVERAGE}" -ge 80 ]; then
-            echo "✅ Coverage ${COVERAGE}% already meets the 80% threshold"
-            echo "coverage_boosted=false" >> $GITHUB_OUTPUT
+          # Also check SonarCloud quality gate — it measures new-code coverage,
+          # which can fail even when overall JaCoCo coverage looks fine
+          QG_STATUS=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=OwenNolis_AI-SDLC" \
+            | jq -r '.projectStatus.status // "UNKNOWN"' 2>/dev/null || echo "UNKNOWN")
+          echo "📊 SonarCloud Quality Gate: ${QG_STATUS}"
+
+          NEEDS_BOOST=false
+          if [ "${COVERAGE}" -lt 80 ]; then
+            echo "⚠️ Overall coverage ${COVERAGE}% is below 80%"
+            NEEDS_BOOST=true
+          elif [ "${QG_STATUS}" != "OK" ]; then
+            echo "⚠️ Overall coverage ${COVERAGE}% is OK but SonarCloud Quality Gate is ${QG_STATUS} — new code may lack coverage"
+            NEEDS_BOOST=true
           else
-            echo "⚠️ Coverage ${COVERAGE}% is below 80% — running AI test generation pipeline..."
+            echo "✅ Coverage ${COVERAGE}% meets threshold and Quality Gate is OK"
+          fi
+
+          if [ "$NEEDS_BOOST" = "true" ]; then
+            echo "🚀 Running AI test generation pipeline..."
             set +e
             timeout 840 .github/scripts/ai-fix-utils.sh boost-coverage 80
             set -e
@@ -359,10 +374,12 @@ jobs:
             echo "coverage_after=${COVERAGE_AFTER}" >> $GITHUB_OUTPUT
             echo "coverage_boosted=true" >> $GITHUB_OUTPUT
             if [ "${COVERAGE_AFTER}" -ge 80 ]; then
-              echo "✅ Coverage improved: ${COVERAGE}% to ${COVERAGE_AFTER}% (meets 80% threshold)"
+              echo "✅ Coverage improved: ${COVERAGE}% → ${COVERAGE_AFTER}% (meets 80% threshold)"
             else
-              echo "⚠️ Coverage improved: ${COVERAGE}% to ${COVERAGE_AFTER}% (still below 80%)"
+              echo "⚠️ Coverage improved: ${COVERAGE}% → ${COVERAGE_AFTER}% (still below 80%)"
             fi
+          else
+            echo "coverage_boosted=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Re-scan SonarQube with Improved Coverage
