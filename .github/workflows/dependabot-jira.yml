@@ -3,10 +3,25 @@ name: Dependabot → Jira
 on:
   pull_request:
     types: [opened, reopened]
+  # Manual trigger for testing — the real schedule lives in dependabot.yml
+  workflow_dispatch:
+    inputs:
+      pr_title:
+        description: "PR title"
+        default: "build(deps): bump axios from 1.6.0 to 1.7.4 in /frontend"
+      pr_url:
+        description: "PR URL"
+        default: "https://github.com/OwenNolis/AI-SDLC/pull/999"
+      pr_number:
+        description: "PR number"
+        default: "999"
+      pr_body:
+        description: "PR body"
+        default: "Bumps [axios](https://github.com/axios/axios) from 1.6.0 to 1.7.4."
 
 jobs:
   create-jira-issue:
-    if: github.actor == 'dependabot[bot]'
+    if: github.actor == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -15,10 +30,10 @@ jobs:
         env:
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_TITLE: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_title || github.event.pull_request.title }}
+          PR_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_url || github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
+          PR_BODY: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_body || github.event.pull_request.body }}
         run: |
           SUMMARY="[Dependabot] ${PR_TITLE}"
 
