@@ -354,6 +354,13 @@ jobs:
             | jq -r '.projectStatus.status // "UNKNOWN"' 2>/dev/null || echo "UNKNOWN")
           echo "📊 SonarCloud Quality Gate: ${QG_STATUS}"
 
+          # Detect new/modified source files that may not have tests yet
+          NEW_SRC=$(
+            { git diff --name-only HEAD -- 'backend/src/main/java/' 2>/dev/null || true; \
+              git ls-files --others --exclude-standard backend/src/main/java/ 2>/dev/null || true; } \
+            | grep '\.java$' | grep -v '^$' | head -5
+          )
+
           NEEDS_BOOST=false
           if [ "${COVERAGE}" -lt 80 ]; then
             echo "⚠️ Overall coverage ${COVERAGE}% is below 80%"
@@ -361,8 +368,12 @@ jobs:
           elif [ "${QG_STATUS}" != "OK" ]; then
             echo "⚠️ Overall coverage ${COVERAGE}% is OK but SonarCloud Quality Gate is ${QG_STATUS} — new code may lack coverage"
             NEEDS_BOOST=true
+          elif [ -n "$NEW_SRC" ]; then
+            echo "⚠️ New/modified source files detected — generating tests to ensure coverage:"
+            echo "$NEW_SRC"
+            NEEDS_BOOST=true
           else
-            echo "✅ Coverage ${COVERAGE}% meets threshold and Quality Gate is OK"
+            echo "✅ Coverage ${COVERAGE}% meets threshold, Quality Gate is OK, no new source files"
           fi
 
           if [ "$NEEDS_BOOST" = "true" ]; then

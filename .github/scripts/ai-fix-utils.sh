@@ -1138,15 +1138,35 @@ run_coverage_boost_pipeline() {
         local coverage; coverage=$(_get_line_coverage)
         log_info "Current line coverage: ${coverage}%  (threshold: ${threshold}%)"
 
-        if [ "$coverage" -ge "$threshold" ]; then
-            log_success "Coverage ${coverage}% meets the ${threshold}% threshold!"
+        # Always detect new/modified source files (unstaged, staged, or untracked)
+        # so they are tested even when overall coverage already meets the threshold.
+        local new_src_files
+        new_src_files=$(
+            { git diff --name-only HEAD -- 'backend/src/main/java/' 2>/dev/null || true; \
+              git ls-files --others --exclude-standard backend/src/main/java/ 2>/dev/null || true; } \
+            | grep '\.java$' | sort -u
+        )
+        if [ -n "$new_src_files" ]; then
+            log_info "New/modified source files detected — will ensure they have tests:"
+            while IFS= read -r f; do log_info "  + $f"; done <<< "$new_src_files"
+        fi
+
+        if [ "$coverage" -ge "$threshold" ] && [ -z "$new_src_files" ]; then
+            log_success "Coverage ${coverage}% meets the ${threshold}% threshold and no new source files!"
             return 0
         fi
 
-        log_info "Coverage ${coverage}% is below ${threshold}% — asking Gemini for tests …"
+        if [ "$coverage" -ge "$threshold" ]; then
+            log_info "Overall coverage OK but new source files need tests — targeting them …"
+        else
+            log_info "Coverage ${coverage}% is below ${threshold}% — asking Gemini for tests …"
+        fi
 
-        # Identify the worst-covered production classes
+        # Identify the worst-covered production classes, always prepending new source files
         local low_files; low_files=$(_uncovered_classes "$threshold")
+        if [ -n "$new_src_files" ]; then
+            low_files=$(printf '%s\n%s' "$new_src_files" "$low_files" | grep -v '^$' | sort -u | head -10)
+        fi
         if [ -z "$low_files" ]; then
             log_warning "Could not identify low-coverage classes from JaCoCo XML — stopping"
             break
