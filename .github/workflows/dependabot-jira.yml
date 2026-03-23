@@ -121,4 +121,60 @@ jobs:
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            -d "{\"body\": \"🎫 Jira task created: [**${ISSUE_KEY}**](${ISSUE_URL})\"}"
+            -d "{\"body\": \"🎫 Jira task created: [**${ISSUE_KEY}**](${ISSUE_URL})\"}"       
+  close-jira-issue:
+    if: github.event.pull_request.merged == true && github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Find Jira issue key from PR comment
+        id: find_issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Look for the comment posted by the create-jira-issue job
+          COMMENT=$(curl -s \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            | jq -r '.[].body | select(startswith("🎫 Jira task created:"))')
+
+          ISSUE_KEY=$(echo "$COMMENT" | grep -oP 'SCRUM-\d+')
+
+          if [ -n "$ISSUE_KEY" ]; then
+            echo "Found Jira issue: $ISSUE_KEY"
+            echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+          else
+            echo "No Jira issue found in PR comments, skipping"
+          fi
+
+      - name: Close Jira issue
+        if: steps.find_issue.outputs.issue_key != ''
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          ISSUE_KEY: ${{ steps.find_issue.outputs.issue_key }}
+        run: |
+          # Get available transitions for the issue
+          TRANSITIONS=$(curl -s \
+            "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}")
+
+          # Find the transition ID for "CLOSED"
+          TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.name == "CLOSED") | .id')
+
+          if [ -z "$TRANSITION_ID" ]; then
+            echo "❌ Could not find 'CLOSED' transition"
+            echo "Available transitions: $(echo $TRANSITIONS | jq -r '.transitions[].name')"
+            exit 1
+          fi
+
+          # Apply the transition
+          curl -s -X POST \
+            "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"transition\": {\"id\": \"${TRANSITION_ID}\"}}"
+
+          echo "✅ Jira issue ${ISSUE_KEY} closed"
