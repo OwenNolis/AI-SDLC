@@ -166,10 +166,10 @@ jobs:
             -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}")
 
           # Find the transition ID for "CLOSED"
-          TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.name == "CLOSED") | .id')
+          TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.name == "Closed") | .id')
 
           if [ -z "$TRANSITION_ID" ]; then
-            echo "❌ Could not find 'CLOSED' transition"
+            echo "❌ Could not find 'Closed' transition"
             echo "Available transitions: $(echo $TRANSITIONS | jq -r '.transitions[].name')"
             exit 1
           fi
