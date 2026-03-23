@@ -29,14 +29,14 @@
     "eslint": "^10.1.0",
     "eslint-plugin-react-hooks": "7.1.0-canary-52684925-20251110",
     "eslint-plugin-react-refresh": "^0.5.2",
-    "globals": "15.0.0",
+    "globals": "^17.4.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.1",
-    "vite": "^8.0.2",
+    "vite": "8.0.0",
     "axios": "1.13.6"
   },
   "engines": {

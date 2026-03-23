@@ -22,7 +22,7 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "daily"
-      time: "15:57"
+      time: "16:41"
       timezone: "Europe/Brussels"
     open-pull-requests-limit: 5
     labels:
@@ -49,7 +49,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "15:57"
+      time: "16:30"
       timezone: "Europe/Brussels"
     open-pull-requests-limit: 3
     labels:
@@ -69,7 +69,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "15:57"
+      time: "16:30"
       timezone: "Europe/Brussels"
     labels:
       - "dependencies"
