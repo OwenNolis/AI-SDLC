@@ -7,21 +7,24 @@ on:
   workflow_dispatch:
     inputs:
       pr_title:
-        description: "PR title"
+        description: "PR title (used for create)"
         default: "build(deps): bump axios from 1.6.0 to 1.7.4 in /frontend"
       pr_url:
-        description: "PR URL"
+        description: "PR URL (used for create)"
         default: "https://github.com/OwenNolis/AI-SDLC/pull/999"
       pr_number:
-        description: "PR number"
+        description: "PR number (used for create)"
         default: "999"
       pr_body:
-        description: "PR body"
+        description: "PR body (used for create)"
         default: "Bumps [axios](https://github.com/axios/axios) from 1.6.0 to 1.7.4."
+      close_pr_number:
+        description: "PR number to close Jira issue for (leave empty to run create instead)"
+        default: ""
 
 jobs:
   create-jira-issue:
-    if: github.actor == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'
+    if: github.actor == 'dependabot[bot]' || (github.event_name == 'workflow_dispatch' && inputs.close_pr_number == '')
     runs-on: ubuntu-latest
 
     steps:
@@ -115,7 +118,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_KEY: ${{ steps.create_issue.outputs.issue_key }}
           ISSUE_URL: ${{ steps.create_issue.outputs.issue_url }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
         run: |
           curl -s -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -124,7 +127,7 @@ jobs:
             -d "{\"body\": \"🎫 Jira task created: [**${ISSUE_KEY}**](${ISSUE_URL})\"}"
 
   close-jira-issue:
-    if: github.event.pull_request.merged == true && github.event.pull_request.user.login == 'dependabot[bot]'
+    if: (github.event.pull_request.merged == true && github.event.pull_request.user.login == 'dependabot[bot]') || (github.event_name == 'workflow_dispatch' && inputs.close_pr_number != '')
     runs-on: ubuntu-latest
 
     steps:
@@ -132,7 +135,7 @@ jobs:
         id: find_issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.close_pr_number || github.event.pull_request.number }}
         run: |
           # Look for the comment posted by the create-jira-issue job
           COMMENT=$(curl -s \
