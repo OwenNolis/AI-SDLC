@@ -22,7 +22,7 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "daily"
-      time: "16:41"
+      time: "09:00"
       timezone: "Europe/Brussels"
     open-pull-requests-limit: 5
     labels:
