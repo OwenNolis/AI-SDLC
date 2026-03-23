@@ -142,7 +142,7 @@ jobs:
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            | jq -r '.[].body | select(startswith("🎫 Jira task created:"))')
+            | jq -r 'if type == "array" then .[].body | select(startswith("🎫 Jira task created:")) else empty end')
 
           ISSUE_KEY=$(echo "$COMMENT" | grep -oP 'SCRUM-\d+' || true)
 
