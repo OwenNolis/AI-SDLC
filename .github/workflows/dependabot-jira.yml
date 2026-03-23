@@ -2,7 +2,7 @@ name: Dependabot → Jira
 
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, closed]
   # Manual trigger for testing — the real schedule lives in dependabot.yml
   workflow_dispatch:
     inputs:
@@ -121,7 +121,8 @@ jobs:
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            -d "{\"body\": \"🎫 Jira task created: [**${ISSUE_KEY}**](${ISSUE_URL})\"}"       
+            -d "{\"body\": \"🎫 Jira task created: [**${ISSUE_KEY}**](${ISSUE_URL})\"}"
+
   close-jira-issue:
     if: github.event.pull_request.merged == true && github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
