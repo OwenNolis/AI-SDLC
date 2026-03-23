@@ -35,6 +35,7 @@ jobs:
           PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
           PR_BODY: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_body || github.event.pull_request.body }}
         run: |
+          echo "Using Jira email: ${JIRA_EMAIL}"
           SUMMARY="[Dependabot] ${PR_TITLE}"
 
           # Build the Jira issue body in Atlassian Document Format (ADF)
