@@ -141,7 +141,7 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
             | jq -r '.[].body | select(startswith("🎫 Jira task created:"))')
 
-          ISSUE_KEY=$(echo "$COMMENT" | grep -oP 'SCRUM-\d+')
+          ISSUE_KEY=$(echo "$COMMENT" | grep -oP 'SCRUM-\d+' || true)
 
           if [ -n "$ISSUE_KEY" ]; then
             echo "Found Jira issue: $ISSUE_KEY"
