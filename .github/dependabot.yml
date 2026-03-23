@@ -21,9 +21,8 @@ updates:
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:15"
+      interval: "daily"
+      time: "15:51"
       timezone: "Europe/Brussels"
     open-pull-requests-limit: 5
     labels:
