@@ -26,6 +26,8 @@ jobs:
   create-jira-issue:
     if: github.actor == 'dependabot[bot]' || (github.event_name == 'workflow_dispatch' && inputs.close_pr_number == '')
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
 
     steps:
       - name: Create Jira Task for Dependabot PR
