@@ -47,9 +47,8 @@ updates:
   - package-ecosystem: "npm"
     directory: "/ai/validator"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "16:30"
+      interval: "daily"
+      time: "09:00"
       timezone: "Europe/Brussels"
     open-pull-requests-limit: 3
     labels:
@@ -67,9 +66,8 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "16:30"
+      interval: "daily"
+      time: "09:00"
       timezone: "Europe/Brussels"
     labels:
       - "dependencies"
