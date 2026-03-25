@@ -33,6 +33,13 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Intentionally vulnerable version for Dependabot security testing (CVE-2022-42889) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.9</version>
+        </dependency>
+
         <!-- Bean validation (Jakarta Validation) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
