@@ -37,7 +37,7 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.57.2",
     "vite": "8.0.2",
-    "axios": "1.13.6"
+    "axios": "1.6.0"
   },
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24"
