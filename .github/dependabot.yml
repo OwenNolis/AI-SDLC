@@ -22,7 +22,7 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "daily"
-      time: "09:00"
+      time: "09:35"
       timezone: "Europe/Brussels"
     open-pull-requests-limit: 5
     labels:
@@ -48,7 +48,7 @@ updates:
     directory: "/ai/validator"
     schedule:
       interval: "daily"
-      time: "09:00"
+      time: "09:35"
       timezone: "Europe/Brussels"
     open-pull-requests-limit: 3
     labels:
@@ -67,7 +67,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "09:00"
+      time: "09:35"
       timezone: "Europe/Brussels"
     labels:
       - "dependencies"
