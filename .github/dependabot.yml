@@ -48,7 +48,7 @@ updates:
     directory: "/ai/validator"
     schedule:
       interval: "daily"
-      time: "09:35"
+      time: "08:00"
       timezone: "Europe/Brussels"
     open-pull-requests-limit: 3
     labels:

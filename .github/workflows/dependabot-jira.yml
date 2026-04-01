@@ -30,7 +30,26 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Skip if Jira issue already exists for this PR
+        id: check_existing
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
+        run: |
+          EXISTING=$(curl -s \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            | jq -r '[.[] | select(.body | startswith("🎫 Jira task created:"))] | length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "⏭️ Jira issue already exists for PR #${PR_NUMBER} — skipping creation"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Jira Task for Dependabot PR
+        if: steps.check_existing.outputs.skip != 'true'
         id: create_issue
         env:
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
@@ -146,41 +165,42 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
             | jq -r 'if type == "array" then .[].body | select(startswith("🎫 Jira task created:")) else empty end')
 
-          ISSUE_KEY=$(echo "$COMMENT" | grep -oP 'SCRUM-\d+' | head -1 || true)
+          # Collect ALL Jira keys from all matching comments (handles grouped PRs with multiple issues)
+          ISSUE_KEYS=$(echo "$COMMENT" | grep -oP 'SCRUM-\d+' | sort -u | tr '\n' ',' | sed 's/,$//' || true)
 
-          if [ -n "$ISSUE_KEY" ]; then
-            echo "Found Jira issue: $ISSUE_KEY"
-            echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+          if [ -n "$ISSUE_KEYS" ]; then
+            echo "Found Jira issues: $ISSUE_KEYS"
+            echo "issue_keys=$ISSUE_KEYS" >> $GITHUB_OUTPUT
           else
-            echo "No Jira issue found in PR comments, skipping"
+            echo "No Jira issues found in PR comments, skipping"
           fi
 
-      - name: Close Jira issue
-        if: steps.find_issue.outputs.issue_key != ''
+      - name: Close all Jira issues
+        if: steps.find_issue.outputs.issue_keys != ''
         env:
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          ISSUE_KEY: ${{ steps.find_issue.outputs.issue_key }}
         run: |
-          # Get available transitions for the issue
-          TRANSITIONS=$(curl -s \
-            "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue/${ISSUE_KEY}/transitions" \
-            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}")
+          echo "${{ steps.find_issue.outputs.issue_keys }}" | tr ',' '\n' | while read -r ISSUE_KEY; do
+            [ -z "$ISSUE_KEY" ] && continue
 
-          # Find the transition ID for "CLOSED"
-          TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.name == "Closed") | .id')
+            TRANSITIONS=$(curl -s \
+              "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+              -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}")
 
-          if [ -z "$TRANSITION_ID" ]; then
-            echo "❌ Could not find 'Closed' transition"
-            echo "Available transitions: $(echo $TRANSITIONS | jq -r '.transitions[].name')"
-            exit 1
-          fi
+            TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.name == "Closed") | .id')
 
-          # Apply the transition
-          curl -s -X POST \
-            "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue/${ISSUE_KEY}/transitions" \
-            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "{\"transition\": {\"id\": \"${TRANSITION_ID}\"}}"
+            if [ -z "$TRANSITION_ID" ]; then
+              echo "❌ Could not find 'Closed' transition for ${ISSUE_KEY}"
+              echo "Available transitions: $(echo $TRANSITIONS | jq -r '.transitions[].name')"
+              continue
+            fi
 
-          echo "✅ Jira issue ${ISSUE_KEY} closed"
+            curl -s -X POST \
+              "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+              -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"transition\": {\"id\": \"${TRANSITION_ID}\"}}"
+
+            echo "✅ Jira issue ${ISSUE_KEY} closed"
+          done
