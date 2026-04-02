@@ -235,8 +235,8 @@ jobs:
           context: backend
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_BACKEND }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
+            ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_BACKEND }}:latest
+            ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
 
       - name: Build & push frontend image
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -245,15 +245,15 @@ jobs:
           context: frontend
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
+            ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:latest
+            ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
 
       # ── Deploy ────────────────────────────────────────────────────
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
-          DOCKER_IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
-          DOCKER_IMAGE_FRONTEND: ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
+          DOCKER_IMAGE_BACKEND: ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
+          DOCKER_IMAGE_FRONTEND: ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
         run: |
           echo "🚀 Deploy stap — vervang dit met jouw deploy commando"
           echo "Backend image:  $DOCKER_IMAGE_BACKEND"
