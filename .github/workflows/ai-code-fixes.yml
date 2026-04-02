@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FEATURE_ID: feature-001-support-ticket
+  FEATURE_ID: ${{ vars.FEATURE_ID }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
 jobs:
@@ -215,6 +215,10 @@ jobs:
         id: sonar_action
         continue-on-error: true
         uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
+        with:
+          args: >
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -350,7 +354,7 @@ jobs:
           # Also check SonarCloud quality gate — it measures new-code coverage,
           # which can fail even when overall JaCoCo coverage looks fine
           QG_STATUS=$(curl -s -u "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=OwenNolis_AI-SDLC" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ vars.SONAR_PROJECT_KEY }}" \
             | jq -r '.projectStatus.status // "UNKNOWN"' 2>/dev/null || echo "UNKNOWN")
           echo "📊 SonarCloud Quality Gate: ${QG_STATUS}"
 
@@ -425,7 +429,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          PROJECT_KEY="OwenNolis_AI-SDLC"
+          PROJECT_KEY="${{ vars.SONAR_PROJECT_KEY }}"
           QG_STATUS=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/qualitygates/project_status?projectKey=$PROJECT_KEY" \
             | jq -r '.projectStatus.status')
