@@ -249,24 +249,14 @@ jobs:
             ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
 
       # ── Deploy ────────────────────────────────────────────────────
-      - name: Deploy
+      - name: Deploy (Docker Compose)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
           DOCKER_IMAGE_BACKEND: ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
           DOCKER_IMAGE_FRONTEND: ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
         run: |
-          echo "🚀 Deploy stap — vervang dit met jouw deploy commando"
           echo "Backend image:  $DOCKER_IMAGE_BACKEND"
           echo "Frontend image: $DOCKER_IMAGE_FRONTEND"
-          # Voorbeelden per platform:
-          #
-          # SSH naar VPS:
-          # ssh -o StrictHostKeyChecking=no user@${{ vars.DEPLOY_HOST }} \
-          #   "docker pull $DOCKER_IMAGE_BACKEND && docker restart backend"
-          #
-          # Kubernetes:
-          # kubectl set image deployment/backend backend=$DOCKER_IMAGE_BACKEND
-          # kubectl set image deployment/frontend frontend=$DOCKER_IMAGE_FRONTEND
-          #
-          # Docker Compose op server:
-          # ssh user@${{ vars.DEPLOY_HOST }} "cd /app && docker compose pull && docker compose up -d"
+          docker compose pull
+          docker compose up -d
+          docker compose ps
