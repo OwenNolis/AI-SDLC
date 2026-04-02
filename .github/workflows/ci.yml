@@ -207,3 +207,66 @@ jobs:
             docs/technical-analysis/**
             docs/test-scenarios/**
             docs/test-context/**
+
+      # ── Package ───────────────────────────────────────────────────
+      - name: Package backend (JAR)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: mvn -DskipTests package -q
+        working-directory: backend
+
+      - name: Build frontend (production)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: npm run build
+        working-directory: frontend
+
+      # ── Docker build & push → GHCR ────────────────────────────────
+      - name: Log in to GitHub Container Registry
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push backend image
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_BACKEND }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
+
+      - name: Build & push frontend image
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
+
+      # ── Deploy ────────────────────────────────────────────────────
+      - name: Deploy
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          DOCKER_IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
+          DOCKER_IMAGE_FRONTEND: ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
+        run: |
+          echo "🚀 Deploy stap — vervang dit met jouw deploy commando"
+          echo "Backend image:  $DOCKER_IMAGE_BACKEND"
+          echo "Frontend image: $DOCKER_IMAGE_FRONTEND"
+          # Voorbeelden per platform:
+          #
+          # SSH naar VPS:
+          # ssh -o StrictHostKeyChecking=no user@${{ vars.DEPLOY_HOST }} \
+          #   "docker pull $DOCKER_IMAGE_BACKEND && docker restart backend"
+          #
+          # Kubernetes:
+          # kubectl set image deployment/backend backend=$DOCKER_IMAGE_BACKEND
+          # kubectl set image deployment/frontend frontend=$DOCKER_IMAGE_FRONTEND
+          #
+          # Docker Compose op server:
+          # ssh user@${{ vars.DEPLOY_HOST }} "cd /app && docker compose pull && docker compose up -d"
