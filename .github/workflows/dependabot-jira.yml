@@ -54,6 +54,8 @@ jobs:
         env:
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ vars.JIRA_PROJECT_KEY }}
+          JIRA_DOMAIN: ${{ vars.JIRA_DOMAIN }}
           PR_TITLE: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_title || github.event.pull_request.title }}
           PR_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_url || github.event.pull_request.html_url }}
           PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
@@ -74,7 +76,7 @@ jobs:
 
           payload = {
             "fields": {
-              "project":     {"key": "SCRUM"},
+              "project":     {"key": os.environ["JIRA_PROJECT_KEY"]},
               "summary":     f"[Dependabot] {pr_title}",
               "issuetype":   {"name": "Task"},
               "description": {
@@ -114,7 +116,7 @@ jobs:
           )
 
           RESPONSE=$(curl -s -X POST \
-            "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue" \
+            "https://${JIRA_DOMAIN}/rest/api/3/issue" \
             -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
@@ -123,7 +125,7 @@ jobs:
 
           if [ -n "$ISSUE_KEY" ]; then
             echo "✅ Jira issue created: $ISSUE_KEY"
-            ISSUE_URL="https://agentic-ai-sdlc.atlassian.net/browse/$ISSUE_KEY"
+            ISSUE_URL="https://${JIRA_DOMAIN}/browse/$ISSUE_KEY"
             echo "🔗 $ISSUE_URL"
             echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
             echo "issue_url=$ISSUE_URL" >> $GITHUB_OUTPUT
@@ -156,6 +158,7 @@ jobs:
         id: find_issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ vars.JIRA_PROJECT_KEY }}
           PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.close_pr_number || github.event.pull_request.number }}
         run: |
           # Look for the comment posted by the create-jira-issue job
@@ -166,7 +169,7 @@ jobs:
             | jq -r 'if type == "array" then .[].body | select(startswith("🎫 Jira task created:")) else empty end')
 
           # Collect ALL Jira keys from all matching comments (handles grouped PRs with multiple issues)
-          ISSUE_KEYS=$(echo "$COMMENT" | grep -oP 'SCRUM-\d+' | sort -u | tr '\n' ',' | sed 's/,$//' || true)
+          ISSUE_KEYS=$(echo "$COMMENT" | grep -oP "${JIRA_PROJECT_KEY}-\d+" | sort -u | tr '\n' ',' | sed 's/,$//' || true)
 
           if [ -n "$ISSUE_KEYS" ]; then
             echo "Found Jira issues: $ISSUE_KEYS"
@@ -180,12 +183,13 @@ jobs:
         env:
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_DOMAIN: ${{ vars.JIRA_DOMAIN }}
         run: |
           echo "${{ steps.find_issue.outputs.issue_keys }}" | tr ',' '\n' | while read -r ISSUE_KEY; do
             [ -z "$ISSUE_KEY" ] && continue
 
             TRANSITIONS=$(curl -s \
-              "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+              "https://${JIRA_DOMAIN}/rest/api/3/issue/${ISSUE_KEY}/transitions" \
               -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}")
 
             TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.name == "Closed") | .id')
@@ -197,7 +201,7 @@ jobs:
             fi
 
             curl -s -X POST \
-              "https://agentic-ai-sdlc.atlassian.net/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+              "https://${JIRA_DOMAIN}/rest/api/3/issue/${ISSUE_KEY}/transitions" \
               -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
               -H "Content-Type: application/json" \
               -d "{\"transition\": {\"id\": \"${TRANSITION_ID}\"}}"

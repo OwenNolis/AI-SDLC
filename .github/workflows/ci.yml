@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 30
 
     env:
-      FEATURE_ID: feature-001-support-ticket
+      FEATURE_ID: ${{ vars.FEATURE_ID }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
 
@@ -115,6 +115,10 @@ jobs:
         if: always()
         id: sonar_scan
         uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
+        with:
+          args: >
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -151,7 +155,7 @@ jobs:
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
         run: |
           .github/scripts/sonar-pr-comment.sh \
-            "OwenNolis_AI-SDLC" \
+            "${{ vars.SONAR_PROJECT_KEY }}" \
             "${{ github.event.pull_request.number }}" \
             "${{ github.repository }}"
 
@@ -160,7 +164,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          PROJECT_KEY="OwenNolis_AI-SDLC"
+          PROJECT_KEY="${{ vars.SONAR_PROJECT_KEY }}"
           API="https://sonarcloud.io/api/issues/search"
           QG_API="https://sonarcloud.io/api/qualitygates/project_status?projectKey=$PROJECT_KEY"
 
