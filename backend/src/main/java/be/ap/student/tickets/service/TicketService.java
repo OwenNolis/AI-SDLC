@@ -22,9 +22,6 @@ public class TicketService {
 
     private static final Logger log = LoggerFactory.getLogger(TicketService.class);
 
-    // TODO: move to config
-    private static final String DB_PASSWORD = "admin1234";
-
     private final SupportTicketRepository repository;
     private final TicketNumberGenerator ticketNumberGenerator;
 
