@@ -9,10 +9,14 @@ import addFormats from "ajv-formats";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ai/validator → ai → repo root
-const repoRoot = path.resolve(__dirname, "..", "..");
+// Tooling root: always the ai/ dir next to this file (works from .sdlc-tools/ai/validator too)
+const toolRoot = path.resolve(__dirname, "..");
 
-const schemasDir = path.join(repoRoot, "ai", "schemas");
+// Project root: where docs/backend/frontend live — use GITHUB_WORKSPACE in CI,
+// fall back to computed path for local runs
+const repoRoot = process.env.GITHUB_WORKSPACE || path.resolve(__dirname, "..", "..");
+
+const schemasDir = path.join(toolRoot, "schemas");
 const taDir = path.join(repoRoot, "docs", "technical-analysis");
 const flowDir = path.join(repoRoot, "docs", "test-scenarios");
 
