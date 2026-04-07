@@ -7,17 +7,18 @@ if [[ -z "$FEATURE" ]]; then
   exit 1
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${GITHUB_WORKSPACE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 echo "==> (1) Validate TA + Flow JSON"
 
-npm --prefix "${ROOT_DIR}/ai/validator" run validate
+npm --prefix "${SCRIPT_DIR}/validator" run validate
 
 echo "==> (2) Generate backend tests (TestRestTemplate)"
 
 BACKEND_CMD=(
   node
-  "${ROOT_DIR}/ai/testgen/generate-backend-tests.mjs"
+  "${SCRIPT_DIR}/testgen/generate-backend-tests.mjs"
   "${FEATURE}"
 )
 
@@ -30,7 +31,7 @@ fi
 
 echo "==> (3) Generate frontend tests (RTL)"
 
-node "${ROOT_DIR}/ai/testgen/generate-frontend-tests.mjs" "${FEATURE}"
+node "${SCRIPT_DIR}/testgen/generate-frontend-tests.mjs" "${FEATURE}"
 
 echo "==> Done. Run:"
 echo "  cd backend && mvn test"

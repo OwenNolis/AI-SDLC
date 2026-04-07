@@ -7,6 +7,7 @@ if [[ -z "$FEATURE" ]]; then
   exit 1
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${GITHUB_WORKSPACE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 # --- Load .env automatically (if present) ---
@@ -61,15 +62,15 @@ echo "✅ Preflight (ok)"
 
 # 1) Sync FA -> TA + Flow + Context (LLM agent)
 run_step "1) Sync from FA (LLM)" \
-  "${ROOT_DIR}/ai/sync-from-fa.sh" "${FEATURE}"
+  "${SCRIPT_DIR}/sync-from-fa.sh" "${FEATURE}"
 
 # 2) Validate TA + Flow JSON schemas
 run_step "2) Validate TA + Flow JSON (AJV)" \
-  npm --prefix "${ROOT_DIR}/ai/validator" run validate
+  npm --prefix "${SCRIPT_DIR}/validator" run validate
 
 # 3) Generate backend + frontend tests from artifacts
 run_step "3) Generate tests" \
-  "${ROOT_DIR}/ai/generate-tests.sh" "${FEATURE}"
+  "${SCRIPT_DIR}/generate-tests.sh" "${FEATURE}"
 
 # 4) Run backend tests
 run_step "4) Run backend tests (mvn test)" \
