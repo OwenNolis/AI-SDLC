@@ -4,6 +4,34 @@ on:
   pull_request:
   push:
     branches: ["main"]
+  workflow_call:
+    inputs:
+      FEATURE_ID:
+        type: string
+        required: false
+      GEMINI_MODEL:
+        type: string
+        required: false
+      SONAR_PROJECT_KEY:
+        type: string
+        required: false
+      SONAR_ORGANIZATION:
+        type: string
+        required: false
+      DOCKER_OWNER:
+        type: string
+        required: false
+      DOCKER_IMAGE_BACKEND:
+        type: string
+        required: false
+      DOCKER_IMAGE_FRONTEND:
+        type: string
+        required: false
+    secrets:
+      GEMINI_API_KEY:
+        required: false
+      SONAR_TOKEN:
+        required: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -15,9 +43,9 @@ jobs:
     timeout-minutes: 30
 
     env:
-      FEATURE_ID: ${{ vars.FEATURE_ID }}
+      FEATURE_ID: ${{ inputs.FEATURE_ID || vars.FEATURE_ID }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      GEMINI_MODEL: ${{ inputs.GEMINI_MODEL || vars.GEMINI_MODEL }}
 
     steps:
       - name: Checkout
@@ -25,14 +53,24 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Checkout AI-SDLC tools
+        uses: actions/checkout@v6
+        with:
+          repository: OwenNolis/AI-SDLC
+          path: .sdlc-tools
+          sparse-checkout: |
+            .github/scripts
+            .github/ai-fix-config.env
+            ai
+
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: "22"
           cache: "npm"
           cache-dependency-path: |
-            ai/agent/package-lock.json
-            ai/validator/package-lock.json
+            .sdlc-tools/ai/agent/package-lock.json
+            .sdlc-tools/ai/validator/package-lock.json
             frontend/package-lock.json
 
       - name: Setup Java (Temurin 21)
@@ -44,14 +82,14 @@ jobs:
 
       - name: Install AI agent dependencies
         run: npm ci
-        working-directory: ai/agent
+        working-directory: .sdlc-tools/ai/agent
 
       - name: Install validator deps
         run: npm ci
-        working-directory: ai/validator
+        working-directory: .sdlc-tools/ai/validator
 
       - name: Make scripts executable
-        run: chmod +x ai/flow.sh ai/sync-from-fa.sh ai/generate-tests.sh .github/scripts/sonar-rule-details.sh .github/scripts/sonar-pr-comment.sh
+        run: chmod +x .sdlc-tools/ai/flow.sh .sdlc-tools/ai/sync-from-fa.sh .sdlc-tools/ai/generate-tests.sh .sdlc-tools/.github/scripts/sonar-rule-details.sh .sdlc-tools/.github/scripts/sonar-pr-comment.sh
 
       - name: Preflight info
         run: |
@@ -81,7 +119,7 @@ jobs:
 
           # We capture output so we can detect quota (429) and not fail CI.
           set +e
-          ./ai/flow.sh "${FEATURE_ID}" 2>&1 | tee flow.log
+          .sdlc-tools/ai/flow.sh "${FEATURE_ID}" 2>&1 | tee flow.log
           EXIT_CODE="${PIPESTATUS[0]}"
           set -e
 
@@ -117,8 +155,8 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
         with:
           args: >
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ inputs.SONAR_PROJECT_KEY || vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ inputs.SONAR_ORGANIZATION || vars.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -152,10 +190,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          GEMINI_MODEL: ${{ inputs.GEMINI_MODEL || vars.GEMINI_MODEL }}
         run: |
-          .github/scripts/sonar-pr-comment.sh \
-            "${{ vars.SONAR_PROJECT_KEY }}" \
+          .sdlc-tools/.github/scripts/sonar-pr-comment.sh \
+            "${{ inputs.SONAR_PROJECT_KEY || vars.SONAR_PROJECT_KEY }}" \
             "${{ github.event.pull_request.number }}" \
             "${{ github.repository }}"
 
@@ -164,7 +202,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          PROJECT_KEY="${{ vars.SONAR_PROJECT_KEY }}"
+          PROJECT_KEY="${{ inputs.SONAR_PROJECT_KEY || vars.SONAR_PROJECT_KEY }}"
           API="https://sonarcloud.io/api/issues/search"
           QG_API="https://sonarcloud.io/api/qualitygates/project_status?projectKey=$PROJECT_KEY"
 
@@ -235,8 +273,8 @@ jobs:
           context: backend
           push: true
           tags: |
-            ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_BACKEND }}:latest
-            ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
+            ghcr.io/${{ inputs.DOCKER_OWNER || vars.DOCKER_OWNER }}/${{ inputs.DOCKER_IMAGE_BACKEND || vars.DOCKER_IMAGE_BACKEND }}:latest
+            ghcr.io/${{ inputs.DOCKER_OWNER || vars.DOCKER_OWNER }}/${{ inputs.DOCKER_IMAGE_BACKEND || vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
 
       - name: Build & push frontend image
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -245,15 +283,15 @@ jobs:
           context: frontend
           push: true
           tags: |
-            ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:latest
-            ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
+            ghcr.io/${{ inputs.DOCKER_OWNER || vars.DOCKER_OWNER }}/${{ inputs.DOCKER_IMAGE_FRONTEND || vars.DOCKER_IMAGE_FRONTEND }}:latest
+            ghcr.io/${{ inputs.DOCKER_OWNER || vars.DOCKER_OWNER }}/${{ inputs.DOCKER_IMAGE_FRONTEND || vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
 
       # ── Deploy ────────────────────────────────────────────────────
       - name: Deploy (Docker Compose)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
-          DOCKER_IMAGE_BACKEND: ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
-          DOCKER_IMAGE_FRONTEND: ghcr.io/${{ vars.DOCKER_OWNER }}/${{ vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
+          DOCKER_IMAGE_BACKEND: ghcr.io/${{ inputs.DOCKER_OWNER || vars.DOCKER_OWNER }}/${{ inputs.DOCKER_IMAGE_BACKEND || vars.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
+          DOCKER_IMAGE_FRONTEND: ghcr.io/${{ inputs.DOCKER_OWNER || vars.DOCKER_OWNER }}/${{ inputs.DOCKER_IMAGE_FRONTEND || vars.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
         run: |
           echo "Backend image:  $DOCKER_IMAGE_BACKEND"
           echo "Frontend image: $DOCKER_IMAGE_FRONTEND"

@@ -5,13 +5,29 @@ on:
     workflows: ["Dependabot Auto-merge", "CI"]
     types: [completed]
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      FEATURE_ID:
+        type: string
+        required: false
+      SONAR_PROJECT_KEY:
+        type: string
+        required: false
+      SONAR_ORGANIZATION:
+        type: string
+        required: false
+    secrets:
+      GEMINI_API_KEY:
+        required: false
+      SONAR_TOKEN:
+        required: false
 
 concurrency:
   group: ai-fixes-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  FEATURE_ID: ${{ vars.FEATURE_ID }}
+  FEATURE_ID: ${{ inputs.FEATURE_ID || vars.FEATURE_ID }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
 jobs:
@@ -26,14 +42,24 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
+      - name: Checkout AI-SDLC tools
+        uses: actions/checkout@v6
+        with:
+          repository: OwenNolis/AI-SDLC
+          path: .sdlc-tools
+          sparse-checkout: |
+            .github/scripts
+            .github/ai-fix-config.env
+            ai
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "npm"
           cache-dependency-path: |
-            ai/agent/package-lock.json
-            ai/validator/package-lock.json
+            .sdlc-tools/ai/agent/package-lock.json
+            .sdlc-tools/ai/validator/package-lock.json
 
       - name: Setup Java (Temurin 21)
         uses: actions/setup-java@v5
@@ -50,15 +76,15 @@ jobs:
           
       - name: Install AI agent dependencies
         run: |
-          cd ai/agent && npm ci
+          cd .sdlc-tools/ai/agent && npm ci
           cd ../validator && npm ci
 
       - name: Make scripts executable
         run: |
-          chmod +x ai/flow.sh
-          chmod +x ai/generate-tests.sh
-          chmod +x .github/scripts/ai-fix-utils.sh
-          chmod +x .github/scripts/sonar-rule-details.sh
+          chmod +x .sdlc-tools/ai/flow.sh
+          chmod +x .sdlc-tools/ai/generate-tests.sh
+          chmod +x .sdlc-tools/.github/scripts/ai-fix-utils.sh
+          chmod +x .sdlc-tools/.github/scripts/sonar-rule-details.sh
 
       - name: Skip Dependabot Check for AI Workflow
         run: |
@@ -81,7 +107,7 @@ jobs:
         run: |
           echo "🔍 Running SDLC flow to detect errors..."
           set +e
-          ./ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output.log
+          .sdlc-tools/ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output.log
           exit_code=$?
           
           has_errors=false
@@ -226,8 +252,8 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
         with:
           args: >
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ inputs.SONAR_PROJECT_KEY || vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ inputs.SONAR_ORGANIZATION || vars.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -239,7 +265,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           echo "📋 Fetching SonarQube issues..."
-          .github/scripts/ai-fix-utils.sh fetch-sonar-issues error_analysis.md
+          .sdlc-tools/.github/scripts/ai-fix-utils.sh fetch-sonar-issues error_analysis.md
           
           # If Sonar found issues, make sure has_errors is true
           if [ -f sonar_issues.json ] && [ "$(jq '.total // 0' sonar_issues.json 2>/dev/null)" -gt 0 ]; then
@@ -285,7 +311,7 @@ jobs:
           fi
           
           echo "🔍 Running generic AI fix pipeline (errors + source code → Gemini → fixes)..."
-          if timeout 900 .github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
+          if timeout 900 .sdlc-tools/.github/scripts/ai-fix-utils.sh apply-ai-fixes error_analysis.md; then
             echo "✅ AI-generated fixes applied successfully"
             echo "fixes_applied=true" >> $GITHUB_OUTPUT
             
@@ -321,7 +347,7 @@ jobs:
                   echo "- **Author:** $AUTHOR" >> fix_summary.md
                   echo "- **What was wrong:** $MSG" >> fix_summary.md
                   echo "- **Why was this wrong:**" >> fix_summary.md
-                  .github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md 2>/dev/null || true
+                  .sdlc-tools/.github/scripts/sonar-rule-details.sh "$RULE" >> fix_summary.md 2>/dev/null || true
                   echo "- **How it was fixed:**" >> fix_summary.md
                   echo "  - AI-generated code changes were applied to resolve this issue. See below for diff." >> fix_summary.md
                   echo "" >> fix_summary.md
@@ -356,14 +382,14 @@ jobs:
           echo "📊 Checking code coverage after AI fixes..."
           cd backend && mvn verify -q 2>/dev/null || true && cd ..
 
-          COVERAGE=$(.github/scripts/ai-fix-utils.sh get-coverage)
+          COVERAGE=$(.sdlc-tools/.github/scripts/ai-fix-utils.sh get-coverage)
           echo "📈 Current line coverage: ${COVERAGE}%"
           echo "coverage_before=${COVERAGE}" >> $GITHUB_OUTPUT
 
           # Also check SonarCloud quality gate — it measures new-code coverage,
           # which can fail even when overall JaCoCo coverage looks fine
           QG_STATUS=$(curl -s -u "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ vars.SONAR_PROJECT_KEY }}" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ inputs.SONAR_PROJECT_KEY || vars.SONAR_PROJECT_KEY }}" \
             | jq -r '.projectStatus.status // "UNKNOWN"' 2>/dev/null || echo "UNKNOWN")
           echo "📊 SonarCloud Quality Gate: ${QG_STATUS}"
 
@@ -392,9 +418,9 @@ jobs:
           if [ "$NEEDS_BOOST" = "true" ]; then
             echo "🚀 Running AI test generation pipeline..."
             set +e
-            timeout 840 .github/scripts/ai-fix-utils.sh boost-coverage 80
+            timeout 840 .sdlc-tools/.github/scripts/ai-fix-utils.sh boost-coverage 80
             set -e
-            COVERAGE_AFTER=$(.github/scripts/ai-fix-utils.sh get-coverage)
+            COVERAGE_AFTER=$(.sdlc-tools/.github/scripts/ai-fix-utils.sh get-coverage)
             echo "coverage_after=${COVERAGE_AFTER}" >> $GITHUB_OUTPUT
             echo "coverage_boosted=true" >> $GITHUB_OUTPUT
             if [ "${COVERAGE_AFTER}" -ge 80 ]; then
@@ -438,7 +464,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          PROJECT_KEY="${{ vars.SONAR_PROJECT_KEY }}"
+          PROJECT_KEY="${{ inputs.SONAR_PROJECT_KEY || vars.SONAR_PROJECT_KEY }}"
           QG_STATUS=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/qualitygates/project_status?projectKey=$PROJECT_KEY" \
             | jq -r '.projectStatus.status')
@@ -459,7 +485,7 @@ jobs:
         run: |
           echo "Testing AI-generated fixes..."
           set +e
-          ./ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output_fixed.log
+          .sdlc-tools/ai/flow.sh ${{ env.FEATURE_ID }} 2>&1 | tee flow_output_fixed.log
           exit_code=$?
           echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
           
@@ -627,7 +653,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🔍 Running AI self-review on PR #${{ steps.create_pr.outputs.pr_number }}..."
-          .github/scripts/ai-fix-utils.sh review-pr "${{ github.repository }}" "${{ steps.create_pr.outputs.pr_number }}"
+          .sdlc-tools/.github/scripts/ai-fix-utils.sh review-pr "${{ github.repository }}" "${{ steps.create_pr.outputs.pr_number }}"
 
       - name: Report Results
         if: always()
