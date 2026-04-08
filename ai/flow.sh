@@ -60,6 +60,15 @@ echo "✅ GEMINI_API_KEY is set."
 
 echo "✅ Preflight (ok)"
 
+# Check if FA exists; if not, skip the entire flow (no analysis to process yet)
+FA_PATH="${ROOT_DIR}/docs/functional-analysis/${FEATURE}.md"
+if [[ ! -f "${FA_PATH}" ]]; then
+  echo ""
+  echo "⚠️  No FA found at ${FA_PATH} — skipping AI-SDLC flow (nothing to process)."
+  echo "   Create docs/functional-analysis/${FEATURE}.md to enable the flow."
+  exit 0
+fi
+
 # 1) Sync FA -> TA + Flow + Context (LLM agent)
 run_step "1) Sync from FA (LLM)" \
   "${SCRIPT_DIR}/sync-from-fa.sh" "${FEATURE}"
