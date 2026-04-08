@@ -1,0 +1,139 @@
+name: SonarCloud Analysis
+
+on:
+  workflow_call:
+    inputs:
+      SONAR_PROJECT_KEY:
+        type: string
+        required: false
+      SONAR_ORGANIZATION:
+        type: string
+        required: false
+      GEMINI_MODEL:
+        type: string
+        required: false
+    secrets:
+      SONAR_TOKEN:
+        required: false
+      GEMINI_API_KEY:
+        required: false
+
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Checkout AI-SDLC tools
+        uses: actions/checkout@v6
+        with:
+          repository: OwenNolis/AI-SDLC
+          path: .sdlc-tools
+          sparse-checkout: |
+            .github/scripts
+
+      - name: Setup Java (Temurin 21)
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: "maven"
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Make scripts executable
+        run: chmod +x .sdlc-tools/.github/scripts/sonar-rule-details.sh .sdlc-tools/.github/scripts/sonar-pr-comment.sh
+
+      - name: Build backend + generate coverage
+        run: |
+          cd backend && mvn dependency:copy-dependencies -q 2>/dev/null || true
+          mvn verify -q 2>/dev/null || echo "⚠️ Backend verify had issues (coverage may be partial)"
+
+      - name: Run frontend tests with coverage
+        run: |
+          cd frontend && npm ci && npx jest --coverage --ci 2>/dev/null || echo "⚠️ Frontend tests had issues (coverage may be partial)"
+
+      - name: SonarQube Scan
+        id: sonar_scan
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
+        with:
+          args: >
+            -Dsonar.projectKey=${{ inputs.SONAR_PROJECT_KEY || vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ inputs.SONAR_ORGANIZATION || vars.SONAR_ORGANIZATION }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Wait for SonarCloud processing
+        if: steps.sonar_scan.outcome == 'success'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          TASK_URL=$(sed -n 's/^ceTaskUrl=//p' .scannerwork/report-task.txt 2>/dev/null)
+          if [ -z "$TASK_URL" ]; then
+            echo "⚠️ No CE task URL found – skipping wait"
+            exit 0
+          fi
+          echo "⏳ Waiting for SonarCloud to finish processing..."
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s -u "$SONAR_TOKEN:" "$TASK_URL" | jq -r '.task.status // "PENDING"')
+            echo "  Attempt $i/30: $STATUS"
+            case "$STATUS" in
+              SUCCESS) echo "✅ Analysis processed"; break ;;
+              FAILED|CANCELED) echo "⚠️ Analysis $STATUS"; break ;;
+              *) sleep 10 ;;
+            esac
+          done
+
+      - name: Post Detailed Sonar Analysis on PR
+        if: github.event_name == 'pull_request' && steps.sonar_scan.outcome == 'success'
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ inputs.GEMINI_MODEL || vars.GEMINI_MODEL }}
+        run: |
+          .sdlc-tools/.github/scripts/sonar-pr-comment.sh \
+            "${{ inputs.SONAR_PROJECT_KEY || vars.SONAR_PROJECT_KEY }}" \
+            "${{ github.event.pull_request.number }}" \
+            "${{ github.repository }}"
+
+      - name: Check SonarQube Quality Gate and Issues
+        if: steps.sonar_scan.outcome == 'success'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          PROJECT_KEY="${{ inputs.SONAR_PROJECT_KEY || vars.SONAR_PROJECT_KEY }}"
+          API="https://sonarcloud.io/api/issues/search"
+          QG_API="https://sonarcloud.io/api/qualitygates/project_status?projectKey=$PROJECT_KEY"
+
+          QG_STATUS=$(curl -s -u "$SONAR_TOKEN:" "$QG_API" | jq -r '.projectStatus.status')
+          echo "SonarQube Quality Gate status: $QG_STATUS"
+          if [ "$QG_STATUS" != "OK" ]; then
+            echo "❌ SonarQube Quality Gate failed!"
+            exit 1
+          fi
+
+          IMPACT_SEVERITIES="HIGH,MEDIUM"
+          RESPONSE=$(curl -s -u "$SONAR_TOKEN:" \
+            "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&impactSeverities=$IMPACT_SEVERITIES&ps=1")
+          TOTAL=$(echo "$RESPONSE" | jq '.total // 0')
+
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "❌ SonarQube reports $TOTAL open HIGH/MEDIUM issue(s):"
+            curl -s -u "$SONAR_TOKEN:" \
+              "$API?componentKeys=$PROJECT_KEY&statuses=OPEN,CONFIRMED,REOPENED&impactSeverities=$IMPACT_SEVERITIES&ps=10" \
+              | jq -r '.issues[] | "  [\(.impacts[0].severity // .severity)] \(.message)  (\((.component // "") | split(":") | last):\(.line // "?"))"'
+            exit 1
+          else
+            echo "✅ No open SonarQube issues for impact severity HIGH or MEDIUM"
+          fi
