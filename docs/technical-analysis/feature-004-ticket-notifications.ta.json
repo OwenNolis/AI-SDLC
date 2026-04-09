@@ -1,0 +1,1096 @@
+{
+  "meta": {
+    "featureId": "feature-004-ticket-notifications",
+    "title": "Feature-004: Ticket notificaties via events",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "inScope": [
+      "Event publiceren bij aanmaken van een ticket",
+      "Event publiceren bij statuswijziging van een ticket (OPEN \u2192 IN_PROGRESS, IN_PROGRESS \u2192 CLOSED)",
+      "E-mail notificatie versturen via een consumer",
+      "Retry logica bij mislukte notificaties",
+      "Dead letter queue voor onverwerkte events",
+      "Publicatie van TicketCreatedEvent op topic `ticket-created`",
+      "Publicatie van TicketStatusChangedEvent op topic `ticket-status-changed`",
+      "Verwerking van TicketCreatedEvents door NotificationConsumer voor bevestigings-e-mails",
+      "Verwerking van TicketStatusChangedEvents door NotificationConsumer voor statusupdate-e-mails",
+      "Implementatie van exponential backoff retry strategie (max 3 pogingen)",
+      "Afhandeling van onverwerkbare events naar de dead letter queue `ticket-notifications-dlq`",
+      "Monitoring van de DLQ en genereren van alerts",
+      "Idempotentie van events",
+      "Beperking van de impact op de response tijd van de ticket API (< 50ms)",
+      "Doorvoercapaciteit van de consumer (minimaal 100 events/seconde)"
+    ],
+    "outOfScope": [
+      "Push notificaties naar de browser",
+      "SMS notificaties",
+      "Notificaties bij het verwijderen van tickets",
+      "Gebruikersinstellingen voor notificatievoorkeuren"
+    ]
+  },
+  "assumptions": [],
+  "openQuestions": [],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "Bij het aanmaken van een ticket wordt een TicketCreatedEvent gepubliceerd op het topic `ticket-created`.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "Bij een statuswijziging van een ticket wordt een TicketStatusChangedEvent gepubliceerd op het topic `ticket-status-changed`.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "De NotificationConsumer verwerkt TicketCreatedEvents en verstuurt een bevestigings-e-mail naar de aanmaker.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "De NotificationConsumer verwerkt TicketStatusChangedEvents en verstuurt een statusupdate-e-mail.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-005",
+      "text": "Bij een mislukte e-mailbezorging wordt het event opnieuw geprobeerd met exponential backoff (max 3 pogingen).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "Events die na 3 pogingen niet verwerkt kunnen worden, worden naar de dead letter queue gestuurd.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "De DLQ wordt gemonitord en er wordt een alert gegenereerd als er berichten in de DLQ terechtkomen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "Een TicketCreatedEvent bevat altijd het ticketId, ticketNumber, subject, priority en createdByUserId.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "Een TicketStatusChangedEvent bevat altijd het ticketId, ticketNumber, previousStatus, newStatus en changedAt.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "Events zijn idempotent \u2014 dubbele verwerking heeft geen side-effects.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-011",
+      "text": "Event publicatie mag de response tijd van de ticket API niet met meer dan 50ms verhogen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-012",
+      "text": "De consumer moet minimaal 100 events per seconde kunnen verwerken.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-013",
+      "text": "Een TicketCreatedEvent wordt gepubliceerd bij het succesvol aanmaken van een ticket.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-014",
+      "text": "Een TicketStatusChangedEvent wordt gepubliceerd bij een wijziging van de status van een ticket.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-015",
+      "text": "De NotificationConsumer verstuurt een bevestigings-e-mail naar de aanmaker van een ticket.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-016",
+      "text": "De NotificationConsumer verstuurt een statusupdate-e-mail bij een statuswijziging van een ticket.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-017",
+      "text": "Er wordt een retry strategie met exponential backoff toegepast bij mislukte e-mailbezorgingen, met een maximum van 3 pogingen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-018",
+      "text": "Events die na 3 pogingen niet verwerkt kunnen worden, worden naar de dead letter queue gestuurd.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-019",
+      "text": "De dead letter queue wordt gemonitord en er wordt een alert gegenereerd bij de aanwezigheid van berichten.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-020",
+      "text": "Het ticketId, ticketNumber, subject, priority en createdByUserId zijn onderdeel van de payload van een TicketCreatedEvent.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-021",
+      "text": "Het ticketId, ticketNumber, previousStatus, newStatus en changedAt zijn onderdeel van de payload van een TicketStatusChangedEvent.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-022",
+      "text": "De TicketService produceert events op de `ticket-created` en `ticket-status-changed` topics.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-023",
+      "text": "De NotificationConsumer consumeert events van de `ticket-created` en `ticket-status-changed` topics.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-024",
+      "text": "De DeadLetterHandler consumeert events van de `ticket-notifications-dlq`.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-025",
+      "text": "De retry strategie voor mislukte notificaties hanteert intervallen van 1s, 2s en 4s.",
+      "priority": "must"
+    }
+  ],
+  "domain": {
+    "entities": [
+      {
+        "name": "Ticket",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "ticketNumber",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "subject",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "priority",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdByUserId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "status",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "updatedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "TicketCreatedEvent",
+        "fields": [
+          {
+            "name": "eventId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "timestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "ticketId",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "ticketNumber",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "subject",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "priority",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdByUserId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "TicketStatusChangedEvent",
+        "fields": [
+          {
+            "name": "eventId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "timestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "ticketId",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "ticketNumber",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "previousStatus",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "newStatus",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "changedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Notification",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "recipientEmail",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:5"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "subject",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "body",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "status",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "retryCount",
+            "type": "Integer",
+            "constraints": [
+              "notNull",
+              "minValue:0"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "updatedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "DeadLetterMessage",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "originalTopic",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "payload",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "errorMessage",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "processedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "errorFormat": {
+      "type": "ApiError",
+      "fields": []
+    },
+    "endpoints": []
+  },
+  "backend": {
+    "modules": [
+      {
+        "name": "ticket",
+        "classes": [
+          {
+            "name": "TicketController",
+            "responsibility": "Exposeert REST endpoints voor ticket management en publiceert events."
+          },
+          {
+            "name": "TicketService",
+            "responsibility": "Beheert de business logic voor tickets en publiceert events."
+          },
+          {
+            "name": "TicketRepository",
+            "responsibility": "Verantwoordelijk voor data-access van Ticket entiteiten."
+          },
+          {
+            "name": "Ticket",
+            "responsibility": "Representeert de Ticket entiteit in de database."
+          },
+          {
+            "name": "TicketCreateRequestDto",
+            "responsibility": "Data Transfer Object voor het aanmaken van een ticket."
+          },
+          {
+            "name": "TicketUpdateStatusRequestDto",
+            "responsibility": "Data Transfer Object voor het updaten van de status van een ticket."
+          },
+          {
+            "name": "TicketCreatedEvent",
+            "responsibility": "Event dat wordt gepubliceerd wanneer een ticket is aangemaakt."
+          },
+          {
+            "name": "TicketStatusChangedEvent",
+            "responsibility": "Event dat wordt gepubliceerd wanneer de status van een ticket is gewijzigd."
+          },
+          {
+            "name": "TicketCreatedEventPublisher",
+            "responsibility": "Publiceert TicketCreatedEvent naar de messaging queue."
+          },
+          {
+            "name": "TicketStatusChangedEventPublisher",
+            "responsibility": "Publiceert TicketStatusChangedEvent naar de messaging queue."
+          },
+          {
+            "name": "TicketValidator",
+            "responsibility": "Valideert de input voor ticket operaties."
+          },
+          {
+            "name": "TicketNotFoundException",
+            "responsibility": "Exception die wordt gegooid wanneer een ticket niet wordt gevonden."
+          },
+          {
+            "name": "InvalidTicketDataException",
+            "responsibility": "Exception die wordt gegooid bij ongeldige ticket data."
+          }
+        ]
+      },
+      {
+        "name": "notification",
+        "classes": [
+          {
+            "name": "NotificationConsumer",
+            "responsibility": "Consumeert ticket events en verstuurt notificaties."
+          },
+          {
+            "name": "NotificationService",
+            "responsibility": "Beheert de business logic voor notificaties en e-mail verzending."
+          },
+          {
+            "name": "NotificationRepository",
+            "responsibility": "Verantwoordelijk voor data-access van Notification entiteiten."
+          },
+          {
+            "name": "Notification",
+            "responsibility": "Representeert een notificatie in de database."
+          },
+          {
+            "name": "EmailSender",
+            "responsibility": "Verantwoordelijk voor het daadwerkelijk versturen van e-mails."
+          },
+          {
+            "name": "NotificationRetryService",
+            "responsibility": "Implementeert de retry strategie voor mislukte notificaties."
+          },
+          {
+            "name": "NotificationDlqProducer",
+            "responsibility": "Publiceert mislukte notificatie events naar de DLQ."
+          },
+          {
+            "name": "NotificationException",
+            "responsibility": "Generieke exception voor notificatie gerelateerde fouten."
+          }
+        ]
+      },
+      {
+        "name": "common",
+        "classes": [
+          {
+            "name": "DeadLetterHandler",
+            "responsibility": "Verwerkt berichten die in de Dead Letter Queue terechtkomen."
+          },
+          {
+            "name": "DeadLetterMessage",
+            "responsibility": "Representeert een bericht in de Dead Letter Queue."
+          },
+          {
+            "name": "DlqMonitor",
+            "responsibility": "Monitort de Dead Letter Queue en genereert alerts."
+          },
+          {
+            "name": "IdempotencyChecker",
+            "responsibility": "Zorgt ervoor dat events idempotent verwerkt worden."
+          },
+          {
+            "name": "MessagingConfig",
+            "responsibility": "Configureert de messaging infrastructuur (topics, queues)."
+          },
+          {
+            "name": "GlobalExceptionHandler",
+            "responsibility": "Centrale afhandeling van exceptions."
+          }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "routes": [],
+    "components": []
+  },
+  "tests": {
+    "unit": [],
+    "integration": [],
+    "e2e": []
+  },
+  "messaging": {
+    "topics": [
+      {
+        "name": "ticket-created",
+        "producer": "TicketService",
+        "consumer": "NotificationConsumer",
+        "description": "Publiceert TicketCreatedEvent wanneer een nieuw ticket succesvol is aangemaakt."
+      },
+      {
+        "name": "ticket-status-changed",
+        "producer": "TicketService",
+        "consumer": "NotificationConsumer",
+        "description": "Publiceert TicketStatusChangedEvent wanneer de status van een ticket wordt gewijzigd."
+      },
+      {
+        "name": "ticket-notifications-dlq",
+        "producer": "NotificationService",
+        "consumer": "DeadLetterHandler",
+        "description": "Dead Letter Queue voor mislukte notificatie events."
+      }
+    ],
+    "events": [
+      {
+        "name": "TicketCreatedEvent",
+        "trigger": "Succesvolle aanmaak van een ticket.",
+        "payloadFields": [
+          "eventId",
+          "timestamp",
+          "ticketId",
+          "ticketNumber",
+          "subject",
+          "priority",
+          "createdByUserId"
+        ]
+      },
+      {
+        "name": "TicketStatusChangedEvent",
+        "trigger": "Wijziging van de status van een ticket.",
+        "payloadFields": [
+          "eventId",
+          "timestamp",
+          "ticketId",
+          "ticketNumber",
+          "previousStatus",
+          "newStatus",
+          "changedAt"
+        ]
+      }
+    ],
+    "dlqStrategy": "Events die na 3 mislukte pogingen niet verwerkt kunnen worden door de NotificationConsumer, worden naar de 'ticket-notifications-dlq' topic gestuurd. De DLQ wordt gemonitord en genereert alerts bij de aanwezigheid van berichten.",
+    "retryStrategy": "Bij mislukte e-mailbezorgingen wordt een retry strategie met exponential backoff toegepast. De intervallen tussen pogingen zijn 1 seconde, 2 seconden en 4 seconden, met een maximum van 3 pogingen in totaal."
+  },
+  "traceability": [
+    {
+      "reqId": "REQ-001",
+      "backendRefs": [
+        "TicketService",
+        "TicketCreatedEventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat bij het aanmaken van een ticket via de API, een TicketCreatedEvent wordt gepubliceerd op het juiste topic."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [
+        "TicketService",
+        "TicketStatusChangedEventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat bij het wijzigen van de status van een ticket via de API, een TicketStatusChangedEvent wordt gepubliceerd op het juiste topic."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [
+        "NotificationConsumer",
+        "NotificationService",
+        "EmailSender"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de NotificationConsumer een TicketCreatedEvent verwerkt en een bevestigings-e-mail verstuurt naar de correcte ontvanger."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [
+        "NotificationConsumer",
+        "NotificationService",
+        "EmailSender"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de NotificationConsumer een TicketStatusChangedEvent verwerkt en een statusupdate-e-mail verstuurt."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [
+        "NotificationRetryService",
+        "EmailSender"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat bij een mislukte e-mailbezorging, de NotificationRetryService het event opnieuw probeert te verwerken met exponential backoff (max 3 pogingen)."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [
+        "NotificationRetryService",
+        "NotificationDlqProducer"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat events die na 3 pogingen niet verwerkt kunnen worden, correct naar de dead letter queue worden gestuurd."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [
+        "DlqMonitor"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de DlqMonitor detecteert wanneer er berichten in de DLQ terechtkomen en een alert genereert."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [
+        "TicketCreatedEvent"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat een TicketCreatedEvent de verplichte velden (ticketId, ticketNumber, subject, priority, createdByUserId) bevat."
+      ]
+    },
+    {
+      "reqId": "REQ-009",
+      "backendRefs": [
+        "TicketStatusChangedEvent"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat een TicketStatusChangedEvent de verplichte velden (ticketId, ticketNumber, previousStatus, newStatus, changedAt) bevat."
+      ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [
+        "IdempotencyChecker",
+        "NotificationConsumer"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat het verwerken van dubbele events geen ongewenste side-effects veroorzaakt."
+      ]
+    },
+    {
+      "reqId": "REQ-011",
+      "backendRefs": [
+        "TicketController",
+        "TicketCreatedEventPublisher",
+        "TicketStatusChangedEventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Meet de response tijd van de ticket API bij het aanmaken en updaten van tickets om te verifi\u00ebren dat de event publicatie de tijd niet significant verhoogt."
+      ]
+    },
+    {
+      "reqId": "REQ-012",
+      "backendRefs": [
+        "NotificationConsumer"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Voer een load test uit op de NotificationConsumer om te verifi\u00ebren dat deze minimaal 100 events per seconde kan verwerken."
+      ]
+    },
+    {
+      "reqId": "REQ-013",
+      "backendRefs": [
+        "TicketService",
+        "TicketCreatedEventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat een TicketCreatedEvent wordt gepubliceerd na een succesvolle ticket aanmaak operatie."
+      ]
+    },
+    {
+      "reqId": "REQ-014",
+      "backendRefs": [
+        "TicketService",
+        "TicketStatusChangedEventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat een TicketStatusChangedEvent wordt gepubliceerd na een succesvolle statuswijziging van een ticket."
+      ]
+    },
+    {
+      "reqId": "REQ-015",
+      "backendRefs": [
+        "NotificationConsumer",
+        "NotificationService",
+        "EmailSender"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de NotificationConsumer een TicketCreatedEvent verwerkt en een bevestigings-e-mail stuurt naar de aanmaker."
+      ]
+    },
+    {
+      "reqId": "REQ-016",
+      "backendRefs": [
+        "NotificationConsumer",
+        "NotificationService",
+        "EmailSender"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de NotificationConsumer een TicketStatusChangedEvent verwerkt en een statusupdate-e-mail stuurt."
+      ]
+    },
+    {
+      "reqId": "REQ-017",
+      "backendRefs": [
+        "NotificationRetryService",
+        "EmailSender"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat bij een mislukte e-mailbezorging, de NotificationRetryService de retry strategie met exponential backoff (max 3 pogingen) toepast."
+      ]
+    },
+    {
+      "reqId": "REQ-018",
+      "backendRefs": [
+        "NotificationRetryService",
+        "NotificationDlqProducer"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat events die na 3 pogingen niet verwerkt kunnen worden, naar de dead letter queue worden gestuurd."
+      ]
+    },
+    {
+      "reqId": "REQ-019",
+      "backendRefs": [
+        "DlqMonitor"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de DlqMonitor een alert genereert wanneer er berichten in de dead letter queue aanwezig zijn."
+      ]
+    },
+    {
+      "reqId": "REQ-020",
+      "backendRefs": [
+        "TicketCreatedEvent"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de payload van een TicketCreatedEvent de velden ticketId, ticketNumber, subject, priority en createdByUserId bevat."
+      ]
+    },
+    {
+      "reqId": "REQ-021",
+      "backendRefs": [
+        "TicketStatusChangedEvent"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de payload van een TicketStatusChangedEvent de velden ticketId, ticketNumber, previousStatus, newStatus en changedAt bevat."
+      ]
+    },
+    {
+      "reqId": "REQ-022",
+      "backendRefs": [
+        "TicketService",
+        "TicketCreatedEventPublisher",
+        "TicketStatusChangedEventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de TicketService events publiceert op de `ticket-created` en `ticket-status-changed` topics."
+      ]
+    },
+    {
+      "reqId": "REQ-023",
+      "backendRefs": [
+        "NotificationConsumer",
+        "MessagingConfig"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de NotificationConsumer events consumeert van de `ticket-created` en `ticket-status-changed` topics."
+      ]
+    },
+    {
+      "reqId": "REQ-024",
+      "backendRefs": [
+        "DeadLetterHandler",
+        "MessagingConfig"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de DeadLetterHandler events consumeert van de `ticket-notifications-dlq`."
+      ]
+    },
+    {
+      "reqId": "REQ-025",
+      "backendRefs": [
+        "NotificationRetryService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat de retry strategie voor mislukte notificaties de gespecificeerde intervallen van 1s, 2s en 4s hanteert."
+      ]
+    }
+  ]
+}

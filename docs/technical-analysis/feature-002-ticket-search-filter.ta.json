@@ -1,0 +1,438 @@
+{
+  "meta": {
+    "featureId": "feature-002-ticket-search-filter",
+    "title": "Feature-002: Support tickets zoeken en filteren",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "inScope": [
+      "Overzicht van support tickets tonen",
+      "Zoeken op ticketnummer en subject",
+      "Filteren op status",
+      "Filteren op priority",
+      "Sorteren op aanmaakdatum",
+      "Lege resultaten correct tonen"
+    ],
+    "outOfScope": [
+      "Ticket aanmaken",
+      "Ticket bewerken of sluiten",
+      "Paginatie",
+      "Export van resultaten",
+      "Geavanceerde full-text search"
+    ]
+  },
+  "assumptions": [],
+  "openQuestions": [],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "De gebruiker kan een lijst van support tickets opvragen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "De gebruiker kan zoeken op ticketnummer of subject.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "De gebruiker kan filteren op status.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "De gebruiker kan filteren op priority.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-005",
+      "text": "De gebruiker kan sorteren op createdAt in oplopende of aflopende volgorde.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "Indien geen tickets gevonden worden, krijgt de gebruiker een duidelijke lege status te zien.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "Ongeldige filterwaarden geven een valide foutmelding terug.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "Enkel geldige statussen OPEN en CLOSED zijn toegestaan als filter.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "Enkel geldige prioriteiten LOW, MEDIUM en HIGH zijn toegestaan als filter.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "De standaard sortering is createdAt dalend.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-011",
+      "text": "Zoeken op ticketnummer is een exacte match, zoeken op subject is een gedeeltelijke match.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-012",
+      "text": "Combinaties van zoekterm en filters moeten samen toegepast worden.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-013",
+      "text": "De responstijd voor het ophalen van tickets blijft p95 < 300 ms bij normale datasetgrootte.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-014",
+      "text": "Foutantwoorden volgen het standaard error formaat met correlationId.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-015",
+      "text": "De oplossing moet uitbreidbaar zijn naar paginatie in een latere fase.",
+      "priority": "should"
+    },
+    {
+      "id": "REQ-016",
+      "text": "Toon een zoekveld boven de resultatenlijst.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-017",
+      "text": "Gebruik filters voor status en priority als dropdowns.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-018",
+      "text": "Gebruik een sorteerkeuze voor nieuwste/eerst of oudste/eerst.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-019",
+      "text": "Toon een duidelijke melding wanneer geen resultaten gevonden zijn.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-020",
+      "text": "Behoud de actieve zoek- en filterwaarden in de UI.",
+      "priority": "must"
+    }
+  ],
+  "domain": {
+    "entities": []
+  },
+  "api": {
+    "errorFormat": {
+      "type": "ApiError",
+      "fields": []
+    },
+    "endpoints": []
+  },
+  "backend": {
+    "modules": []
+  },
+  "frontend": {
+    "routes": [
+      "/tickets"
+    ],
+    "components": [
+      "TicketListPage",
+      "TicketList",
+      "TicketListItem",
+      "SearchBar",
+      "StatusFilter",
+      "PriorityFilter",
+      "SortOrderSelector",
+      "LoadingSpinner",
+      "EmptyState",
+      "ErrorMessage"
+    ]
+  },
+  "tests": {
+    "unit": [
+      "TicketListPage: rendering in loading, empty, error, and success states",
+      "TicketList: rendering with and without tickets",
+      "TicketListItem: rendering correctly",
+      "SearchBar: input handling and submission",
+      "StatusFilter: dropdown rendering and selection",
+      "PriorityFilter: dropdown rendering and selection",
+      "SortOrderSelector: rendering and selection",
+      "LoadingSpinner: rendering",
+      "EmptyState: rendering with custom message",
+      "ErrorMessage: rendering with correlationId and message"
+    ],
+    "integration": [
+      "GET /api/tickets with search query \u2192 200 OK with filtered tickets (mocked)",
+      "GET /api/tickets with status filter \u2192 200 OK with filtered tickets (mocked)",
+      "GET /api/tickets with priority filter \u2192 200 OK with filtered tickets (mocked)",
+      "GET /api/tickets with sort order \u2192 200 OK with sorted tickets (mocked)",
+      "GET /api/tickets with combination of filters and search \u2192 200 OK with combined results (mocked)",
+      "GET /api/tickets returning empty array \u2192 200 OK with empty array (mocked)",
+      "GET /api/tickets returning error response \u2192 500 Internal Server Error with correlationId (mocked)"
+    ],
+    "e2e": [
+      "User navigates to the tickets page.",
+      "User sees a list of tickets with default sorting (createdAt descending).",
+      "User enters a ticket number in the search bar and presses Enter, sees exact match results.",
+      "User enters a partial subject in the search bar and presses Enter, sees partial match results.",
+      "User selects 'OPEN' from the status filter, sees only open tickets.",
+      "User selects 'HIGH' from the priority filter, sees only high priority tickets.",
+      "User combines status filter ('CLOSED') and priority filter ('LOW'), sees matching tickets.",
+      "User changes sort order to 'oldest first', sees tickets sorted by createdAt ascending.",
+      "User clears search and filters, sees the full list of tickets again.",
+      "User searches for a non-existent ticket, sees the 'no results found' message.",
+      "User applies filters that result in no tickets, sees the 'no results found' message.",
+      "User observes that active search and filter values are maintained in the UI."
+    ]
+  },
+  "traceability": [
+    {
+      "reqId": "REQ-001",
+      "backendRefs": [],
+      "frontendRefs": [
+        "TicketListPage",
+        "TicketList"
+      ],
+      "testRefs": [
+        "Verifieer dat de TicketListPage de TicketList component rendert en dat deze data bevat.",
+        "Controleer of de TicketList component correct wordt gevuld met ticketinformatie."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [],
+      "frontendRefs": [
+        "SearchBar",
+        "TicketList"
+      ],
+      "testRefs": [
+        "Test het invoeren van een ticketnummer in de SearchBar en controleer of de lijst wordt gefilterd op exacte match.",
+        "Test het invoeren van een subject in de SearchBar en controleer of de lijst wordt gefilterd op gedeeltelijke match.",
+        "Controleer of de SearchBar zichtbaar is en functioneel werkt."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [],
+      "frontendRefs": [
+        "StatusFilter",
+        "TicketList"
+      ],
+      "testRefs": [
+        "Selecteer een status uit de StatusFilter en controleer of de TicketList wordt gefilterd op de geselecteerde status.",
+        "Controleer of de StatusFilter zichtbaar is en correct functioneert."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [],
+      "frontendRefs": [
+        "PriorityFilter",
+        "TicketList"
+      ],
+      "testRefs": [
+        "Selecteer een prioriteit uit de PriorityFilter en controleer of de TicketList wordt gefilterd op de geselecteerde prioriteit.",
+        "Controleer of de PriorityFilter zichtbaar is en correct functioneert."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [],
+      "frontendRefs": [
+        "SortOrderSelector",
+        "TicketList"
+      ],
+      "testRefs": [
+        "Selecteer 'oplopende volgorde' in de SortOrderSelector en controleer of de TicketList wordt gesorteerd op createdAt oplopend.",
+        "Selecteer 'aflopende volgorde' in de SortOrderSelector en controleer of de TicketList wordt gesorteerd op createdAt aflopend."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [],
+      "frontendRefs": [
+        "TicketList",
+        "EmptyState"
+      ],
+      "testRefs": [
+        "Voer zoek- of filtercriteria in die geen tickets opleveren en controleer of de EmptyState component wordt getoond.",
+        "Verifieer dat de EmptyState component een duidelijke melding geeft dat er geen tickets gevonden zijn."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [],
+      "frontendRefs": [
+        "ErrorMessage"
+      ],
+      "testRefs": [
+        "Voer een ongeldige waarde in een filter of zoekveld en controleer of een valide foutmelding wordt getoond.",
+        "Controleer of de foutmelding de verwachte structuur heeft."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [],
+      "frontendRefs": [
+        "StatusFilter",
+        "ErrorMessage"
+      ],
+      "testRefs": [
+        "Probeer een status te filteren die niet OPEN of CLOSED is en controleer of een foutmelding wordt getoond.",
+        "Verifieer dat de StatusFilter alleen de opties OPEN en CLOSED bevat."
+      ]
+    },
+    {
+      "reqId": "REQ-009",
+      "backendRefs": [],
+      "frontendRefs": [
+        "PriorityFilter",
+        "ErrorMessage"
+      ],
+      "testRefs": [
+        "Probeer een prioriteit te filteren die niet LOW, MEDIUM of HIGH is en controleer of een foutmelding wordt getoond.",
+        "Verifieer dat de PriorityFilter alleen de opties LOW, MEDIUM en HIGH bevat."
+      ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [],
+      "frontendRefs": [
+        "TicketList",
+        "SortOrderSelector"
+      ],
+      "testRefs": [
+        "Controleer of de TicketList bij het initialiseren van de pagina gesorteerd is op createdAt aflopend.",
+        "Verifieer dat de SortOrderSelector standaard is ingesteld op 'nieuwste/eerst'."
+      ]
+    },
+    {
+      "reqId": "REQ-011",
+      "backendRefs": [],
+      "frontendRefs": [
+        "SearchBar",
+        "TicketList"
+      ],
+      "testRefs": [
+        "Voer een exact ticketnummer in en controleer of alleen het corresponderende ticket wordt getoond.",
+        "Voer een deel van een subject in en controleer of alle tickets met dat deel in het subject worden getoond."
+      ]
+    },
+    {
+      "reqId": "REQ-012",
+      "backendRefs": [],
+      "frontendRefs": [
+        "SearchBar",
+        "StatusFilter",
+        "PriorityFilter",
+        "TicketList"
+      ],
+      "testRefs": [
+        "Voer een zoekterm in en selecteer een status en prioriteit, controleer of de resultaten voldoen aan alle criteria.",
+        "Test verschillende combinaties van zoektermen en filters om de correcte toepassing te valideren."
+      ]
+    },
+    {
+      "reqId": "REQ-013",
+      "backendRefs": [],
+      "frontendRefs": [],
+      "testRefs": [
+        "Voer performance tests uit met een normale datasetgrootte en meet de responstijd voor het ophalen van tickets. Verifieer dat p95 < 300 ms.",
+        "Simuleer normale gebruikersbelasting en monitor de responstijd."
+      ]
+    },
+    {
+      "reqId": "REQ-014",
+      "backendRefs": [],
+      "frontendRefs": [
+        "ErrorMessage"
+      ],
+      "testRefs": [
+        "Genereer een foutconditie (bv. ongeldige filter) en controleer of het foutantwoord het standaard error formaat volgt, inclusief correlationId.",
+        "Valideer de structuur van de foutmeldingen."
+      ]
+    },
+    {
+      "reqId": "REQ-015",
+      "backendRefs": [],
+      "frontendRefs": [
+        "TicketListPage"
+      ],
+      "testRefs": [
+        "Beoordeel de architectuur van de TicketListPage component om te zien of deze toekomstige paginatie-integratie toelaat zonder grote refactoring.",
+        "Controleer of de data-ophaling en weergave logica flexibel genoeg is voor paginatie."
+      ]
+    },
+    {
+      "reqId": "REQ-016",
+      "backendRefs": [],
+      "frontendRefs": [
+        "TicketListPage",
+        "SearchBar"
+      ],
+      "testRefs": [
+        "Controleer of de SearchBar component zichtbaar is en correct gepositioneerd is boven de resultatenlijst op de TicketListPage.",
+        "Verifieer de UI-layout."
+      ]
+    },
+    {
+      "reqId": "REQ-017",
+      "backendRefs": [],
+      "frontendRefs": [
+        "TicketListPage",
+        "StatusFilter",
+        "PriorityFilter"
+      ],
+      "testRefs": [
+        "Controleer of de StatusFilter en PriorityFilter componenten worden gerenderd als dropdowns op de TicketListPage.",
+        "Verifieer de interactie met de dropdowns."
+      ]
+    },
+    {
+      "reqId": "REQ-018",
+      "backendRefs": [],
+      "frontendRefs": [
+        "TicketListPage",
+        "SortOrderSelector"
+      ],
+      "testRefs": [
+        "Controleer of de SortOrderSelector component zichtbaar is en de opties 'nieuwste/eerst' en 'oudste/eerst' biedt.",
+        "Test de selectie van beide sorteeropties."
+      ]
+    },
+    {
+      "reqId": "REQ-019",
+      "backendRefs": [],
+      "frontendRefs": [
+        "TicketList",
+        "EmptyState"
+      ],
+      "testRefs": [
+        "Voer criteria in die geen resultaten opleveren en controleer of de EmptyState component wordt getoond met een duidelijke melding.",
+        "Valideer de tekst en zichtbaarheid van de melding bij geen resultaten."
+      ]
+    },
+    {
+      "reqId": "REQ-020",
+      "backendRefs": [],
+      "frontendRefs": [
+        "TicketListPage",
+        "SearchBar",
+        "StatusFilter",
+        "PriorityFilter",
+        "SortOrderSelector"
+      ],
+      "testRefs": [
+        "Pas een zoekterm, filter of sorteeroptie toe, navigeer weg en terug, en controleer of de actieve waarden behouden blijven in de UI.",
+        "Test het behouden van state na navigatie of herladen van de pagina."
+      ]
+    }
+  ]
+}
