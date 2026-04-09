@@ -225,6 +225,43 @@
       }
     },
 
+    "messaging": {
+      "type": "object",
+      "required": ["topics", "events"],
+      "properties": {
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "producer", "consumer"],
+            "properties": {
+              "name":        { "type": "string" },
+              "producer":    { "type": "string" },
+              "consumer":    { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "trigger", "payloadFields"],
+            "properties": {
+              "name":          { "type": "string" },
+              "trigger":       { "type": "string" },
+              "payloadFields": { "type": "array", "items": { "type": "string" } }
+            },
+            "additionalProperties": false
+          }
+        },
+        "dlqStrategy":   { "type": "string" },
+        "retryStrategy": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
     "generatedTests": {
       "type": "object",
       "additionalProperties": true
