@@ -1,0 +1,883 @@
+{
+  "meta": {
+    "featureId": "feature-005-user-profile",
+    "title": "Feature-005: Gebruikersprofiel beheren",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "inScope": [
+      "Profielpagina tonen met huidige gegevens",
+      "Weergavenaam aanpassen",
+      "E-mailadres aanpassen",
+      "Wachtwoord wijzigen",
+      "Profielfoto uploaden en verwijderen",
+      "Validatiefeedback tonen bij ongeldige invoer"
+    ],
+    "outOfScope": [
+      "Account verwijderen",
+      "Two-factor authenticatie instellen",
+      "Notificatievoorkeuren beheren",
+      "Gekoppelde externe accounts (Google, GitHub)"
+    ]
+  },
+  "assumptions": [],
+  "openQuestions": [],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "De gebruiker kan zijn huidige profielgegevens (weergavenaam, e-mailadres, profielfoto) bekijken.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "De gebruiker kan zijn weergavenaam aanpassen (minimaal 2, maximaal 50 tekens).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "De gebruiker kan zijn e-mailadres aanpassen. Het nieuwe e-mailadres moet uniek zijn in het systeem.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "De gebruiker kan zijn wachtwoord wijzigen door het huidige wachtwoord en tweemaal het nieuwe wachtwoord in te voeren.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-005",
+      "text": "Het nieuwe wachtwoord moet minimaal 8 tekens bevatten, met minstens \u00e9\u00e9n hoofdletter en \u00e9\u00e9n cijfer.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "De gebruiker kan een profielfoto uploaden (JPEG of PNG, maximaal 2MB).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "De gebruiker kan zijn profielfoto verwijderen, waarna een standaard avatar getoond wordt.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "Bij ongeldige invoer worden veldspecifieke foutmeldingen getoond.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "Na een succesvolle wijziging wordt een bevestigingsmelding getoond.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "Een e-mailadres mag slechts aan \u00e9\u00e9n account gekoppeld zijn.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-011",
+      "text": "Het huidige wachtwoord moet correct zijn voordat een nieuw wachtwoord ingesteld kan worden.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-012",
+      "text": "Het nieuwe wachtwoord mag niet gelijk zijn aan het huidige wachtwoord.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-013",
+      "text": "Wachtwoorden worden opgeslagen als bcrypt hash, nooit als plaintext.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-014",
+      "text": "Profielfoto's worden opgeslagen in object storage (S3-compatibel).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-015",
+      "text": "De profielpagina moet binnen 1 seconde geladen zijn.",
+      "priority": "should"
+    }
+  ],
+  "domain": {
+    "entities": [
+      {
+        "name": "User",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "displayName",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:2",
+              "maxLength:50"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "email",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "unique"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value",
+              "duplicate_per_day"
+            ]
+          },
+          {
+            "name": "passwordHash",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "profilePictureUrl",
+            "type": "String",
+            "constraints": [],
+            "testCases": [
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "updatedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "PasswordChangeRequest",
+        "fields": [
+          {
+            "name": "currentPassword",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "newPassword",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:8"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "confirmNewPassword",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ProfilePictureUpload",
+        "fields": [
+          {
+            "name": "file",
+            "type": "byte[]",
+            "constraints": [
+              "notNull",
+              "maxSize:2MB"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "contentType",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "allowedTypes:JPEG,PNG"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "errorFormat": {
+      "type": "ApiError",
+      "fields": [
+        "correlationId",
+        "code",
+        "message",
+        "fieldErrors"
+      ]
+    },
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/api/users/me",
+        "summary": "Haal huidige gebruikersprofiel op",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "UserResponse",
+            "notes": "Gebruikersprofiel succesvol opgehaald"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/users/me/displayName",
+        "summary": "Pas weergavenaam van de gebruiker aan",
+        "request": {
+          "bodySchemaRef": "UpdateDisplayNameRequest",
+          "validationRules": [
+            "displayName: notNull, minLength:2, maxLength:50"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "UserResponse",
+            "notes": "Weergavenaam succesvol aangepast"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/users/me/email",
+        "summary": "Pas e-mailadres van de gebruiker aan",
+        "request": {
+          "bodySchemaRef": "UpdateEmailRequest",
+          "validationRules": [
+            "email: notNull, unique"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "UserResponse",
+            "notes": "E-mailadres succesvol aangepast"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body of e-mailadres is al in gebruik"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "POST",
+        "path": "/api/users/me/password",
+        "summary": "Wijzig wachtwoord van de gebruiker",
+        "request": {
+          "bodySchemaRef": "PasswordChangeRequest",
+          "validationRules": [
+            "currentPassword: notNull",
+            "newPassword: notNull, minLength:8, passwordComplexity",
+            "confirmNewPassword: notNull"
+          ]
+        },
+        "responses": [
+          {
+            "status": 204,
+            "notes": "Wachtwoord succesvol gewijzigd",
+            "bodySchemaRef": "EmptyResponse"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body, huidig wachtwoord incorrect, nieuwe wachtwoorden komen niet overeen, of nieuw wachtwoord is gelijk aan huidig wachtwoord"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "POST",
+        "path": "/api/users/me/profile-picture",
+        "summary": "Upload profielfoto voor de gebruiker",
+        "request": {
+          "bodySchemaRef": "ProfilePictureUpload",
+          "validationRules": [
+            "file: notNull, maxSize:2MB",
+            "contentType: notNull, allowedTypes:JPEG,PNG"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "UserResponse",
+            "notes": "Profielfoto succesvol ge\u00fcpload"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body (bestand te groot, ongeldig bestandstype)"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/users/me/profile-picture",
+        "summary": "Verwijder profielfoto van de gebruiker",
+        "request": {},
+        "responses": [
+          {
+            "status": 204,
+            "notes": "Profielfoto succesvol verwijderd",
+            "bodySchemaRef": "EmptyResponse"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      }
+    ]
+  },
+  "backend": {
+    "modules": [
+      {
+        "name": "user",
+        "classes": [
+          {
+            "name": "UserController",
+            "responsibility": "Handelt alle inkomende HTTP-verzoeken af voor gebruikersgerelateerde operaties."
+          },
+          {
+            "name": "UserService",
+            "responsibility": "Bevat de bedrijfslogica voor gebruikersbeheer, inclusief profielupdates en wachtwoordwijzigingen."
+          },
+          {
+            "name": "UserRepository",
+            "responsibility": "Verantwoordelijk voor de interactie met de gebruikersdatabase."
+          },
+          {
+            "name": "User",
+            "responsibility": "Representeert de User entiteit in de database."
+          },
+          {
+            "name": "UserResponseDTO",
+            "responsibility": "Data Transfer Object voor het retourneren van gebruikersprofielinformatie."
+          },
+          {
+            "name": "UpdateDisplayNameRequestDTO",
+            "responsibility": "Data Transfer Object voor het aanpassen van de weergavenaam."
+          },
+          {
+            "name": "UpdateEmailRequestDTO",
+            "responsibility": "Data Transfer Object voor het aanpassen van het e-mailadres."
+          },
+          {
+            "name": "PasswordChangeRequestDTO",
+            "responsibility": "Data Transfer Object voor het wijzigen van het wachtwoord."
+          },
+          {
+            "name": "ProfilePictureUploadDTO",
+            "responsibility": "Data Transfer Object voor het uploaden van een profielfoto."
+          },
+          {
+            "name": "UserNotFoundException",
+            "responsibility": "Exception die wordt gegooid wanneer een gebruiker niet wordt gevonden."
+          },
+          {
+            "name": "InvalidPasswordException",
+            "responsibility": "Exception die wordt gegooid wanneer het huidige wachtwoord incorrect is."
+          },
+          {
+            "name": "PasswordsDoNotMatchException",
+            "responsibility": "Exception die wordt gegooid wanneer het nieuwe wachtwoord en de bevestiging niet overeenkomen."
+          },
+          {
+            "name": "EmailAlreadyExistsException",
+            "responsibility": "Exception die wordt gegooid wanneer een e-mailadres al in gebruik is."
+          },
+          {
+            "name": "DisplayNameValidator",
+            "responsibility": "Valideert de weergavenaam volgens de gestelde regels."
+          },
+          {
+            "name": "EmailValidator",
+            "responsibility": "Valideert het e-mailadres en controleert op uniciteit."
+          },
+          {
+            "name": "PasswordValidator",
+            "responsibility": "Valideert het nieuwe wachtwoord op complexiteit en lengte."
+          },
+          {
+            "name": "ProfilePictureValidator",
+            "responsibility": "Valideert de profielfoto op grootte en bestandstype."
+          },
+          {
+            "name": "PasswordHasher",
+            "responsibility": "Verantwoordelijk voor het hashen en verifi\u00ebren van wachtwoorden met bcrypt."
+          },
+          {
+            "name": "ProfilePictureStorageService",
+            "responsibility": "Verantwoordelijk voor het opslaan en verwijderen van profielfoto's in object storage."
+          }
+        ]
+      },
+      {
+        "name": "common",
+        "classes": [
+          {
+            "name": "ApiError",
+            "responsibility": "Standaard formaat voor foutmeldingen in de API."
+          },
+          {
+            "name": "FieldError",
+            "responsibility": "Representeert een specifieke validatiefout voor een veld."
+          },
+          {
+            "name": "AuthenticationFacade",
+            "responsibility": "Biedt toegang tot de geauthenticeerde gebruiker."
+          },
+          {
+            "name": "CorrelationIdFilter",
+            "responsibility": "Voegt een correlatie-ID toe aan elke request voor tracing."
+          },
+          {
+            "name": "GlobalExceptionHandler",
+            "responsibility": "Vangt alle exceptions op en retourneert gestandaardiseerde ApiError responses."
+          }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "routes": [
+      "/profile",
+      "/profile/edit-display-name",
+      "/profile/edit-email",
+      "/profile/change-password",
+      "/profile/edit-profile-picture"
+    ],
+    "components": [
+      "ProfilePage",
+      "UserProfileDisplay",
+      "EditDisplayNameForm",
+      "EditEmailForm",
+      "ChangePasswordForm",
+      "ProfilePictureUploader",
+      "Avatar",
+      "LoadingSpinner",
+      "ErrorMessage"
+    ]
+  },
+  "tests": {
+    "unit": [
+      "ProfilePage render",
+      "UserProfileDisplay render",
+      "EditDisplayNameForm render",
+      "EditEmailForm render",
+      "ChangePasswordForm render",
+      "ProfilePictureUploader render",
+      "Avatar render",
+      "LoadingSpinner render",
+      "ErrorMessage render",
+      "useUserProfile hook fetch",
+      "useUserProfile hook updateDisplayName",
+      "useUserProfile hook updateEmail",
+      "useUserProfile hook changePassword",
+      "useUserProfile hook uploadProfilePicture",
+      "useUserProfile hook deleteProfilePicture"
+    ],
+    "integration": [
+      "GET /api/users/me \u2192 200 OK",
+      "PATCH /api/users/me/displayName \u2192 200 OK",
+      "PATCH /api/users/me/email \u2192 200 OK",
+      "POST /api/users/me/password \u2192 204 No Content",
+      "POST /api/users/me/profile-picture \u2192 200 OK",
+      "DELETE /api/users/me/profile-picture \u2192 204 No Content",
+      "GET /api/users/me \u2192 401 Unauthorized",
+      "PATCH /api/users/me/displayName \u2192 400 Bad Request",
+      "PATCH /api/users/me/email \u2192 400 Bad Request",
+      "POST /api/users/me/password \u2192 400 Bad Request",
+      "POST /api/users/me/profile-picture \u2192 400 Bad Request"
+    ],
+    "e2e": [
+      "Gebruiker navigeert naar profielpagina, bekijkt huidige gegevens.",
+      "Gebruiker navigeert naar profielpagina, klikt op 'Bewerk weergavenaam', voert geldige naam in, slaat op, ziet bevestiging en bijgewerkte naam.",
+      "Gebruiker navigeert naar profielpagina, klikt op 'Bewerk e-mailadres', voert geldig en uniek e-mailadres in, slaat op, ziet bevestiging en bijgewerkt e-mailadres.",
+      "Gebruiker navigeert naar profielpagina, klikt op 'Wijzig wachtwoord', voert huidig wachtwoord en twee keer een nieuw, complex wachtwoord in, slaat op, ziet bevestiging.",
+      "Gebruiker navigeert naar profielpagina, klikt op 'Upload profielfoto', selecteert een geldige JPEG/PNG van maximaal 2MB, uploadt, ziet profielfoto bijgewerkt.",
+      "Gebruiker navigeert naar profielpagina, klikt op 'Verwijder profielfoto', bevestigt, ziet standaard avatar getoond.",
+      "Gebruiker probeert weergavenaam te wijzigen met ongeldige invoer (te kort/lang), ziet veldspecifieke foutmelding.",
+      "Gebruiker probeert e-mailadres te wijzigen met een reeds in gebruik zijnd e-mailadres, ziet foutmelding.",
+      "Gebruiker probeert wachtwoord te wijzigen met incorrect huidig wachtwoord, ziet foutmelding.",
+      "Gebruiker probeert wachtwoord te wijzigen met nieuwe wachtwoorden die niet overeenkomen, ziet foutmelding.",
+      "Gebruiker probeert wachtwoord te wijzigen met een nieuw wachtwoord dat niet voldoet aan de complexiteitseisen, ziet foutmelding.",
+      "Gebruiker probeert profielfoto te uploaden die te groot is, ziet foutmelding.",
+      "Gebruiker probeert profielfoto te uploaden met een ongeldig bestandstype, ziet foutmelding."
+    ]
+  },
+  "traceability": [
+    {
+      "reqId": "REQ-001",
+      "backendRefs": [
+        "UserController",
+        "UserService",
+        "User",
+        "UserResponseDTO"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "UserProfileDisplay"
+      ],
+      "testRefs": [
+        "Verifieer dat de weergavenaam, e-mailadres en profielfoto van de gebruiker correct worden weergegeven op de profielpagina."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [
+        "UserController",
+        "UserService",
+        "UpdateDisplayNameRequestDTO",
+        "DisplayNameValidator"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "EditDisplayNameForm"
+      ],
+      "testRefs": [
+        "Test het aanpassen van de weergavenaam met geldige invoer (minimaal 2, maximaal 50 tekens).",
+        "Test het aanpassen van de weergavenaam met ongeldige invoer (minder dan 2 tekens, meer dan 50 tekens)."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [
+        "UserController",
+        "UserService",
+        "UpdateEmailRequestDTO",
+        "EmailValidator",
+        "EmailAlreadyExistsException"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "EditEmailForm"
+      ],
+      "testRefs": [
+        "Test het aanpassen van het e-mailadres naar een uniek adres.",
+        "Test het aanpassen van het e-mailadres naar een reeds bestaand adres."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [
+        "UserController",
+        "UserService",
+        "PasswordChangeRequestDTO",
+        "PasswordHasher",
+        "AuthenticationFacade"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "ChangePasswordForm"
+      ],
+      "testRefs": [
+        "Test het wijzigen van het wachtwoord met correct huidig wachtwoord en tweemaal hetzelfde nieuwe wachtwoord.",
+        "Test het wijzigen van het wachtwoord met een incorrect huidig wachtwoord."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [
+        "UserService",
+        "PasswordValidator",
+        "PasswordHasher"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "ChangePasswordForm"
+      ],
+      "testRefs": [
+        "Test het instellen van een nieuw wachtwoord dat voldoet aan de eisen (minimaal 8 tekens, minstens \u00e9\u00e9n hoofdletter en \u00e9\u00e9n cijfer).",
+        "Test het instellen van een nieuw wachtwoord dat niet voldoet aan de eisen (bv. te kort, geen hoofdletter, geen cijfer)."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [
+        "UserController",
+        "UserService",
+        "ProfilePictureUploadDTO",
+        "ProfilePictureValidator",
+        "ProfilePictureStorageService"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "ProfilePictureUploader"
+      ],
+      "testRefs": [
+        "Test het uploaden van een profielfoto in JPEG-formaat (binnen 2MB).",
+        "Test het uploaden van een profielfoto in PNG-formaat (binnen 2MB).",
+        "Test het uploaden van een bestand dat geen JPEG of PNG is.",
+        "Test het uploaden van een bestand dat groter is dan 2MB."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [
+        "UserController",
+        "UserService",
+        "ProfilePictureStorageService"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "Avatar"
+      ],
+      "testRefs": [
+        "Test het verwijderen van de profielfoto en verifieer dat de standaard avatar wordt getoond."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [
+        "GlobalExceptionHandler",
+        "ApiError",
+        "FieldError"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "EditDisplayNameForm",
+        "EditEmailForm",
+        "ChangePasswordForm",
+        "ProfilePictureUploader",
+        "ErrorMessage"
+      ],
+      "testRefs": [
+        "Verifieer dat veldspecifieke foutmeldingen worden getoond bij ongeldige invoer in elk aanpasbaar veld (weergavenaam, e-mail, wachtwoord)."
+      ]
+    },
+    {
+      "reqId": "REQ-009",
+      "backendRefs": [
+        "UserController",
+        "UserService"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "EditDisplayNameForm",
+        "EditEmailForm",
+        "ChangePasswordForm",
+        "ProfilePictureUploader",
+        "ErrorMessage"
+      ],
+      "testRefs": [
+        "Verifieer dat een bevestigingsmelding wordt getoond na een succesvolle wijziging van de weergavenaam, e-mailadres of wachtwoord."
+      ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [
+        "UserService",
+        "UserRepository",
+        "EmailAlreadyExistsException"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test het registreren of wijzigen van een e-mailadres dat al aan een ander account is gekoppeld."
+      ]
+    },
+    {
+      "reqId": "REQ-011",
+      "backendRefs": [
+        "UserService",
+        "AuthenticationFacade",
+        "InvalidPasswordException"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "ChangePasswordForm"
+      ],
+      "testRefs": [
+        "Test het wijzigen van het wachtwoord waarbij het huidige wachtwoord incorrect is."
+      ]
+    },
+    {
+      "reqId": "REQ-012",
+      "backendRefs": [
+        "UserService",
+        "PasswordValidator",
+        "PasswordsDoNotMatchException"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "ChangePasswordForm"
+      ],
+      "testRefs": [
+        "Test het wijzigen van het wachtwoord waarbij het nieuwe wachtwoord niet overeenkomt met de herhaalde invoer."
+      ]
+    },
+    {
+      "reqId": "REQ-013",
+      "backendRefs": [
+        "UserService",
+        "UserRepository",
+        "PasswordHasher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Controleer de database om te verifi\u00ebren dat wachtwoorden zijn opgeslagen als bcrypt hashes en niet als plaintext."
+      ]
+    },
+    {
+      "reqId": "REQ-014",
+      "backendRefs": [
+        "ProfilePictureStorageService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat de ge\u00fcploade profielfoto's daadwerkelijk worden opgeslagen in de geconfigureerde S3-compatibele object storage."
+      ]
+    },
+    {
+      "reqId": "REQ-015",
+      "backendRefs": [
+        "UserController",
+        "UserService",
+        "UserResponseDTO"
+      ],
+      "frontendRefs": [
+        "ProfilePage",
+        "UserProfileDisplay",
+        "LoadingSpinner"
+      ],
+      "testRefs": [
+        "Meet de laadtijd van de profielpagina en verifieer dat deze binnen 1 seconde is."
+      ]
+    }
+  ]
+}

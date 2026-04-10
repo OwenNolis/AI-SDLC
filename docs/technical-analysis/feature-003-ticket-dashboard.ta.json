@@ -1,0 +1,242 @@
+{
+  "meta": {
+    "featureId": "feature-003-ticket-dashboard",
+    "title": "Feature-003: Ticket dashboard",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "inScope": [
+      "Dashboard pagina tonen na inloggen",
+      "Aantal open tickets tonen",
+      "Aantal tickets per prioriteit (LOW, MEDIUM, HIGH) tonen",
+      "Aantal tickets aangemaakt vandaag tonen",
+      "Lijst van de 5 meest recente open tickets tonen",
+      "Automatisch verversen elke 30 seconden"
+    ],
+    "outOfScope": [
+      "Ticket aanmaken vanuit het dashboard",
+      "Grafieken of statistieken over meerdere periodes",
+      "Exporteren van dashboarddata",
+      "Realtime updates via websockets"
+    ]
+  },
+  "assumptions": [],
+  "openQuestions": [],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "Het dashboard toont het totaal aantal open tickets.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "Het dashboard toont het aantal tickets per prioriteit (LOW, MEDIUM, HIGH).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "Het dashboard toont het aantal tickets aangemaakt op de huidige dag.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "Het dashboard toont de 5 meest recente open tickets met ticketnummer, subject en prioriteit.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-005",
+      "text": "Het dashboard ververst automatisch elke 30 seconden zonder pagina reload.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "Bij het laden van het dashboard wordt een laadstatus getoond.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "Als de API niet bereikbaar is, wordt een foutmelding getoond met de mogelijkheid om handmatig te verversen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "Als er geen open tickets zijn, wordt een lege staat getoond met een positieve boodschap.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "Het dashboard moet binnen 2 seconden volledig geladen zijn.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "De automatische refresh mag de gebruiker niet onderbreken bij het bekijken van de pagina.",
+      "priority": "must"
+    }
+  ],
+  "domain": {
+    "entities": []
+  },
+  "api": {
+    "errorFormat": {
+      "type": "ApiError",
+      "fields": []
+    },
+    "endpoints": []
+  },
+  "backend": {
+    "modules": []
+  },
+  "frontend": {
+    "routes": [
+      "/dashboard"
+    ],
+    "components": [
+      "DashboardPage",
+      "DashboardHeader",
+      "TicketSummary",
+      "TicketCountByPriority",
+      "RecentTicketsList",
+      "LoadingSpinner",
+      "ErrorMessage",
+      "EmptyState",
+      "RefreshButton"
+    ]
+  },
+  "tests": {
+    "unit": [
+      "DashboardPage rendering in loading state",
+      "DashboardPage rendering in empty state",
+      "DashboardPage rendering in error state",
+      "DashboardPage rendering in success state",
+      "TicketSummary component rendering",
+      "TicketCountByPriority component rendering",
+      "RecentTicketsList component rendering",
+      "LoadingSpinner component rendering",
+      "ErrorMessage component rendering",
+      "EmptyState component rendering",
+      "RefreshButton component rendering"
+    ],
+    "integration": [
+      "GET /api/tickets/summary \u2192 200 OK with mock data",
+      "GET /api/tickets/daily-count \u2192 200 OK with mock data",
+      "GET /api/tickets/recent-open \u2192 200 OK with mock data",
+      "GET /api/tickets/summary \u2192 500 Internal Server Error (simulating API unavailability)"
+    ],
+    "e2e": [
+      "Gebruiker navigeert naar de dashboardpagina.",
+      "De laadstatus wordt getoond terwijl de data wordt opgehaald.",
+      "Na succesvol ophalen van data, worden het totaal aantal open tickets, tickets per prioriteit, tickets van vandaag en de 5 meest recente open tickets getoond.",
+      "Elke 30 seconden wordt de data automatisch ververst zonder dat de pagina herlaadt.",
+      "Als de API niet bereikbaar is, wordt een foutmelding getoond met een 'Ververs' knop.",
+      "Als er geen open tickets zijn, wordt een lege staat met een positieve boodschap getoond.",
+      "De gebruiker kan de pagina bekijken zonder onderbreking door de automatische refresh."
+    ]
+  },
+  "traceability": [
+    {
+      "reqId": "REQ-001",
+      "backendRefs": [],
+      "frontendRefs": [
+        "DashboardHeader",
+        "TicketSummary"
+      ],
+      "testRefs": [
+        "Verifieer dat het totaal aantal open tickets correct wordt weergegeven op het dashboard."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [],
+      "frontendRefs": [
+        "DashboardHeader",
+        "TicketCountByPriority"
+      ],
+      "testRefs": [
+        "Controleer of het aantal tickets per prioriteit (LOW, MEDIUM, HIGH) correct wordt getoond op het dashboard."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [],
+      "frontendRefs": [
+        "DashboardHeader",
+        "TicketSummary"
+      ],
+      "testRefs": [
+        "Valideer dat het aantal tickets aangemaakt op de huidige dag correct wordt weergegeven op het dashboard."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [],
+      "frontendRefs": [
+        "RecentTicketsList"
+      ],
+      "testRefs": [
+        "Controleer of de 5 meest recente open tickets met ticketnummer, subject en prioriteit correct worden weergegeven in de lijst."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [],
+      "frontendRefs": [
+        "DashboardPage"
+      ],
+      "testRefs": [
+        "Test of het dashboard automatisch ververst elke 30 seconden zonder dat de pagina opnieuw geladen hoeft te worden."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [],
+      "frontendRefs": [
+        "LoadingSpinner"
+      ],
+      "testRefs": [
+        "Verifieer dat een laadstatus (LoadingSpinner) wordt getoond wanneer het dashboard geladen wordt."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [],
+      "frontendRefs": [
+        "ErrorMessage",
+        "RefreshButton"
+      ],
+      "testRefs": [
+        "Simuleer een API-fout en controleer of een foutmelding wordt getoond met een optie om handmatig te verversen."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [],
+      "frontendRefs": [
+        "EmptyState"
+      ],
+      "testRefs": [
+        "Test de situatie waarin er geen open tickets zijn en controleer of een lege staat met een positieve boodschap wordt getoond."
+      ]
+    },
+    {
+      "reqId": "REQ-009",
+      "backendRefs": [],
+      "frontendRefs": [
+        "DashboardPage"
+      ],
+      "testRefs": [
+        "Meet de laadtijd van het dashboard en controleer of deze binnen 2 seconden volledig geladen is."
+      ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [],
+      "frontendRefs": [
+        "DashboardPage"
+      ],
+      "testRefs": [
+        "Observeer het gedrag van de automatische refresh tijdens interactie met de pagina (bijv. scrollen, klikken) om te verzekeren dat het de gebruiker niet onderbreekt."
+      ]
+    }
+  ]
+}

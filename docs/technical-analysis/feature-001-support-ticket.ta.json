@@ -1,174 +1,181 @@
 {
   "meta": {
     "featureId": "feature-001-support-ticket",
-    "title": "Support Ticket Create",
-    "version": "1.0.5",
-    "createdAt": "2026-02-02"
+    "title": "Feature-001: Support Ticket aanmaken",
+    "version": "1.0.0"
   },
   "scope": {
     "inScope": [
-      "Create ticket",
-      "Validation",
-      "Persist SupportTicket",
-      "Return ticketNumber + status"
+      "Ticket aanmaken via UI",
+      "Validatie van input",
+      "Ticket opslaan",
+      "Ticket ID + status teruggeven",
+      "Foutmeldingen op UI"
     ],
     "outOfScope": [
-      "Update/close",
+      "Ticket bewerken/sluiten",
       "Attachments",
-      "Email notifications"
+      "Email notificaties"
     ]
   },
-  "assumptions": [
-    "Endpoint requires authenticated user (placeholder).",
-    "Use JPA with relational database.",
-    "Correlation id via X-Correlation-Id header or generated.",
-    "Priority processing order: HIGH > MEDIUM > LOW.",
-    "Tickets are processed in the order they are created, with priority influencing completion order.",
-    "User session or token provides user identity for daily limits.",
-    "Ticket subject uniqueness is enforced per user per day.",
-    "Completion order logic is handled by a background process or specific API endpoint.",
-    "Immediate visibility of HIGH priority tickets is a frontend concern, but backend must support quick retrieval.",
-    "Backend must enforce daily limits for total tickets and high-priority tickets per user.",
-    "Backend must enforce unique subject per day per user.",
-    "Backend must enforce priority completion order (HIGH before LOW/MEDIUM).",
-    "Backend must enforce immediate visibility of HIGH priority tickets.",
-    "Backend must enforce that a user can create at most 3 tickets per day.",
-    "Backend must enforce that a user can create at most 2 tickets with the priority HIGH per day.",
-    "Backend must ensure tickets with HIGH priority are completed before tickets with LOW priority.",
-    "Backend must ensure tickets with HIGH priority are completed before tickets with MEDIUM priority.",
-    "Backend must enforce that a ticket subject is unique per day.",
-    "Backend must enforce that a user can create at most 3 tickets per day.",
-    "Backend must enforce that a user can create at most 2 tickets with the priority HIGH per day.",
-    "Backend must ensure tickets with HIGH priority are completed before tickets with LOW priority.",
-    "Backend must ensure tickets with HIGH priority are completed before tickets with MEDIUM priority."
-  ],
-  "openQuestions": [
-    "Link ticket to userId?",
-    "Existing global error response standard?",
-    "What is the exact mechanism for enforcing completion order (e.g., API endpoint for completion, or is this a background process)?",
-    "How is 'immediately visible' defined in the context of the UI and data retrieval?",
-    "What is the expected behavior if a user attempts to create a ticket with a subject that is unique per day but already exists for another user?",
-    "What is the specific error code or message for priority completion order violations?",
-    "What is the specific error code or message for exceeding the daily ticket limits (total and high-priority)?",
-    "What is the specific error code or message for violating the unique subject per day constraint?",
-    "What is the specific error code or message for violating the immediate visibility of HIGH priority tickets constraint?",
-    "What is the specific error code or message for violating the maximum 3 tickets per day constraint?",
-    "What is the specific error code or message for violating the maximum 2 HIGH priority tickets per day constraint?"
-  ],
+  "assumptions": [],
+  "openQuestions": [],
   "requirements": [
     {
       "id": "REQ-001",
-      "text": "User can create ticket with subject, description, priority.",
+      "text": "Gebruiker kan een ticket aanmaken met velden: subject, description, priority.",
       "priority": "must"
     },
     {
       "id": "REQ-002",
-      "text": "Subject is verplicht (min 5, max 120).",
+      "text": "Subject is verplicht en moet minimaal 5 en maximaal 120 karakters lang zijn.",
       "priority": "must"
     },
     {
       "id": "REQ-003",
-      "text": "Description is verplicht (min 20, max 2000).",
+      "text": "Description is verplicht en moet minimaal 20 en maximaal 2000 karakters lang zijn.",
       "priority": "must"
     },
     {
       "id": "REQ-004",
-      "text": "Priority is verplicht en één van: LOW, MEDIUM, HIGH.",
+      "text": "Priority is verplicht en moet \u00e9\u00e9n van de volgende waarden hebben: LOW, MEDIUM, HIGH.",
       "priority": "must"
     },
     {
       "id": "REQ-005",
-      "text": "Na succesvol aanmaken krijgt gebruiker ticketNumber + status = OPEN te zien.",
+      "text": "Na succesvol aanmaken van een ticket krijgt de gebruiker het ticketnummer en de status OPEN te zien.",
       "priority": "must"
     },
     {
       "id": "REQ-006",
-      "text": "Bij validatiefouten worden veldspecifieke fouten getoond.",
+      "text": "Bij validatiefouten worden veldspecifieke foutmeldingen getoond op de gebruikersinterface.",
       "priority": "must"
     },
     {
       "id": "REQ-007",
-      "text": "Server errors tonen generieke foutmelding met correlation id.",
+      "text": "Bij server errors wordt een generieke foutmelding getoond met een correlation id.",
       "priority": "must"
     },
     {
       "id": "REQ-008",
-      "text": "Ticket subject must be unique per day (business constraint).",
+      "text": "Het ticketnummer moet uniek zijn en een leesbaar formaat hebben: TCK-YYYY-000001, waarbij het nummer een sequentie per jaar is.",
       "priority": "must"
     },
     {
       "id": "REQ-009",
-      "text": "A user can create at most 3 tickets per day.",
+      "text": "De status van een nieuw aangemaakt ticket is altijd OPEN.",
       "priority": "must"
     },
     {
       "id": "REQ-010",
-      "text": "Tickets with priority HIGH must be completed before tickets with priority LOW.",
+      "text": "De API response tijd voor het aanmaken van een ticket moet voor 95% van de verzoeken minder dan 300 milliseconden zijn.",
       "priority": "must"
     },
     {
       "id": "REQ-011",
-      "text": "A ticket with priority HIGH must always be visible immediately after creation.",
+      "text": "De logging moet de correlation id bevatten.",
       "priority": "must"
     },
     {
       "id": "REQ-012",
-      "text": "A ticket with priority HIGH must always be completed before a ticket with priority MEDIUM.",
+      "text": "Een ticket met prioriteit HIGH moet onmiddellijk na aanmaken zichtbaar zijn.",
       "priority": "must"
     },
     {
       "id": "REQ-013",
-      "text": "A user can create at most 2 tickets with the priority HIGH.",
-      "priority": "should"
+      "text": "Het onderwerp van een ticket moet uniek zijn per dag.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-014",
+      "text": "Een gebruiker kan maximaal 3 tickets per dag aanmaken.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-015",
+      "text": "Een gebruiker kan maximaal 2 tickets met de prioriteit HIGH per dag aanmaken.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-016",
+      "text": "Een ticket met prioriteit HIGH moet altijd worden voltooid voordat een ticket met prioriteit LOW wordt voltooid.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-017",
+      "text": "Een ticket met prioriteit HIGH moet altijd worden voltooid voordat een ticket met prioriteit MEDIUM wordt voltooid.",
+      "priority": "must"
     }
   ],
   "domain": {
     "entities": [
       {
-        "name": "SupportTicket",
+        "name": "Ticket",
         "fields": [
           {
             "name": "id",
-            "type": "uuid"
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
           },
           {
             "name": "ticketNumber",
-            "type": "string",
+            "type": "String",
             "constraints": [
+              "notNull",
               "unique"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value",
+              "duplicate_per_day"
             ]
           },
           {
             "name": "subject",
-            "type": "string",
+            "type": "String",
             "constraints": [
-              "min:5",
-              "max:120",
-              "uniquePerDay:true"
+              "notNull",
+              "minLength:5",
+              "maxLength:120",
+              "uniquePerDay"
             ],
             "testCases": [
               "empty",
               "too_short",
               "too_long",
+              "missing",
+              "invalid_value",
               "duplicate_per_day"
             ]
           },
           {
             "name": "description",
-            "type": "string",
+            "type": "String",
             "constraints": [
-              "min:20",
-              "max:2000"
+              "notNull",
+              "minLength:20",
+              "maxLength:2000"
             ],
             "testCases": [
               "empty",
               "too_short",
-              "too_long"
+              "too_long",
+              "missing",
+              "invalid_value"
             ]
           },
           {
             "name": "priority",
-            "type": "enum:LOW|MEDIUM|HIGH",
+            "type": "Priority",
+            "constraints": [
+              "notNull"
+            ],
             "testCases": [
               "missing",
               "invalid_value"
@@ -176,24 +183,114 @@
           },
           {
             "name": "status",
-            "type": "enum:OPEN"
-          },
-          {
-            "name": "createdAt",
-            "type": "instant"
-          },
-          {
-            "name": "userId",
-            "type": "string",
+            "type": "Status",
             "constraints": [
-              "required"
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
             ]
           },
           {
-            "name": "highPriorityCount",
-            "type": "integer",
+            "name": "createdAt",
+            "type": "LocalDateTime",
             "constraints": [
-              "max:2"
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdByUserId",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "User",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "username",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "unique"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "TicketDailyLimit",
+        "fields": [
+          {
+            "name": "userId",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "date",
+            "type": "LocalDate",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "ticketCount",
+            "type": "Integer",
+            "constraints": [
+              "notNull",
+              "greaterThanOrEqual:0"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "highPriorityTicketCount",
+            "type": "Integer",
+            "constraints": [
+              "notNull",
+              "greaterThanOrEqual:0"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
             ]
           }
         ]
@@ -214,200 +311,455 @@
       {
         "method": "POST",
         "path": "/api/tickets",
-        "summary": "Create support ticket",
+        "summary": "Maak een nieuw ticket aan",
         "request": {
           "bodySchemaRef": "CreateTicketRequest",
           "validationRules": [
-            "subject min 5 max 120",
-            "description min 20 max 2000",
-            "priority in LOW|MEDIUM|HIGH",
-            "userId required",
-            "highPriorityCount <= 2",
-            "subject uniquePerDay",
-            "dailyTicketLimit <= 3"
+            "subject: minLength:5, maxLength:120, uniquePerDay",
+            "description: minLength:20, maxLength:2000",
+            "priority: notNull, enum(LOW, MEDIUM, HIGH)",
+            "createdByUserId: notNull"
           ]
         },
         "responses": [
           {
             "status": 201,
-            "bodySchemaRef": "CreateTicketResponse"
+            "bodySchemaRef": "TicketResponse",
+            "notes": "Ticket succesvol aangemaakt. Ticketnummer en status OPEN worden geretourneerd."
           },
           {
             "status": 400,
-            "bodySchemaRef": "ApiError"
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in de request body. Specifieke foutmeldingen per veld worden getoond."
           },
           {
             "status": 409,
-            "bodySchemaRef": "ApiError"
+            "bodySchemaRef": "ApiError",
+            "notes": "Conflict: Dagelijkse ticketlimiet overschreden of onderwerp is al gebruikt op deze dag."
           },
           {
             "status": 500,
-            "bodySchemaRef": "ApiError"
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout. Een generieke foutmelding met een correlation id wordt getoond."
           }
         ],
-        "auth": "authenticated"
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tickets/{ticketId}",
+        "summary": "Haal een specifiek ticket op",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "TicketResponse",
+            "notes": "Ticket succesvol opgehaald."
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Ticket niet gevonden."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout."
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tickets",
+        "summary": "Haal een lijst van tickets op",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "TicketListResponse",
+            "notes": "Lijst van tickets succesvol opgehaald."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout."
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/tickets/{ticketId}/status",
+        "summary": "Update de status van een ticket",
+        "request": {
+          "bodySchemaRef": "UpdateTicketStatusRequest",
+          "validationRules": [
+            "status: notNull, enum(OPEN, IN_PROGRESS, CLOSED)"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "TicketResponse",
+            "notes": "Status van het ticket succesvol bijgewerkt."
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in de request body."
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Ticket niet gevonden."
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Conflict: Prioriteitsregels voor voltooiing worden geschonden."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout."
+          }
+        ],
+        "auth": "bearer"
       }
     ]
   },
   "backend": {
     "modules": [
       {
-        "name": "tickets",
+        "name": "ticket",
         "classes": [
           {
             "name": "TicketController",
-            "responsibility": "REST endpoint mapping"
+            "responsibility": "Exposeert de REST API endpoints voor ticket management."
           },
           {
             "name": "TicketService",
-            "responsibility": "Business logic"
+            "responsibility": "Orchestreert de business logica voor ticket operaties."
+          },
+          {
+            "name": "TicketRepository",
+            "responsibility": "Verantwoordelijk voor data access operaties met betrekking tot tickets."
+          },
+          {
+            "name": "Ticket",
+            "responsibility": "Representeert de ticket entiteit in de database."
+          },
+          {
+            "name": "CreateTicketRequest",
+            "responsibility": "DTO voor het aanmaken van een nieuw ticket."
+          },
+          {
+            "name": "TicketResponse",
+            "responsibility": "DTO voor het retourneren van ticket informatie."
+          },
+          {
+            "name": "TicketListResponse",
+            "responsibility": "DTO voor het retourneren van een lijst met tickets."
+          },
+          {
+            "name": "UpdateTicketStatusRequest",
+            "responsibility": "DTO voor het updaten van de status van een ticket."
+          },
+          {
+            "name": "TicketNotFoundException",
+            "responsibility": "Exception die wordt gegooid wanneer een ticket niet wordt gevonden."
+          },
+          {
+            "name": "TicketSubjectUniquePerDayValidator",
+            "responsibility": "Valideert of het ticket subject uniek is per dag."
+          },
+          {
+            "name": "TicketDailyLimitValidator",
+            "responsibility": "Valideert of de dagelijkse ticket limiet voor een gebruiker is overschreden."
+          },
+          {
+            "name": "HighPriorityTicketDailyLimitValidator",
+            "responsibility": "Valideert of de dagelijkse limiet voor high priority tickets is overschreden."
+          },
+          {
+            "name": "TicketPriorityCompletionOrderValidator",
+            "responsibility": "Valideert de volgorde van voltooiing van tickets op basis van prioriteit."
           },
           {
             "name": "TicketNumberGenerator",
-            "responsibility": "Generate ticket number"
+            "responsibility": "Genereert unieke ticketnummers in het formaat TCK-YYYY-NNNNNN."
+          }
+        ]
+      },
+      {
+        "name": "user",
+        "classes": [
+          {
+            "name": "UserRepository",
+            "responsibility": "Verantwoordelijk voor data access operaties met betrekking tot gebruikers."
           },
           {
-            "name": "SupportTicketRepository",
-            "responsibility": "Persistence"
+            "name": "User",
+            "responsibility": "Representeert de user entiteit in de database."
+          }
+        ]
+      },
+      {
+        "name": "limit",
+        "classes": [
+          {
+            "name": "TicketDailyLimitRepository",
+            "responsibility": "Verantwoordelijk voor data access operaties met betrekking tot dagelijkse ticket limieten."
+          },
+          {
+            "name": "TicketDailyLimit",
+            "responsibility": "Representeert de dagelijkse ticket limiet entiteit in de database."
+          }
+        ]
+      },
+      {
+        "name": "common",
+        "classes": [
+          {
+            "name": "ApiError",
+            "responsibility": "Standaard fout response formaat voor API."
+          },
+          {
+            "name": "FieldError",
+            "responsibility": "Representeert een specifieke validatiefout voor een veld."
           },
           {
             "name": "GlobalExceptionHandler",
-            "responsibility": "Error handling"
+            "responsibility": "Vangt exceptions op en transformeert ze naar ApiError responses."
           },
           {
-            "name": "UserTicketLimitService",
-            "responsibility": "Enforce daily ticket creation limits per user."
+            "name": "CorrelationIdFilter",
+            "responsibility": "Genereert en beheert correlation IDs voor requests."
           },
           {
-            "name": "PriorityCompletionEnforcer",
-            "responsibility": "Ensures HIGH priority tickets are completed before LOW/MEDIUM."
+            "name": "LoggingAspect",
+            "responsibility": "Voegt logging toe aan methodes, inclusief correlation ID."
           },
           {
-            "name": "DailySubjectUniquenessEnforcer",
-            "responsibility": "Enforces unique ticket subjects per user per day."
-          },
-          {
-            "name": "HighPriorityTicketLimitService",
-            "responsibility": "Enforces daily limit for HIGH priority tickets per user."
+            "name": "EnumConverter",
+            "responsibility": "Converteert string representaties naar enum waarden."
           }
         ]
       }
     ]
   },
   "frontend": {
-    "routes": [
-      "/tickets/new"
-    ],
-    "components": [
-      "TicketCreatePage",
-      "TicketForm"
-    ]
+    "routes": [],
+    "components": []
   },
   "tests": {
-    "unit": [
-      "TicketValidationTest",
-      "TicketServiceTest",
-      "UserTicketLimitServiceTest",
-      "PriorityCompletionEnforcerTest",
-      "DailySubjectUniquenessEnforcerTest",
-      "HighPriorityTicketLimitServiceTest"
-    ],
-    "integration": [
-      "TicketControllerIT"
-    ],
+    "unit": [],
+    "integration": [],
     "e2e": []
   },
   "traceability": [
     {
+      "reqId": "REQ-001",
+      "backendRefs": [
+        "TicketController",
+        "TicketService",
+        "TicketRepository",
+        "CreateTicketRequest",
+        "Ticket"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of een ticket succesvol kan worden aangemaakt met de velden subject, description en priority."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [
+        "TicketController",
+        "TicketService",
+        "CreateTicketRequest",
+        "TicketSubjectUniquePerDayValidator"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen van de validatie van het subject veld: minimaal 5 en maximaal 120 karakters."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [
+        "TicketController",
+        "TicketService",
+        "CreateTicketRequest"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen van de validatie van het description veld: minimaal 20 en maximaal 2000 karakters."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [
+        "TicketController",
+        "TicketService",
+        "CreateTicketRequest",
+        "EnumConverter"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen van de validatie van het priority veld: moet \u00e9\u00e9n van de toegestane waarden (LOW, MEDIUM, HIGH) zijn."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [
+        "TicketController",
+        "TicketService",
+        "TicketResponse"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of na succesvolle aanmaak van een ticket, het ticketnummer en de status OPEN worden geretourneerd."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [
+        "TicketController",
+        "GlobalExceptionHandler",
+        "FieldError"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of bij validatiefouten, veldspecifieke foutmeldingen worden getoond."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [
+        "GlobalExceptionHandler",
+        "ApiError",
+        "CorrelationIdFilter"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of bij server errors een generieke foutmelding met een correlation id wordt getoond."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [
+        "TicketNumberGenerator",
+        "TicketRepository",
+        "Ticket"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of het ticketnummer uniek is en het correcte formaat heeft (TCK-YYYY-000001)."
+      ]
+    },
+    {
       "reqId": "REQ-009",
       "backendRefs": [
         "TicketService",
-        "UserTicketLimitService"
+        "Ticket"
       ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
+      "frontendRefs": [],
       "testRefs": [
-        "Feature001SupportTicketGeneratedIT"
+        "Testen of de status van een nieuw aangemaakt ticket altijd OPEN is."
       ]
     },
     {
       "reqId": "REQ-010",
       "backendRefs": [
-        "TicketService",
-        "PriorityCompletionEnforcer"
+        "TicketController",
+        "TicketService"
       ],
       "frontendRefs": [],
-      "testRefs": []
+      "testRefs": [
+        "Meten van de API response tijd voor het aanmaken van een ticket om te valideren dat 95% van de verzoeken < 300ms is."
+      ]
     },
     {
       "reqId": "REQ-011",
       "backendRefs": [
-        "TicketService"
+        "LoggingAspect",
+        "CorrelationIdFilter"
       ],
-      "frontendRefs": [
-        "TicketCreatePage"
-      ],
-      "testRefs": []
+      "frontendRefs": [],
+      "testRefs": [
+        "Controleren van de logs om te verifi\u00ebren dat de correlation id aanwezig is."
+      ]
     },
     {
       "reqId": "REQ-012",
       "backendRefs": [
+        "TicketController",
         "TicketService",
-        "PriorityCompletionEnforcer"
+        "TicketListResponse"
       ],
       "frontendRefs": [],
-      "testRefs": []
+      "testRefs": [
+        "Testen of een ticket met prioriteit HIGH direct na aanmaak zichtbaar is in de lijst."
+      ]
     },
     {
       "reqId": "REQ-013",
       "backendRefs": [
-        "TicketService",
-        "HighPriorityTicketLimitService"
+        "TicketSubjectUniquePerDayValidator",
+        "TicketRepository"
       ],
-      "frontendRefs": [
-        "TicketForm"
-      ],
-      "testRefs": []
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of het onderwerp van een ticket uniek is per dag."
+      ]
     },
     {
-      "reqId": "REQ-008",
+      "reqId": "REQ-014",
       "backendRefs": [
-        "TicketService",
-        "DailySubjectUniquenessEnforcer"
+        "TicketDailyLimitValidator",
+        "TicketDailyLimitRepository",
+        "TicketDailyLimit"
       ],
-      "frontendRefs": [
-        "TicketForm"
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of een gebruiker maximaal 3 tickets per dag kan aanmaken."
+      ]
+    },
+    {
+      "reqId": "REQ-015",
+      "backendRefs": [
+        "HighPriorityTicketDailyLimitValidator",
+        "TicketDailyLimitRepository",
+        "TicketDailyLimit"
       ],
-      "testRefs": []
-    }
-  ],
-  "generatedTests": {
-    "validationMatrix": {
-      "SupportTicket.subject": [
-        "empty",
-        "too_short",
-        "too_long",
-        "duplicate_per_day"
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of een gebruiker maximaal 2 tickets met prioriteit HIGH per dag kan aanmaken."
+      ]
+    },
+    {
+      "reqId": "REQ-016",
+      "backendRefs": [
+        "TicketPriorityCompletionOrderValidator",
+        "TicketRepository"
       ],
-      "SupportTicket.description": [
-        "empty",
-        "too_short",
-        "too_long"
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of een ticket met prioriteit HIGH altijd wordt voltooid voordat een ticket met prioriteit LOW wordt voltooid."
+      ]
+    },
+    {
+      "reqId": "REQ-017",
+      "backendRefs": [
+        "TicketPriorityCompletionOrderValidator",
+        "TicketRepository"
       ],
-      "SupportTicket.priority": [
-        "missing",
-        "invalid_value"
-      ],
-      "SupportTicket.userId": [
-        "missing"
-      ],
-      "SupportTicket.highPriorityCount": [
-        "exceeds_limit"
-      ],
-      "SupportTicket.dailyTicketLimit": [
-        "exceeds_limit"
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of een ticket met prioriteit HIGH altijd wordt voltooid voordat een ticket met prioriteit MEDIUM wordt voltooid."
       ]
     }
-  }
+  ]
 }
