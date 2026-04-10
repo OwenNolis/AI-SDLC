@@ -82,5 +82,6 @@ if [[ ! -f "$VENV_MARKER" ]] || [[ "$REQ_FILE" -nt "$VENV_MARKER" ]]; then
 fi
 
 # Agent aanroepen — feature-id als eerste argument, daarna alle overige argumenten
+# AISDLC_REPO_ROOT wordt meegegeven zodat de agent de juiste repo root gebruikt
 shift
-"${VENV_DIR}/bin/python" "${AGENT_DIR}/fa_to_ta.py" "$FEATURE" "$@"
+AISDLC_REPO_ROOT="${ROOT_DIR}" "${VENV_DIR}/bin/python" "${AGENT_DIR}/fa_to_ta.py" "$FEATURE" "$@"

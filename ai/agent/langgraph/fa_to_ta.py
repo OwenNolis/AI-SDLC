@@ -913,11 +913,17 @@ def main():
     args = parse_args()
     feature_id = args.feature_id
 
-    base        = Path(__file__).parent.parent.parent.parent
+    # AISDLC_REPO_ROOT wordt gezet door fa-to-ta.sh zodat de agent werkt
+    # vanuit zowel de parent repo als een child repo via .sdlc-tools
+    if os.environ.get("AISDLC_REPO_ROOT"):
+        base = Path(os.environ["AISDLC_REPO_ROOT"])
+    else:
+        base = Path(__file__).parent.parent.parent.parent
+
     fa_path     = base / "docs" / "functional-analysis" / f"{feature_id}.md"
     ta_md_path  = base / "docs" / "technical-analysis"  / f"{feature_id}.md"
     ta_json_path= base / "docs" / "technical-analysis"  / f"{feature_id}.ta.json"
-    schema_path = base / "ai"   / "schemas"             / "ta.schema.json"
+    schema_path = Path(__file__).parent.parent.parent / "schemas" / "ta.schema.json"
 
     print("==============================================")
     print("AI-SDLC — LangGraph FA→TA agent")
@@ -974,7 +980,7 @@ def main():
     ta_json_path.write_text(json.dumps(final["ta_json"], indent=2) + "\n")
     ta_md_path.write_text(final["ta_markdown"] + "\n")
 
-    print(f"\n✅ Klaar!")
+    print("\n✅ Klaar!")
     print(f"   🏷️  FA-type  : {final['fa_type']}")
     print(f"   📄 {ta_md_path.relative_to(base)}")
     print(f"   📋 {ta_json_path.relative_to(base)}")
