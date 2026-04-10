@@ -26,8 +26,11 @@ fi
 # Paden bepalen
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AGENT_DIR="${SCRIPT_DIR}/agent/langgraph"
-ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 VENV_DIR="${AGENT_DIR}/.venv"
+
+# ROOT_DIR = de map van waaruit het commando uitgevoerd wordt (de repo root)
+# Dit werkt zowel voor de parent repo als de child repo
+ROOT_DIR="$PWD"
 
 # .env laden vanuit repo root (indien aanwezig)
 ENV_FILE="${ROOT_DIR}/.env"
