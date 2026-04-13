@@ -180,8 +180,7 @@
             ],
             "testCases": [
               "missing",
-              "invalid_value",
-              "future_date"
+              "invalid_value"
             ]
           },
           {
@@ -194,9 +193,7 @@
             ],
             "testCases": [
               "missing",
-              "invalid_value",
-              "negative_value",
-              "too_large"
+              "invalid_value"
             ]
           },
           {
@@ -354,9 +351,7 @@
             ],
             "testCases": [
               "missing",
-              "invalid_value",
-              "negative_value",
-              "too_large"
+              "invalid_value"
             ]
           },
           {

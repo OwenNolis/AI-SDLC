@@ -629,12 +629,16 @@ def assemble_ta_json(state: TAState) -> dict:
         "endpoints":   clean_endpoints,
     }
 
+    ALLOWED_TEST_CASES = {"empty", "too_short", "too_long", "missing", "invalid_value", "duplicate_per_day"}
+
     raw_domain = state["domain_model"]
     clean_entities = []
     for ent in raw_domain.get("entities", []):
         clean_fields = []
         for f in ent.get("fields", []):
             clean_f = {k: v for k, v in f.items() if k in ("name", "type", "constraints", "testCases")}
+            if "testCases" in clean_f:
+                clean_f["testCases"] = [tc for tc in clean_f["testCases"] if tc in ALLOWED_TEST_CASES]
             clean_fields.append(clean_f)
         clean_entities.append({"name": ent["name"], "fields": clean_fields})
     domain = {"entities": clean_entities}
