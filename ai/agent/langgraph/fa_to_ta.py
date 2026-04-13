@@ -643,12 +643,25 @@ def assemble_ta_json(state: TAState) -> dict:
         clean_entities.append({"name": ent["name"], "fields": clean_fields})
     domain = {"entities": clean_entities}
 
+    # Normalize priority synonyms → schema enum values
+    _PRIORITY_MAP = {
+        "must": "must", "must-have": "must", "high": "must",
+        "should": "should", "should-have": "should", "medium": "should",
+        "could": "could", "could-have": "could", "low": "could", "nice-to-have": "could",
+    }
+    # REQ-NNN pattern guard (exactly 3 digits)
+    import re as _re
+    _REQ_PATTERN = _re.compile(r"^REQ-\d{3}$")
+
     # Strip extra fields from requirements (schema: id, text, priority only)
-    clean_requirements = [
-        {k: v for k, v in r.items() if k in ("id", "text", "priority")}
-        for r in state["requirements"]
-        if isinstance(r.get("id"), str) and r["id"].startswith("REQ-")
-    ]
+    clean_requirements = []
+    for r in state["requirements"]:
+        req_id = r.get("id", "")
+        if not isinstance(req_id, str) or not _REQ_PATTERN.match(req_id):
+            continue
+        priority_raw = str(r.get("priority", "must")).lower()
+        priority = _PRIORITY_MAP.get(priority_raw, "must")
+        clean_requirements.append({"id": req_id, "text": r.get("text", ""), "priority": priority})
 
     # Strip extra fields from backend classes (schema: name, responsibility only)
     clean_modules = []
@@ -672,13 +685,26 @@ def assemble_ta_json(state: TAState) -> dict:
         "e2e":         state["tests_design"].get("e2e", []),
     }
 
+    raw_scope = state["scope"]
+    clean_scope = {
+        "inScope":    raw_scope.get("inScope", []),
+        "outOfScope": raw_scope.get("outOfScope", []),
+    }
+
+    raw_error_fmt = api.get("errorFormat", {})
+    clean_error_fmt = {
+        "type":   raw_error_fmt.get("type", "ApiError"),
+        "fields": raw_error_fmt.get("fields", []),
+    }
+    api["errorFormat"] = clean_error_fmt
+
     ta = {
         "meta": {
             "featureId": state["feature_id"],
             "title": _extract_title(state["fa_content"], state["feature_id"]),
             "version": "1.0.0",
         },
-        "scope": state["scope"],
+        "scope": clean_scope,
         "assumptions": state["assumptions"],
         "openQuestions": state["open_questions"],
         "requirements": clean_requirements,
@@ -689,10 +715,12 @@ def assemble_ta_json(state: TAState) -> dict:
         "tests": tests,
         # Voeg messaging sectie toe voor event-driven features
         **({"messaging": _clean_messaging(state["messaging_design"])} if fa_type == "event-driven" else {}),
-        # Filter traceability: alleen geldige REQ-NNN IDs, testRefs altijd als array
+        # Filter traceability: alleen geldige REQ-NNN IDs, whitelist keys, testRefs altijd als array
         "traceability": [
             {
-                **t,
+                "reqId":        t["reqId"],
+                "backendRefs":  t.get("backendRefs", []),
+                "frontendRefs": t.get("frontendRefs", []),
                 "testRefs": (
                     t["testRefs"] if isinstance(t.get("testRefs"), list)
                     else [t["testRefs"]] if isinstance(t.get("testRefs"), str)
@@ -700,7 +728,7 @@ def assemble_ta_json(state: TAState) -> dict:
                 ),
             }
             for t in state["traceability"]
-            if isinstance(t.get("reqId"), str) and t["reqId"].startswith("REQ-")
+            if isinstance(t.get("reqId"), str) and _REQ_PATTERN.match(t["reqId"])
         ],
     }
 
