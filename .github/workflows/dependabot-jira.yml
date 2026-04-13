@@ -29,6 +29,21 @@ on:
       JIRA_DOMAIN:
         type: string
         required: false
+      # PR event data — must be forwarded explicitly by the child repo caller
+      # because github.event is not available when event_name == workflow_call
+      PR_USER_LOGIN:
+        type: string
+        required: false
+      PR_MERGED:
+        type: boolean
+        required: false
+        default: false
+      PR_ACTION:
+        type: string
+        required: false
+      PR_NUMBER:
+        type: string
+        required: false
     secrets:
       JIRA_EMAIL:
         required: false
@@ -47,7 +62,7 @@ jobs:
         id: check_existing
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event_name == 'workflow_call' && inputs.PR_NUMBER || github.event.pull_request.number }}
         run: |
           EXISTING=$(curl -s \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -71,7 +86,7 @@ jobs:
           JIRA_DOMAIN: ${{ inputs.JIRA_DOMAIN || vars.JIRA_DOMAIN }}
           PR_TITLE: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_title || github.event.pull_request.title }}
           PR_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_url || github.event.pull_request.html_url }}
-          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event_name == 'workflow_call' && inputs.PR_NUMBER || github.event.pull_request.number }}
           PR_BODY: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_body || github.event.pull_request.body }}
         run: |
           echo "Using Jira email: ${JIRA_EMAIL}"
@@ -154,7 +169,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_KEY: ${{ steps.create_issue.outputs.issue_key }}
           ISSUE_URL: ${{ steps.create_issue.outputs.issue_url }}
-          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event_name == 'workflow_call' && inputs.PR_NUMBER || github.event.pull_request.number }}
         run: |
           curl -s -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -163,7 +178,10 @@ jobs:
             -d "{\"body\": \"🎫 Jira task created: [**${ISSUE_KEY}**](${ISSUE_URL})\"}"
 
   close-jira-issue:
-    if: ((github.event.pull_request.merged == true || github.event.action == 'closed') && github.event.pull_request.user.login == 'dependabot[bot]') || (github.event_name == 'workflow_dispatch' && inputs.close_pr_number != '')
+    if: >
+      ((github.event.pull_request.merged == true || github.event.action == 'closed') && github.event.pull_request.user.login == 'dependabot[bot]') ||
+      (github.event_name == 'workflow_call' && (inputs.PR_MERGED == true || inputs.PR_ACTION == 'closed') && inputs.PR_USER_LOGIN == 'dependabot[bot]') ||
+      (github.event_name == 'workflow_dispatch' && inputs.close_pr_number != '')
     runs-on: ubuntu-latest
 
     steps:
@@ -172,7 +190,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JIRA_PROJECT_KEY: ${{ inputs.JIRA_PROJECT_KEY || vars.JIRA_PROJECT_KEY }}
-          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.close_pr_number || github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.close_pr_number || github.event_name == 'workflow_call' && inputs.PR_NUMBER || github.event.pull_request.number }}
         run: |
           # Look for the comment posted by the create-jira-issue job
           COMMENT=$(curl -s \
