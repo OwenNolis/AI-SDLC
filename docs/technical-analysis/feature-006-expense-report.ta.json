@@ -1,0 +1,1074 @@
+{
+  "meta": {
+    "featureId": "feature-006-expense-report",
+    "title": "Feature-006: Onkostennota indienen",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "inScope": [
+      "Onkostennota aanmaken met datum, bedrag, categorie en beschrijving",
+      "Bonnetje uploaden als bijlage (JPEG, PNG of PDF, max 5MB)",
+      "Overzicht van eigen ingediende onkostennota's tonen",
+      "Status opvolgen (ingediend, goedgekeurd, afgewezen, terugbetaald)",
+      "Manager kan onkostennota's goedkeuren of afwijzen met commentaar",
+      "Totaalbedrag per maand tonen voor de medewerker"
+    ],
+    "outOfScope": [
+      "Automatische terugbetaling via bank",
+      "Integratie met boekhoudpakket",
+      "Onkostenlimieten per categorie instellen",
+      "Groepsonkosten voor meerdere medewerkers"
+    ]
+  },
+  "assumptions": [],
+  "openQuestions": [],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "De medewerker kan een onkostennota aanmaken met datum, bedrag, categorie en beschrijving.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "De datum mag niet in de toekomst liggen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "Het bedrag moet positief zijn en maximaal 10.000 euro.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "De categorie moet \u00e9\u00e9n van de toegestane waarden zijn: TRAVEL, MEALS, ACCOMMODATION, OFFICE_SUPPLIES, OTHER.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-005",
+      "text": "De medewerker kan een bonnetje uploaden als bijlage (JPEG, PNG of PDF, maximaal 5MB).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "De medewerker kan zijn eigen onkostennota's bekijken met status en bedrag.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "De medewerker ziet het totaalbedrag van goedgekeurde onkosten per kalendermaand.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "De medewerker kan een onkostennota met status \"ingediend\" verwijderen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "De manager kan een onkostennota goedkeuren of afwijzen met verplicht commentaar bij afwijzing.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "Bij ongeldige invoer worden veldspecifieke foutmeldingen getoond.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-011",
+      "text": "Een onkostennota kan niet gewijzigd worden na indiening.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-012",
+      "text": "Alleen de eigen medewerker en zijn directe manager mogen een onkostennota inzien.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-013",
+      "text": "Een goedgekeurde of afgewezen onkostennota kan niet meer verwijderd worden.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-014",
+      "text": "Bijlagen worden opgeslagen in object storage, niet in de database.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-015",
+      "text": "Bedragen worden opgeslagen als gehele getallen in eurocenten om afrondingsfouten te vermijden.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-016",
+      "text": "De API moet binnen 1 seconde reageren voor alle operaties behalve bestandsupload.",
+      "priority": "must"
+    }
+  ],
+  "domain": {
+    "entities": [
+      {
+        "name": "Employee",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "username",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:3",
+              "maxLength:50"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "managerId",
+            "type": "Long",
+            "constraints": [],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ExpenseReport",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "employeeId",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "date",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "amountInCents",
+            "type": "Long",
+            "constraints": [
+              "notNull",
+              "min:1",
+              "max:100000000"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "category",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "description",
+            "type": "String",
+            "constraints": [
+              "maxLength:500"
+            ],
+            "testCases": [
+              "too_long",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "status",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "rejectionReason",
+            "type": "String",
+            "constraints": [
+              "maxLength:500"
+            ],
+            "testCases": [
+              "too_long",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "attachmentUrl",
+            "type": "String",
+            "constraints": [],
+            "testCases": [
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "updatedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ExpenseReportAttachment",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "expenseReportId",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "fileName",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "maxLength:255"
+            ],
+            "testCases": [
+              "empty",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "fileUrl",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "maxLength:500"
+            ],
+            "testCases": [
+              "empty",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "fileType",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "maxLength:10"
+            ],
+            "testCases": [
+              "empty",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "fileSizeInBytes",
+            "type": "Long",
+            "constraints": [
+              "notNull",
+              "min:1",
+              "max:5242880"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "uploadedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "errorFormat": {
+      "type": "ApiError",
+      "fields": [
+        "correlationId",
+        "code",
+        "message",
+        "fieldErrors"
+      ]
+    },
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/api/expense-reports",
+        "summary": "Onkostennota aanmaken",
+        "request": {
+          "bodySchemaRef": "CreateExpenseReportRequest",
+          "validationRules": [
+            "employeeId: moet aanwezig zijn",
+            "date: moet aanwezig zijn, mag niet in de toekomst liggen",
+            "amountInCents: moet aanwezig zijn, moet tussen 1 en 100000000 liggen",
+            "category: moet aanwezig zijn, moet een van de toegestane waarden zijn (TRAVEL, MEALS, ACCOMMODATION, OFFICE_SUPPLIES, OTHER)",
+            "description: mag maximaal 500 karakters lang zijn"
+          ]
+        },
+        "responses": [
+          {
+            "status": 201,
+            "bodySchemaRef": "ExpenseReportResponse",
+            "notes": "Onkostennota succesvol aangemaakt"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/expense-reports",
+        "summary": "Eigen onkostennota's ophalen",
+        "request": {
+          "validationRules": []
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "ExpenseReportListResponse",
+            "notes": "Lijst van eigen onkostennota's"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/expense-reports/{id}",
+        "summary": "Onkostennota verwijderen",
+        "request": {
+          "validationRules": [
+            "id: moet een geldige Long zijn",
+            "status: mag alleen verwijderd worden als de status 'ingediend' is"
+          ]
+        },
+        "responses": [
+          {
+            "status": 204,
+            "notes": "Onkostennota succesvol verwijderd",
+            "bodySchemaRef": "EmptyResponse"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Ongeldige aanvraag (bv. onkostennota kan niet verwijderd worden)"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 403,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geautoriseerd om deze onkostennota te verwijderen"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onkostennota niet gevonden"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "POST",
+        "path": "/api/expense-reports/{id}/attachment",
+        "summary": "Bonnetje uploaden als bijlage",
+        "request": {
+          "bodySchemaRef": "MultipartFile",
+          "validationRules": [
+            "id: moet een geldige Long zijn",
+            "file: moet aanwezig zijn, moet een JPEG, PNG of PDF zijn, maximaal 5MB",
+            "fileName: moet aanwezig zijn, mag maximaal 255 karakters lang zijn",
+            "fileType: moet aanwezig zijn, mag maximaal 10 karakters lang zijn",
+            "fileSizeInBytes: moet aanwezig zijn, moet tussen 1 en 5242880 liggen"
+          ]
+        },
+        "responses": [
+          {
+            "status": 201,
+            "bodySchemaRef": "ExpenseReportAttachmentResponse",
+            "notes": "Bijlage succesvol ge\u00fcpload"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in de aanvraag (bv. ongeldig bestandstype of grootte)"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 403,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geautoriseerd om een bijlage toe te voegen aan deze onkostennota"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onkostennota niet gevonden"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/expense-reports/{id}/approve",
+        "summary": "Onkostennota goedkeuren (manager)",
+        "request": {
+          "validationRules": [
+            "id: moet een geldige Long zijn"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "ExpenseReportResponse",
+            "notes": "Onkostennota succesvol goedgekeurd"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Ongeldige aanvraag (bv. onkostennota kan niet goedgekeurd worden)"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 403,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geautoriseerd om deze onkostennota goed te keuren"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onkostennota niet gevonden"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/expense-reports/{id}/reject",
+        "summary": "Onkostennota afwijzen met commentaar (manager)",
+        "request": {
+          "bodySchemaRef": "RejectExpenseReportRequest",
+          "validationRules": [
+            "id: moet een geldige Long zijn",
+            "rejectionReason: moet aanwezig zijn, mag maximaal 500 karakters lang zijn"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "ExpenseReportResponse",
+            "notes": "Onkostennota succesvol afgewezen"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body of ongeldige aanvraag"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 403,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geautoriseerd om deze onkostennota af te wijzen"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onkostennota niet gevonden"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/expense-reports/monthly-total",
+        "summary": "Totaalbedrag van goedgekeurde onkosten per kalendermaand ophalen",
+        "request": {
+          "validationRules": [
+            "year: moet een geldig jaar zijn",
+            "month: moet een getal tussen 1 en 12 zijn"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "MonthlyTotalResponse",
+            "notes": "Totaalbedrag per maand"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in query parameters"
+          },
+          {
+            "status": 401,
+            "bodySchemaRef": "ApiError",
+            "notes": "Niet geauthenticeerd"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      }
+    ]
+  },
+  "backend": {
+    "modules": [
+      {
+        "name": "expenseReport",
+        "classes": [
+          {
+            "name": "ExpenseReportController",
+            "responsibility": "Handelt inkomende HTTP-verzoeken af voor onkostennota's en stuurt ze door naar de ExpenseReportService."
+          },
+          {
+            "name": "ExpenseReportService",
+            "responsibility": "Bevat de bedrijfslogica voor het beheren van onkostennota's, inclusief aanmaken, ophalen, verwijderen, goedkeuren en afwijzen."
+          },
+          {
+            "name": "ExpenseReportRepository",
+            "responsibility": "Verantwoordelijk voor de interactie met de database voor onkostennota-gerelateerde gegevens."
+          },
+          {
+            "name": "ExpenseReportEntity",
+            "responsibility": "Representeert de onkostennota in de database."
+          },
+          {
+            "name": "CreateExpenseReportRequestDto",
+            "responsibility": "Data Transfer Object voor het aanmaken van een nieuwe onkostennota."
+          },
+          {
+            "name": "ExpenseReportResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van onkostennota-informatie."
+          },
+          {
+            "name": "ExpenseReportListResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van een lijst met onkostennota's."
+          },
+          {
+            "name": "RejectExpenseReportRequestDto",
+            "responsibility": "Data Transfer Object voor het afwijzen van een onkostennota met een reden."
+          },
+          {
+            "name": "MonthlyTotalResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van het totale goedgekeurde onkostenbedrag per maand."
+          },
+          {
+            "name": "ExpenseReportNotFoundException",
+            "responsibility": "Exception die wordt gegenereerd wanneer een onkostennota niet wordt gevonden."
+          },
+          {
+            "name": "InvalidExpenseReportStatusException",
+            "responsibility": "Exception die wordt gegenereerd wanneer een onkostennota zich in een ongeldige status bevindt voor een bewerking."
+          },
+          {
+            "name": "ExpenseReportValidator",
+            "responsibility": "Valideert de invoer voor onkostennota-gerelateerde operaties volgens de business rules."
+          },
+          {
+            "name": "ExpenseReportAttachmentController",
+            "responsibility": "Handelt inkomende HTTP-verzoeken af voor het uploaden van bijlagen bij onkostennota's."
+          },
+          {
+            "name": "ExpenseReportAttachmentService",
+            "responsibility": "Bevat de bedrijfslogica voor het beheren van bijlagen bij onkostennota's, inclusief opslag in object storage."
+          },
+          {
+            "name": "ExpenseReportAttachmentRepository",
+            "responsibility": "Verantwoordelijk voor de interactie met de database voor onkostennota-bijlage-gerelateerde gegevens."
+          },
+          {
+            "name": "ExpenseReportAttachmentEntity",
+            "responsibility": "Representeert een bijlage bij een onkostennota in de database."
+          },
+          {
+            "name": "ExpenseReportAttachmentResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van informatie over een onkostennota-bijlage."
+          },
+          {
+            "name": "AttachmentValidationException",
+            "responsibility": "Exception die wordt gegenereerd bij ongeldige bestandsuploads."
+          }
+        ]
+      },
+      {
+        "name": "common",
+        "classes": [
+          {
+            "name": "ApiError",
+            "responsibility": "Standaard foutformaat voor API-responses."
+          },
+          {
+            "name": "ApiErrorControllerAdvice",
+            "responsibility": "Globaal afhandelen van exceptions en omzetten naar ApiError responses."
+          },
+          {
+            "name": "SecurityConfig",
+            "responsibility": "Configureert de beveiligingsinstellingen van de applicatie, inclusief authenticatie en autorisatie."
+          },
+          {
+            "name": "JwtTokenProvider",
+            "responsibility": "Verantwoordelijk voor het genereren en valideren van JWT-tokens voor authenticatie."
+          },
+          {
+            "name": "UserPrincipal",
+            "responsibility": "Representeert de geauthenticeerde gebruiker met zijn autorisaties."
+          },
+          {
+            "name": "EmployeeService",
+            "responsibility": "Bevat de bedrijfslogica voor het beheren van werknemersgegevens en het ophalen van managerinformatie."
+          },
+          {
+            "name": "EmployeeRepository",
+            "responsibility": "Verantwoordelijk voor de interactie met de database voor werknemer-gerelateerde gegevens."
+          },
+          {
+            "name": "EmployeeEntity",
+            "responsibility": "Representeert een werknemer in de database."
+          },
+          {
+            "name": "DateValidator",
+            "responsibility": "Valideert datums, inclusief het controleren op toekomstige datums."
+          },
+          {
+            "name": "AmountValidator",
+            "responsibility": "Valideert bedragen, inclusief minimum- en maximumgrenzen."
+          },
+          {
+            "name": "CategoryValidator",
+            "responsibility": "Valideert dat de categorie van een onkostennota een toegestane waarde is."
+          },
+          {
+            "name": "FileStorageService",
+            "responsibility": "Abstracte service voor het opslaan en ophalen van bestanden, te implementeren voor specifieke object storage oplossingen."
+          },
+          {
+            "name": "AmazonS3FileStorageService",
+            "responsibility": "Implementatie van FileStorageService voor Amazon S3."
+          }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "routes": [
+      "/expenses",
+      "/expenses/new",
+      "/manager/expenses"
+    ],
+    "components": [
+      "ExpenseList",
+      "ExpenseForm",
+      "AttachmentUpload",
+      "MonthlyTotalCard",
+      "ManagerExpenseList",
+      "ApproveRejectModal",
+      "StatusBadge",
+      "ErrorDisplay",
+      "LoadingSpinner"
+    ]
+  },
+  "tests": {
+    "unit": [
+      "ExpenseList render",
+      "ExpenseForm render",
+      "AttachmentUpload render",
+      "MonthlyTotalCard render",
+      "ManagerExpenseList render",
+      "ApproveRejectModal render",
+      "StatusBadge render",
+      "ErrorDisplay render",
+      "ExpenseForm handleSubmit",
+      "AttachmentUpload handleFileChange",
+      "ApproveRejectModal handleApprove",
+      "ApproveRejectModal handleReject"
+    ],
+    "integration": [
+      "POST /api/expense-reports \u2192 201 Created",
+      "GET /api/expense-reports \u2192 200 OK",
+      "DELETE /api/expense-reports/{id} \u2192 204 No Content",
+      "POST /api/expense-reports/{id}/attachment \u2192 201 Created",
+      "PUT /api/expense-reports/{id}/approve \u2192 200 OK",
+      "PUT /api/expense-reports/{id}/reject \u2192 200 OK",
+      "GET /api/expense-reports/monthly-total \u2192 200 OK",
+      "POST /api/expense-reports \u2192 400 Bad Request (validation error)",
+      "POST /api/expense-reports/{id}/attachment \u2192 400 Bad Request (file validation error)",
+      "PUT /api/expense-reports/{id}/reject \u2192 400 Bad Request (validation error)"
+    ],
+    "e2e": [
+      "Medewerker maakt een nieuwe onkostennota aan, vult alle velden in, uploadt een bonnetje en dient deze in.",
+      "Medewerker bekijkt zijn eigen onkostennota's en ziet de status en het totaal per maand.",
+      "Manager bekijkt openstaande onkostennota's, keurt er \u00e9\u00e9n goed en wijst een andere af met een reden.",
+      "Medewerker probeert een onkostennota te verwijderen die al goedgekeurd is en ziet een foutmelding.",
+      "Medewerker probeert een onkostennota aan te maken met een datum in de toekomst en ziet een foutmelding."
+    ]
+  },
+  "traceability": [
+    {
+      "reqId": "REQ-001",
+      "backendRefs": [
+        "ExpenseReportController",
+        "ExpenseReportService",
+        "ExpenseReportRepository",
+        "ExpenseReportEntity",
+        "CreateExpenseReportRequestDto",
+        "ExpenseReportValidator"
+      ],
+      "frontendRefs": [
+        "ExpenseForm"
+      ],
+      "testRefs": [
+        "Testen of een onkostennota succesvol kan worden aangemaakt met alle vereiste velden (datum, bedrag, categorie, beschrijving)."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [
+        "ExpenseReportValidator",
+        "DateValidator"
+      ],
+      "frontendRefs": [
+        "ExpenseForm"
+      ],
+      "testRefs": [
+        "Testen of het aanmaken van een onkostennota met een datum in de toekomst wordt geweigerd."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [
+        "ExpenseReportValidator",
+        "AmountValidator"
+      ],
+      "frontendRefs": [
+        "ExpenseForm"
+      ],
+      "testRefs": [
+        "Testen of het aanmaken van een onkostennota met een negatief bedrag of een bedrag boven de 10.000 euro wordt geweigerd."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [
+        "ExpenseReportValidator",
+        "CategoryValidator"
+      ],
+      "frontendRefs": [
+        "ExpenseForm"
+      ],
+      "testRefs": [
+        "Testen of het aanmaken van een onkostennota met een ongeldige categorie wordt geweigerd."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [
+        "ExpenseReportAttachmentController",
+        "ExpenseReportAttachmentService",
+        "ExpenseReportAttachmentRepository",
+        "ExpenseReportAttachmentEntity",
+        "AttachmentValidationException",
+        "FileStorageService",
+        "AmazonS3FileStorageService"
+      ],
+      "frontendRefs": [
+        "AttachmentUpload"
+      ],
+      "testRefs": [
+        "Testen of een gebruiker een bonnetje kan uploaden met de juiste bestandstypes (JPEG, PNG, PDF) en binnen de maximale bestandsgrootte (5MB)."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [
+        "ExpenseReportController",
+        "ExpenseReportService",
+        "ExpenseReportRepository",
+        "ExpenseReportResponseDto",
+        "ExpenseReportListResponseDto"
+      ],
+      "frontendRefs": [
+        "ExpenseList"
+      ],
+      "testRefs": [
+        "Testen of een medewerker een lijst van zijn eigen onkostennota's kan bekijken met de status en het bedrag van elke nota."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [
+        "ExpenseReportController",
+        "ExpenseReportService",
+        "MonthlyTotalResponseDto"
+      ],
+      "frontendRefs": [
+        "MonthlyTotalCard"
+      ],
+      "testRefs": [
+        "Testen of het totaalbedrag van goedgekeurde onkosten per kalendermaand correct wordt weergegeven."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [
+        "ExpenseReportController",
+        "ExpenseReportService",
+        "InvalidExpenseReportStatusException"
+      ],
+      "frontendRefs": [
+        "ExpenseList"
+      ],
+      "testRefs": [
+        "Testen of een onkostennota met de status 'ingediend' succesvol kan worden verwijderd."
+      ]
+    },
+    {
+      "reqId": "REQ-009",
+      "backendRefs": [
+        "ExpenseReportController",
+        "ExpenseReportService",
+        "RejectExpenseReportRequestDto",
+        "InvalidExpenseReportStatusException"
+      ],
+      "frontendRefs": [
+        "ManagerExpenseList",
+        "ApproveRejectModal"
+      ],
+      "testRefs": [
+        "Testen of een manager een onkostennota kan goedkeuren of afwijzen, en of commentaar verplicht is bij afwijzing."
+      ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [
+        "ApiErrorControllerAdvice",
+        "ApiError"
+      ],
+      "frontendRefs": [
+        "ErrorDisplay"
+      ],
+      "testRefs": [
+        "Testen of er veldspecifieke foutmeldingen worden getoond bij ongeldige invoer in de formulieren."
+      ]
+    },
+    {
+      "reqId": "REQ-011",
+      "backendRefs": [
+        "ExpenseReportController",
+        "ExpenseReportService",
+        "InvalidExpenseReportStatusException"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of een onkostennota niet gewijzigd kan worden nadat deze is ingediend."
+      ]
+    },
+    {
+      "reqId": "REQ-012",
+      "backendRefs": [
+        "SecurityConfig",
+        "JwtTokenProvider",
+        "UserPrincipal",
+        "EmployeeService"
+      ],
+      "frontendRefs": [
+        "ExpenseList",
+        "ManagerExpenseList"
+      ],
+      "testRefs": [
+        "Testen of alleen de eigen medewerker en zijn directe manager toegang hebben tot onkostennota's."
+      ]
+    },
+    {
+      "reqId": "REQ-013",
+      "backendRefs": [
+        "ExpenseReportController",
+        "ExpenseReportService",
+        "InvalidExpenseReportStatusException"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of een goedgekeurde of afgewezen onkostennota niet verwijderd kan worden."
+      ]
+    },
+    {
+      "reqId": "REQ-014",
+      "backendRefs": [
+        "ExpenseReportAttachmentService",
+        "FileStorageService",
+        "AmazonS3FileStorageService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of bijlagen worden opgeslagen in object storage en niet in de database."
+      ]
+    },
+    {
+      "reqId": "REQ-015",
+      "backendRefs": [
+        "ExpenseReportEntity",
+        "CreateExpenseReportRequestDto"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen of bedragen worden opgeslagen als gehele getallen in eurocenten."
+      ]
+    },
+    {
+      "reqId": "REQ-016",
+      "backendRefs": [
+        "ExpenseReportController",
+        "ExpenseReportService",
+        "ExpenseReportAttachmentController",
+        "ExpenseReportAttachmentService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Testen van de responstijd van de API voor alle operaties, met uitzondering van bestandsupload, om te verifi\u00ebren dat deze binnen 1 seconde reageert."
+      ]
+    }
+  ]
+}

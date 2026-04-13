@@ -24,6 +24,7 @@ import argparse
 import json
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import TypedDict
 
@@ -50,6 +51,7 @@ class TAState(TypedDict):
     fa_content: str
     fa_type: str            # rest-api | full-stack | frontend-only | event-driven
     fa_type_manual: str     # handmatig opgegeven type (leeg = auto-detect)
+    extra_context: str      # optionele extra context meegegeven via --context
     ta_skeleton: str
     ta_schema: dict
     # Tussenresultaten — gevuld door nodes
@@ -274,16 +276,38 @@ def generate_api_design(state: TAState) -> dict:
     """Node 3: Genereer REST API design op basis van domain model en requirements."""
     print("🔌 API design genereren...")
 
+    # Extraheer expliciet vermelde endpoints uit de FA voor scope enforcement
+    fa_api_notes = ""
+    for line in state["fa_content"].splitlines():
+        if "endpoint:" in line.lower() or "/api/" in line.lower():
+            fa_api_notes += f"  {line.strip()}\n"
+
+    scope_hint = f"""
+Expliciet vermelde endpoints in de FA (gebruik dit als primaire bron):
+{fa_api_notes if fa_api_notes else "  (geen expliciete endpoints vermeld — leid af uit requirements en scope)"}
+
+Scope van de feature:
+{json.dumps(state["scope"], indent=2)}
+""" if fa_api_notes else f"""
+Scope van de feature:
+{json.dumps(state["scope"], indent=2)}
+"""
+
+    extra_context_hint = (
+        f"\nExtra context:\n{state['extra_context']}\n"
+        if state.get("extra_context") else ""
+    )
+
     prompt = f"""Je bent een SDLC-analyse agent.
 
 Genereer het REST API design voor een Spring Boot applicatie.
-
+{extra_context_hint}
 Domain model:
 {json.dumps(state["domain_model"], indent=2)}
 
 Requirements:
 {json.dumps(state["requirements"], indent=2)}
-
+{scope_hint}
 Geef ALLEEN een JSON object terug:
 {{
   "errorFormat": {{
@@ -313,7 +337,11 @@ Geef ALLEEN een JSON object terug:
 
 Regels:
 - method EXACT: GET, POST, PUT, PATCH of DELETE
-- Elke requirement die input of output vereist krijgt een endpoint
+- Genereer ALLEEN endpoints die voortvloeien uit de FA scope en requirements
+- Als de FA expliciete endpoints vermeldt, gebruik die als basis
+- Logische technische endpoints die nodig zijn voor een goede werking mogen toegevoegd worden
+  (bv. foutafhandeling, authenticatie-checks) maar GEEN volledige CRUD voor entiteiten
+  die niet in de scope vallen
 - Validatieregels beschrijven per veld wat gecontroleerd wordt
 - Geen extra velden
 """
@@ -418,11 +446,27 @@ def generate_frontend_design(state: TAState) -> dict:
 
     fa_type = state.get("fa_type", "full-stack")
 
+    # Extraheer expliciet vermelde routes en componenten uit de FA
+    fa_ux_notes = ""
+    in_ux = False
+    for line in state["fa_content"].splitlines():
+        if "ux notes" in line.lower() or "ux note" in line.lower():
+            in_ux = True
+        if in_ux and line.strip():
+            fa_ux_notes += f"  {line.strip()}\n"
+
+    ux_hint = f"\nExpliciet vermelde routes/componenten in de FA:\n{fa_ux_notes}" if fa_ux_notes else ""
+    extra_context_hint = (
+        f"\nExtra context:\n{state['extra_context']}\n"
+        if state.get("extra_context") else ""
+    )
+
     if fa_type == "frontend-only":
         prompt = f"""Je bent een SDLC-analyse agent.
 
 Genereer de frontend structuur voor een React/TypeScript applicatie.
 Dit is een FRONTEND-ONLY feature — er zijn geen nieuwe backend endpoints, alleen bestaande API wordt geconsumeerd.
+{extra_context_hint}{ux_hint}
 
 Requirements:
 {json.dumps(state["requirements"], indent=2)}
@@ -454,12 +498,16 @@ Regels:
         prompt = f"""Je bent een SDLC-analyse agent.
 
 Genereer de frontend structuur voor een React/TypeScript applicatie.
+{extra_context_hint}{ux_hint}
 
 API endpoints:
 {json.dumps(state["api_design"].get("endpoints", []), indent=2)}
 
 Requirements:
 {json.dumps(state["requirements"], indent=2)}
+
+Scope van de feature:
+{json.dumps(state["scope"], indent=2)}
 
 Geef ALLEEN een JSON object terug:
 {{
@@ -473,8 +521,10 @@ Geef ALLEEN een JSON object terug:
 }}
 
 Regels:
-- Routes: paden die de gebruiker kan navigeren
-- Componenten: PascalCase, alleen wat relevant is voor de FA scope
+- Genereer ALLEEN routes en componenten die in de FA scope vallen
+- Als de FA expliciete routes/componenten vermeldt, gebruik die als basis
+- Logische technische componenten mogen toegevoegd worden (bv. ErrorDisplay, LoadingSpinner)
+  maar GEEN pagina's of flows die buiten de scope vallen
 - Stack: React 18, TypeScript
 - tests.unit: klassenamen of component render tests
 - tests.integration: endpoint + verwacht statuscode
@@ -579,22 +629,39 @@ def assemble_ta_json(state: TAState) -> dict:
         "endpoints":   clean_endpoints,
     }
 
+    ALLOWED_TEST_CASES = {"empty", "too_short", "too_long", "missing", "invalid_value", "duplicate_per_day"}
+
     raw_domain = state["domain_model"]
     clean_entities = []
     for ent in raw_domain.get("entities", []):
         clean_fields = []
         for f in ent.get("fields", []):
             clean_f = {k: v for k, v in f.items() if k in ("name", "type", "constraints", "testCases")}
+            if "testCases" in clean_f:
+                clean_f["testCases"] = [tc for tc in clean_f["testCases"] if tc in ALLOWED_TEST_CASES]
             clean_fields.append(clean_f)
         clean_entities.append({"name": ent["name"], "fields": clean_fields})
     domain = {"entities": clean_entities}
 
+    # Normalize priority synonyms → schema enum values
+    _PRIORITY_MAP = {
+        "must": "must", "must-have": "must", "high": "must",
+        "should": "should", "should-have": "should", "medium": "should",
+        "could": "could", "could-have": "could", "low": "could", "nice-to-have": "could",
+    }
+    # REQ-NNN pattern guard (exactly 3 digits)
+    import re as _re
+    _REQ_PATTERN = _re.compile(r"^REQ-\d{3}$")
+
     # Strip extra fields from requirements (schema: id, text, priority only)
-    clean_requirements = [
-        {k: v for k, v in r.items() if k in ("id", "text", "priority")}
-        for r in state["requirements"]
-        if isinstance(r.get("id"), str) and r["id"].startswith("REQ-")
-    ]
+    clean_requirements = []
+    for r in state["requirements"]:
+        req_id = r.get("id", "")
+        if not isinstance(req_id, str) or not _REQ_PATTERN.match(req_id):
+            continue
+        priority_raw = str(r.get("priority", "must")).lower()
+        priority = _PRIORITY_MAP.get(priority_raw, "must")
+        clean_requirements.append({"id": req_id, "text": r.get("text", ""), "priority": priority})
 
     # Strip extra fields from backend classes (schema: name, responsibility only)
     clean_modules = []
@@ -618,13 +685,26 @@ def assemble_ta_json(state: TAState) -> dict:
         "e2e":         state["tests_design"].get("e2e", []),
     }
 
+    raw_scope = state["scope"]
+    clean_scope = {
+        "inScope":    raw_scope.get("inScope", []),
+        "outOfScope": raw_scope.get("outOfScope", []),
+    }
+
+    raw_error_fmt = api.get("errorFormat", {})
+    clean_error_fmt = {
+        "type":   raw_error_fmt.get("type", "ApiError"),
+        "fields": raw_error_fmt.get("fields", []),
+    }
+    api["errorFormat"] = clean_error_fmt
+
     ta = {
         "meta": {
             "featureId": state["feature_id"],
             "title": _extract_title(state["fa_content"], state["feature_id"]),
             "version": "1.0.0",
         },
-        "scope": state["scope"],
+        "scope": clean_scope,
         "assumptions": state["assumptions"],
         "openQuestions": state["open_questions"],
         "requirements": clean_requirements,
@@ -635,10 +715,12 @@ def assemble_ta_json(state: TAState) -> dict:
         "tests": tests,
         # Voeg messaging sectie toe voor event-driven features
         **({"messaging": _clean_messaging(state["messaging_design"])} if fa_type == "event-driven" else {}),
-        # Filter traceability: alleen geldige REQ-NNN IDs, testRefs altijd als array
+        # Filter traceability: alleen geldige REQ-NNN IDs, whitelist keys, testRefs altijd als array
         "traceability": [
             {
-                **t,
+                "reqId":        t["reqId"],
+                "backendRefs":  t.get("backendRefs", []),
+                "frontendRefs": t.get("frontendRefs", []),
                 "testRefs": (
                     t["testRefs"] if isinstance(t.get("testRefs"), list)
                     else [t["testRefs"]] if isinstance(t.get("testRefs"), str)
@@ -646,99 +728,186 @@ def assemble_ta_json(state: TAState) -> dict:
                 ),
             }
             for t in state["traceability"]
-            if isinstance(t.get("reqId"), str) and t["reqId"].startswith("REQ-")
+            if isinstance(t.get("reqId"), str) and _REQ_PATTERN.match(t["reqId"])
         ],
     }
 
     return {"ta_json": ta}
 
 
+def _strip_md_fence(text: str) -> str:
+    """Verwijder eventuele markdown code block wrapper."""
+    text = text.strip()
+    if text.startswith("```markdown"):
+        text = text[len("```markdown"):].lstrip()
+    elif text.startswith("```"):
+        text = text[3:].lstrip()
+    if text.endswith("```"):
+        text = text[:-3].rstrip()
+    return text.strip()
+
+
+def _strip_md_fence(text: str) -> str:
+    """Verwijder eventuele markdown code block wrapper."""
+    text = text.strip()
+    if text.startswith("```markdown"):
+        text = text[len("```markdown"):].lstrip()
+    elif text.startswith("```"):
+        text = text[3:].lstrip()
+    if text.endswith("```"):
+        text = text[:-3].rstrip()
+    return text.strip()
+
+
 def generate_ta_markdown(state: TAState) -> dict:
     """
-    Node 8: Genereer de volledige TA als Markdown document.
-    Gebruikt het TA skelet als structuurreferentie.
+    Node 8: Genereer de TA als Markdown document, per sectiegroep.
+    Elke groep is een aparte LLM-call om afkapping bij grote features te voorkomen.
     """
     print("📄 TA Markdown genereren...")
 
-    skeleton_hint = (
-        f"\nTA skelet (gebruik deze structuur en sectieopbouw):\n---\n{state['ta_skeleton']}\n---"
-        if state.get("ta_skeleton")
-        else ""
+    title   = state["ta_json"]["meta"]["title"]
+    fa_type = state.get("fa_type", "full-stack")
+    extra_context_hint = (
+        f"\nExtra context:\n{state['extra_context']}\n"
+        if state.get("extra_context") else ""
     )
 
-    prompt = f"""Je bent een SDLC-analyse agent.
+    # Gemeenschappelijke instructies voor elke sectie-call
+    base_instruction = (
+        f"Je bent een SDLC-analyse agent. Schrijf in het Nederlands. "
+        f"Wees concreet en technisch. Geef ALLEEN Markdown terug, geen JSON. "
+        f"Elke ## heading begint een nieuwe sectie.{extra_context_hint}"
+    )
 
-Genereer een volledige Technische Analyse als Markdown document.
-{skeleton_hint}
+    # ── Bouw prompts (type-specifiek voor sectie 5) ───────────────────────────
+    if fa_type == "event-driven":
+        prompt_s5 = f"""{base_instruction}
 
-Gebruik de volgende gegevens als inhoud:
+Schrijf sectie 5 van de Technische Analyse voor feature: {title}
 
-Feature ID: {state["feature_id"]}
-Titel: {state["ta_json"]["meta"]["title"]}
+## 5. Messaging Design
+Beschrijf topics, events, DLQ-strategie en retry-strategie met tabellen.
+Gegevens: {json.dumps(state.get("messaging_design", {}), indent=2)}
+"""
+    else:
+        prompt_s5 = f"""{base_instruction}
 
-Scope:
-{json.dumps(state["scope"], indent=2)}
+Schrijf sectie 5 van de Technische Analyse voor feature: {title}
 
-Assumptions:
+## 5. API Design
+Gebruik tabellen voor endpoints. Toon per endpoint: method, path, request DTO, responses en validatieregels.
+Toon ook het error formaat als JSON voorbeeld.
+Gegevens: {json.dumps(state["api_design"], indent=2)}
+"""
+
+    prompts = [
+        f"""{base_instruction}
+
+Titel: {title}
+
+Schrijf secties 1, 2 en 3 van de Technische Analyse:
+
+## 1. Scope
+In scope en out of scope als bullet-lijsten.
+Gegevens: {json.dumps(state["scope"], indent=2)}
+
+## 2. Assumptions
 {json.dumps(state["assumptions"], indent=2)}
 
-Open questions:
+## 3. Open Questions
 {json.dumps(state["open_questions"], indent=2)}
+""",
+        f"""{base_instruction}
 
-Requirements:
-{json.dumps(state["requirements"], indent=2)}
+Schrijf sectie 4 van de Technische Analyse voor feature: {title}
 
-Domain model:
-{json.dumps(state["domain_model"], indent=2)}
+## 4. Domain Model
+Gebruik een Markdown tabel per entiteit met kolommen: Veld | Type | Constraints | Testcases
+Gegevens: {json.dumps(state["domain_model"], indent=2)}
+""",
+        prompt_s5,
+        f"""{base_instruction}
 
-API design:
-{json.dumps(state["api_design"], indent=2)}
+Schrijf secties 6 en 7 van de Technische Analyse voor feature: {title}
 
-Backend design:
-{json.dumps(state["backend_design"], indent=2)}
+## 6. Backend Design
+Beschrijf de lagen (Controller/Service/Repository) en toon een tabel van klassen met verantwoordelijkheden.
+Gegevens: {json.dumps(state["backend_design"], indent=2)}
 
-Frontend design:
-{json.dumps(state["frontend_design"], indent=2)}
+## 7. Frontend Design
+Beschrijf routes en componenten met hun verantwoordelijkheden in tabelvorm.
+Gegevens: {json.dumps(state["frontend_design"], indent=2)}
+""",
+        f"""{base_instruction}
 
-Test strategy:
-{json.dumps(state["tests_design"], indent=2)}
+Schrijf secties 8, 9 en 10 van de Technische Analyse voor feature: {title}
 
-Traceability:
-{json.dumps(state["traceability"], indent=2)}
+## 8. Security & Privacy
+Authenticatie, autorisatie en privacyoverwegingen specifiek voor deze feature.
 
-Schrijf de volledige TA als Markdown met deze 12 secties:
-1. Scope
-2. Assumptions
-3. Open Questions
-4. Domain Model (tabel met entiteiten, velden, constraints)
-5. API Design (endpoints, request/response DTOs, validatieregels, error formaat)
-6. Backend Design (lagen, klassen, verantwoordelijkheden)
-7. Frontend Design (routes, componenten)
-8. Security & Privacy
-9. Observability (logging, metrics, correlation id)
-10. Performance & Scalability
-11. Test Strategy (unit, integration, e2e)
-12. Traceability Matrix (REQ → backend → frontend → tests)
+## 9. Observability
+Logging, metrics en correlation ID gebruik. Geef concrete voorbeelden van wat gelogd wordt.
 
-Regels:
-- Schrijf in het Nederlands
-- Gebruik Markdown tabellen voor domain model en traceability
-- Elke sectie heeft een duidelijke ## heading
-- Wees concreet en technisch — geen vage omschrijvingen
-- Geef ALLEEN de Markdown tekst terug, geen JSON
-"""
-    markdown = llm_text(prompt)
+## 10. Performance & Scalability
+Performance-eisen, database-indexen en schaalbaarheid voor deze feature.
 
-    # Verwijder eventuele markdown code block wrapper
-    if markdown.startswith("```markdown"):
-        markdown = markdown[len("```markdown"):].lstrip()
-        if markdown.endswith("```"):
-            markdown = markdown[:-3].rstrip()
-    elif markdown.startswith("```"):
-        markdown = markdown[3:].lstrip()
-        if markdown.endswith("```"):
-            markdown = markdown[:-3].rstrip()
+Context:
+- Requirements: {json.dumps([r["text"] for r in state["requirements"]], indent=2)}
+- Endpoints: {json.dumps([e["path"] for e in state["api_design"].get("endpoints", [])], indent=2)}
+""",
+        f"""{base_instruction}
 
+Schrijf sectie 11 van de Technische Analyse voor feature: {title}
+
+## 11. Test Strategy
+Schrijf subsecties voor unit tests, integration tests en e2e tests als bullet-lijsten.
+Gegevens: {json.dumps(state["tests_design"], indent=2)}
+""",
+    ]
+
+    # ── Secties 1-11 parallel genereren met voortgangsmelding per sectie ────────
+    section_labels = [
+        "Secties 1-3  (Scope, Assumptions, Open Questions)",
+        "Sectie 4     (Domain Model)",
+        "Sectie 5     (API / Messaging Design)",
+        "Secties 6-7  (Backend + Frontend Design)",
+        "Secties 8-10 (Security, Observability, Performance)",
+        "Sectie 11    (Test Strategy)",
+    ]
+    sections: list[str | None] = [None] * len(prompts)
+
+    def _run_section(idx: int, prompt: str) -> tuple[int, str]:
+        result = _strip_md_fence(llm_text(prompt))
+        print(f"  ✅ {section_labels[idx]}")
+        return idx, result
+
+    print("  📝 Secties 1-11 parallel genereren...")
+    with ThreadPoolExecutor(max_workers=len(prompts)) as executor:
+        futures = [executor.submit(_run_section, i, p) for i, p in enumerate(prompts)]
+        for f in futures:
+            idx, result = f.result()
+            sections[idx] = result
+
+    # ── Sectie 12: Traceability Matrix (direct opgebouwd, geen LLM) ──────────
+    print("  ✅ Sectie 12    (Traceability Matrix)")
+    traceability_rows = ""
+    for t in state["traceability"]:
+        req_id   = t.get("reqId", "")
+        backend  = ", ".join(t.get("backendRefs", []))
+        frontend = ", ".join(t.get("frontendRefs", []))
+        tests    = "; ".join(t.get("testRefs", []))
+        traceability_rows += f"| {req_id} | {backend} | {frontend} | {tests} |\n"
+
+    traceability_md = (
+        "## 12. Traceability Matrix\n\n"
+        "| REQ | Backend | Frontend | Tests |\n"
+        "|-----|---------|----------|-------|\n"
+        + traceability_rows
+    )
+    sections.append(traceability_md)
+
+    markdown = f"# {title}\n\n" + "\n\n".join(sections)
     return {"ta_markdown": markdown}
 
 
@@ -906,6 +1075,11 @@ def parse_args():
         default="",
         help="Pad naar TA skelet (overschrijft het type-specifieke skelet).",
     )
+    parser.add_argument(
+        "--context",
+        default="",
+        help="Extra context voor de agent (bv. technische beslissingen, team conventies).",
+    )
     return parser.parse_args()
 
 
@@ -954,6 +1128,7 @@ def main():
         "fa_content":       fa_path.read_text(),
         "fa_type":          "",
         "fa_type_manual":   args.fa_type,
+        "extra_context":    args.context,
         "ta_skeleton":      ta_skeleton,
         "ta_schema":        json.loads(schema_path.read_text()),
         "requirements":     [],

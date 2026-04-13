@@ -20,6 +20,7 @@ if [[ -z "$FEATURE" ]]; then
   echo "Voorbeelden:"
   echo "  ./ai/fa-to-ta.sh feature-001-support-ticket"
   echo "  ./ai/fa-to-ta.sh feature-002-ticket-search-filter --fa-type frontend-only"
+  echo "  ./ai/fa-to-ta.sh feature-003 --context \"Gebruik PostgreSQL, geen MySQL\""
   exit 1
 fi
 

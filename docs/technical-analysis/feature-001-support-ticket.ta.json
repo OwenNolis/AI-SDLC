@@ -311,118 +311,35 @@
       {
         "method": "POST",
         "path": "/api/tickets",
-        "summary": "Maak een nieuw ticket aan",
+        "summary": "Maakt een nieuw ticket aan.",
         "request": {
           "bodySchemaRef": "CreateTicketRequest",
           "validationRules": [
-            "subject: minLength:5, maxLength:120, uniquePerDay",
-            "description: minLength:20, maxLength:2000",
-            "priority: notNull, enum(LOW, MEDIUM, HIGH)",
-            "createdByUserId: notNull"
+            "subject: notNull, minLength:5, maxLength:120, uniquePerDay",
+            "description: notNull, minLength:20, maxLength:2000",
+            "priority: notNull, enum(LOW, MEDIUM, HIGH)"
           ]
         },
         "responses": [
           {
             "status": 201,
-            "bodySchemaRef": "TicketResponse",
-            "notes": "Ticket succesvol aangemaakt. Ticketnummer en status OPEN worden geretourneerd."
+            "bodySchemaRef": "TicketCreationResponse",
+            "notes": "Ticket succesvol aangemaakt. Geeft ticketnummer en status terug."
           },
           {
             "status": 400,
             "bodySchemaRef": "ApiError",
-            "notes": "Validatiefout in de request body. Specifieke foutmeldingen per veld worden getoond."
+            "notes": "Validatiefout in de request body. Specifieke foutmeldingen per veld."
           },
           {
             "status": 409,
             "bodySchemaRef": "ApiError",
-            "notes": "Conflict: Dagelijkse ticketlimiet overschreden of onderwerp is al gebruikt op deze dag."
+            "notes": "Conflict: Dagelijkse ticketlimiet overschreden of subject is al gebruikt op deze dag."
           },
           {
             "status": 500,
             "bodySchemaRef": "ApiError",
-            "notes": "Onverwachte serverfout. Een generieke foutmelding met een correlation id wordt getoond."
-          }
-        ],
-        "auth": "bearer"
-      },
-      {
-        "method": "GET",
-        "path": "/api/tickets/{ticketId}",
-        "summary": "Haal een specifiek ticket op",
-        "request": {},
-        "responses": [
-          {
-            "status": 200,
-            "bodySchemaRef": "TicketResponse",
-            "notes": "Ticket succesvol opgehaald."
-          },
-          {
-            "status": 404,
-            "bodySchemaRef": "ApiError",
-            "notes": "Ticket niet gevonden."
-          },
-          {
-            "status": 500,
-            "bodySchemaRef": "ApiError",
-            "notes": "Onverwachte serverfout."
-          }
-        ],
-        "auth": "bearer"
-      },
-      {
-        "method": "GET",
-        "path": "/api/tickets",
-        "summary": "Haal een lijst van tickets op",
-        "request": {},
-        "responses": [
-          {
-            "status": 200,
-            "bodySchemaRef": "TicketListResponse",
-            "notes": "Lijst van tickets succesvol opgehaald."
-          },
-          {
-            "status": 500,
-            "bodySchemaRef": "ApiError",
-            "notes": "Onverwachte serverfout."
-          }
-        ],
-        "auth": "bearer"
-      },
-      {
-        "method": "PUT",
-        "path": "/api/tickets/{ticketId}/status",
-        "summary": "Update de status van een ticket",
-        "request": {
-          "bodySchemaRef": "UpdateTicketStatusRequest",
-          "validationRules": [
-            "status: notNull, enum(OPEN, IN_PROGRESS, CLOSED)"
-          ]
-        },
-        "responses": [
-          {
-            "status": 200,
-            "bodySchemaRef": "TicketResponse",
-            "notes": "Status van het ticket succesvol bijgewerkt."
-          },
-          {
-            "status": 400,
-            "bodySchemaRef": "ApiError",
-            "notes": "Validatiefout in de request body."
-          },
-          {
-            "status": 404,
-            "bodySchemaRef": "ApiError",
-            "notes": "Ticket niet gevonden."
-          },
-          {
-            "status": 409,
-            "bodySchemaRef": "ApiError",
-            "notes": "Conflict: Prioriteitsregels voor voltooiing worden geschonden."
-          },
-          {
-            "status": 500,
-            "bodySchemaRef": "ApiError",
-            "notes": "Onverwachte serverfout."
+            "notes": "Onverwachte serverfout. Bevat een correlationId."
           }
         ],
         "auth": "bearer"
@@ -436,59 +353,47 @@
         "classes": [
           {
             "name": "TicketController",
-            "responsibility": "Exposeert de REST API endpoints voor ticket management."
+            "responsibility": "Verwerkt inkomende HTTP-verzoeken voor ticketgerelateerde operaties."
           },
           {
             "name": "TicketService",
-            "responsibility": "Orchestreert de business logica voor ticket operaties."
+            "responsibility": "Bevat de kern business logica voor het aanmaken en beheren van tickets."
           },
           {
             "name": "TicketRepository",
-            "responsibility": "Verantwoordelijk voor data access operaties met betrekking tot tickets."
+            "responsibility": "Verantwoordelijk voor de interactie met de datastore voor Ticket entiteiten."
           },
           {
             "name": "Ticket",
-            "responsibility": "Representeert de ticket entiteit in de database."
+            "responsibility": "Representeert de Ticket entiteit in het domein model."
           },
           {
-            "name": "CreateTicketRequest",
-            "responsibility": "DTO voor het aanmaken van een nieuw ticket."
+            "name": "CreateTicketRequestDto",
+            "responsibility": "Data Transfer Object voor het aanmaken van een nieuw ticket."
           },
           {
-            "name": "TicketResponse",
-            "responsibility": "DTO voor het retourneren van ticket informatie."
-          },
-          {
-            "name": "TicketListResponse",
-            "responsibility": "DTO voor het retourneren van een lijst met tickets."
-          },
-          {
-            "name": "UpdateTicketStatusRequest",
-            "responsibility": "DTO voor het updaten van de status van een ticket."
-          },
-          {
-            "name": "TicketNotFoundException",
-            "responsibility": "Exception die wordt gegooid wanneer een ticket niet wordt gevonden."
+            "name": "TicketCreationResponseDto",
+            "responsibility": "Data Transfer Object voor de response bij het aanmaken van een ticket."
           },
           {
             "name": "TicketSubjectUniquePerDayValidator",
-            "responsibility": "Valideert of het ticket subject uniek is per dag."
+            "responsibility": "Valideert of het ticketonderwerp uniek is per dag."
           },
           {
             "name": "TicketDailyLimitValidator",
-            "responsibility": "Valideert of de dagelijkse ticket limiet voor een gebruiker is overschreden."
+            "responsibility": "Valideert of de dagelijkse ticketlimiet van de gebruiker niet is overschreden."
           },
           {
             "name": "HighPriorityTicketDailyLimitValidator",
-            "responsibility": "Valideert of de dagelijkse limiet voor high priority tickets is overschreden."
-          },
-          {
-            "name": "TicketPriorityCompletionOrderValidator",
-            "responsibility": "Valideert de volgorde van voltooiing van tickets op basis van prioriteit."
+            "responsibility": "Valideert of de dagelijkse limiet voor high priority tickets niet is overschreden."
           },
           {
             "name": "TicketNumberGenerator",
             "responsibility": "Genereert unieke ticketnummers in het formaat TCK-YYYY-NNNNNN."
+          },
+          {
+            "name": "TicketPriorityOrderService",
+            "responsibility": "Beheert de logica voor het prioriteren van ticket voltooiing op basis van prioriteit."
           }
         ]
       },
@@ -497,11 +402,11 @@
         "classes": [
           {
             "name": "UserRepository",
-            "responsibility": "Verantwoordelijk voor data access operaties met betrekking tot gebruikers."
+            "responsibility": "Verantwoordelijk voor de interactie met de datastore voor User entiteiten."
           },
           {
             "name": "User",
-            "responsibility": "Representeert de user entiteit in de database."
+            "responsibility": "Representeert de User entiteit in het domein model."
           }
         ]
       },
@@ -510,11 +415,11 @@
         "classes": [
           {
             "name": "TicketDailyLimitRepository",
-            "responsibility": "Verantwoordelijk voor data access operaties met betrekking tot dagelijkse ticket limieten."
+            "responsibility": "Verantwoordelijk voor de interactie met de datastore voor TicketDailyLimit entiteiten."
           },
           {
             "name": "TicketDailyLimit",
-            "responsibility": "Representeert de dagelijkse ticket limiet entiteit in de database."
+            "responsibility": "Representeert de TicketDailyLimit entiteit in het domein model."
           }
         ]
       },
@@ -523,40 +428,79 @@
         "classes": [
           {
             "name": "ApiError",
-            "responsibility": "Standaard fout response formaat voor API."
+            "responsibility": "Standaard fout response object voor API-verzoeken."
           },
           {
-            "name": "FieldError",
-            "responsibility": "Representeert een specifieke validatiefout voor een veld."
-          },
-          {
-            "name": "GlobalExceptionHandler",
-            "responsibility": "Vangt exceptions op en transformeert ze naar ApiError responses."
+            "name": "ApiExceptionHandler",
+            "responsibility": "Globaal exception handler voor het afhandelen van API-gerelateerde uitzonderingen."
           },
           {
             "name": "CorrelationIdFilter",
-            "responsibility": "Genereert en beheert correlation IDs voor requests."
+            "responsibility": "Genereert en beheert een correlation ID voor elk inkomend verzoek."
           },
           {
-            "name": "LoggingAspect",
-            "responsibility": "Voegt logging toe aan methodes, inclusief correlation ID."
+            "name": "LoggingService",
+            "responsibility": "Verantwoordelijk voor het loggen van applicatiegebeurtenissen met correlation ID."
           },
           {
-            "name": "EnumConverter",
-            "responsibility": "Converteert string representaties naar enum waarden."
+            "name": "Priority",
+            "responsibility": "Enum voor de prioriteit van een ticket."
+          },
+          {
+            "name": "Status",
+            "responsibility": "Enum voor de status van een ticket."
+          },
+          {
+            "name": "ValidationException",
+            "responsibility": "Custom exception voor validatiefouten."
+          },
+          {
+            "name": "ConflictException",
+            "responsibility": "Custom exception voor conflicten (bv. limieten overschreden)."
+          },
+          {
+            "name": "NotFoundException",
+            "responsibility": "Custom exception voor niet-gevonden resources."
           }
         ]
       }
     ]
   },
   "frontend": {
-    "routes": [],
-    "components": []
+    "routes": [
+      "/create-ticket"
+    ],
+    "components": [
+      "TicketCreationForm",
+      "InputValidationMessage",
+      "LoadingSpinner",
+      "ErrorDisplay",
+      "TicketDetailsDisplay"
+    ]
   },
   "tests": {
-    "unit": [],
-    "integration": [],
-    "e2e": []
+    "unit": [
+      "TicketCreationForm render",
+      "TicketCreationForm handleInputChange",
+      "TicketCreationForm handleSubmit",
+      "InputValidationMessage render",
+      "LoadingSpinner render",
+      "ErrorDisplay render",
+      "TicketDetailsDisplay render"
+    ],
+    "integration": [
+      "POST /api/tickets \u2192 201 Created",
+      "POST /api/tickets \u2192 400 Bad Request",
+      "POST /api/tickets \u2192 409 Conflict",
+      "POST /api/tickets \u2192 500 Internal Server Error"
+    ],
+    "e2e": [
+      "Gebruiker navigeert naar de ticket aanmaakpagina, vult het formulier in met geldige gegevens, klikt op submit, ziet een loading indicator, en na succesvolle aanmaak de ticket details (ticketnummer en status OPEN).",
+      "Gebruiker probeert een ticket aan te maken met ongeldige input (bv. te korte subject), ziet veldspecifieke foutmeldingen en de submit knop blijft disabled.",
+      "Gebruiker probeert een ticket aan te maken met een subject dat al gebruikt is op die dag, ziet een conflict foutmelding.",
+      "Gebruiker probeert meer dan 3 tickets per dag aan te maken, ziet een conflict foutmelding.",
+      "Gebruiker probeert meer dan 2 HIGH priority tickets per dag aan te maken, ziet een conflict foutmelding."
+    ]
   },
   "traceability": [
     {
@@ -565,50 +509,64 @@
         "TicketController",
         "TicketService",
         "TicketRepository",
-        "CreateTicketRequest",
+        "CreateTicketRequestDto",
         "Ticket"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "TicketCreationForm"
+      ],
       "testRefs": [
-        "Testen of een ticket succesvol kan worden aangemaakt met de velden subject, description en priority."
+        "Testen of een gebruiker een ticket kan aanmaken met de velden subject, description en priority via het formulier."
       ]
     },
     {
       "reqId": "REQ-002",
       "backendRefs": [
+        "CreateTicketRequestDto",
+        "TicketSubjectUniquePerDayValidator",
         "TicketController",
-        "TicketService",
-        "CreateTicketRequest",
-        "TicketSubjectUniquePerDayValidator"
+        "ApiExceptionHandler",
+        "ValidationException"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "TicketCreationForm",
+        "InputValidationMessage"
+      ],
       "testRefs": [
-        "Testen van de validatie van het subject veld: minimaal 5 en maximaal 120 karakters."
+        "Testen van de validatie van het subject veld: minimaal 5 karakters, maximaal 120 karakters. Testen van lege input en input buiten de limieten."
       ]
     },
     {
       "reqId": "REQ-003",
       "backendRefs": [
+        "CreateTicketRequestDto",
         "TicketController",
-        "TicketService",
-        "CreateTicketRequest"
+        "ApiExceptionHandler",
+        "ValidationException"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "TicketCreationForm",
+        "InputValidationMessage"
+      ],
       "testRefs": [
-        "Testen van de validatie van het description veld: minimaal 20 en maximaal 2000 karakters."
+        "Testen van de validatie van het description veld: minimaal 20 karakters, maximaal 2000 karakters. Testen van lege input en input buiten de limieten."
       ]
     },
     {
       "reqId": "REQ-004",
       "backendRefs": [
+        "CreateTicketRequestDto",
         "TicketController",
-        "TicketService",
-        "CreateTicketRequest",
-        "EnumConverter"
+        "ApiExceptionHandler",
+        "ValidationException",
+        "Priority"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "TicketCreationForm",
+        "InputValidationMessage"
+      ],
       "testRefs": [
-        "Testen van de validatie van het priority veld: moet \u00e9\u00e9n van de toegestane waarden (LOW, MEDIUM, HIGH) zijn."
+        "Testen van de validatie van het priority veld: moet \u00e9\u00e9n van de toegestane waarden (LOW, MEDIUM, HIGH) zijn. Testen van ongeldige waarden."
       ]
     },
     {
@@ -616,35 +574,44 @@
       "backendRefs": [
         "TicketController",
         "TicketService",
-        "TicketResponse"
+        "TicketCreationResponseDto",
+        "Ticket"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "TicketDetailsDisplay"
+      ],
       "testRefs": [
-        "Testen of na succesvolle aanmaak van een ticket, het ticketnummer en de status OPEN worden geretourneerd."
+        "Testen of na succesvolle aanmaak van een ticket, het ticketnummer en de status OPEN worden getoond aan de gebruiker."
       ]
     },
     {
       "reqId": "REQ-006",
       "backendRefs": [
-        "TicketController",
-        "GlobalExceptionHandler",
-        "FieldError"
+        "ApiExceptionHandler",
+        "ValidationException",
+        "TicketController"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "InputValidationMessage",
+        "ErrorDisplay"
+      ],
       "testRefs": [
-        "Testen of bij validatiefouten, veldspecifieke foutmeldingen worden getoond."
+        "Testen of bij ongeldige invoer (bijv. te kort subject) specifieke foutmeldingen per veld worden getoond op de UI."
       ]
     },
     {
       "reqId": "REQ-007",
       "backendRefs": [
-        "GlobalExceptionHandler",
-        "ApiError",
-        "CorrelationIdFilter"
+        "ApiExceptionHandler",
+        "CorrelationIdFilter",
+        "LoggingService",
+        "ApiError"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "ErrorDisplay"
+      ],
       "testRefs": [
-        "Testen of bij server errors een generieke foutmelding met een correlation id wordt getoond."
+        "Testen of bij een server error (bijv. database fout) een generieke foutmelding met een correlation id wordt getoond op de UI."
       ]
     },
     {
@@ -656,7 +623,7 @@
       ],
       "frontendRefs": [],
       "testRefs": [
-        "Testen of het ticketnummer uniek is en het correcte formaat heeft (TCK-YYYY-000001)."
+        "Testen of het gegenereerde ticketnummer voldoet aan het formaat TCK-YYYY-000001 en of het uniek is per jaar."
       ]
     },
     {
@@ -678,87 +645,100 @@
       ],
       "frontendRefs": [],
       "testRefs": [
-        "Meten van de API response tijd voor het aanmaken van een ticket om te valideren dat 95% van de verzoeken < 300ms is."
+        "Performance testen: meten van de API response tijd voor het aanmaken van een ticket en verifi\u00ebren dat 95% van de verzoeken onder de 300ms blijft."
       ]
     },
     {
       "reqId": "REQ-011",
       "backendRefs": [
-        "LoggingAspect",
+        "LoggingService",
         "CorrelationIdFilter"
       ],
       "frontendRefs": [],
       "testRefs": [
-        "Controleren van de logs om te verifi\u00ebren dat de correlation id aanwezig is."
+        "Testen of alle relevante logberichten de correlation id bevatten."
       ]
     },
     {
       "reqId": "REQ-012",
       "backendRefs": [
-        "TicketController",
         "TicketService",
-        "TicketListResponse"
+        "TicketRepository"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "TicketDetailsDisplay"
+      ],
       "testRefs": [
-        "Testen of een ticket met prioriteit HIGH direct na aanmaak zichtbaar is in de lijst."
+        "Testen of een ticket met prioriteit HIGH direct na aanmaken zichtbaar is in de lijst van tickets."
       ]
     },
     {
       "reqId": "REQ-013",
       "backendRefs": [
         "TicketSubjectUniquePerDayValidator",
-        "TicketRepository"
+        "TicketRepository",
+        "ConflictException"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "TicketCreationForm",
+        "InputValidationMessage"
+      ],
       "testRefs": [
-        "Testen of het onderwerp van een ticket uniek is per dag."
+        "Testen of het onderwerp van een ticket uniek is per dag. Pogingen om een ticket met een reeds bestaand onderwerp op dezelfde dag aan te maken moeten falen."
       ]
     },
     {
       "reqId": "REQ-014",
       "backendRefs": [
         "TicketDailyLimitValidator",
+        "TicketRepository",
         "TicketDailyLimitRepository",
-        "TicketDailyLimit"
+        "ConflictException"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "TicketCreationForm",
+        "InputValidationMessage"
+      ],
       "testRefs": [
-        "Testen of een gebruiker maximaal 3 tickets per dag kan aanmaken."
+        "Testen of een gebruiker maximaal 3 tickets per dag kan aanmaken. Pogingen om een vierde ticket aan te maken moeten falen."
       ]
     },
     {
       "reqId": "REQ-015",
       "backendRefs": [
         "HighPriorityTicketDailyLimitValidator",
+        "TicketRepository",
         "TicketDailyLimitRepository",
-        "TicketDailyLimit"
+        "ConflictException"
       ],
-      "frontendRefs": [],
+      "frontendRefs": [
+        "TicketCreationForm",
+        "InputValidationMessage"
+      ],
       "testRefs": [
-        "Testen of een gebruiker maximaal 2 tickets met prioriteit HIGH per dag kan aanmaken."
+        "Testen of een gebruiker maximaal 2 tickets met prioriteit HIGH per dag kan aanmaken. Pogingen om een derde HIGH prioriteit ticket aan te maken moeten falen."
       ]
     },
     {
       "reqId": "REQ-016",
       "backendRefs": [
-        "TicketPriorityCompletionOrderValidator",
+        "TicketPriorityOrderService",
         "TicketRepository"
       ],
       "frontendRefs": [],
       "testRefs": [
-        "Testen of een ticket met prioriteit HIGH altijd wordt voltooid voordat een ticket met prioriteit LOW wordt voltooid."
+        "Testen van de voltooiingsvolgorde: een ticket met prioriteit HIGH moet altijd worden voltooid voordat een ticket met prioriteit LOW wordt voltooid."
       ]
     },
     {
       "reqId": "REQ-017",
       "backendRefs": [
-        "TicketPriorityCompletionOrderValidator",
+        "TicketPriorityOrderService",
         "TicketRepository"
       ],
       "frontendRefs": [],
       "testRefs": [
-        "Testen of een ticket met prioriteit HIGH altijd wordt voltooid voordat een ticket met prioriteit MEDIUM wordt voltooid."
+        "Testen van de voltooiingsvolgorde: een ticket met prioriteit HIGH moet altijd worden voltooid voordat een ticket met prioriteit MEDIUM wordt voltooid."
       ]
     }
   ]

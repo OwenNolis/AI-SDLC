@@ -1,0 +1,1071 @@
+{
+  "meta": {
+    "featureId": "feature-007-audit-log",
+    "title": "Feature-007: Audit log voor gebruikersacties",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "inScope": [
+      "Event publiceren bij inloggen en uitloggen van een gebruiker",
+      "Event publiceren bij aanmaken, wijzigen en verwijderen van een resource",
+      "Audit log consumer slaat events op in een audit-database",
+      "Retry logica bij mislukte opslag",
+      "Dead letter queue voor onverwerkte events"
+    ],
+    "outOfScope": [
+      "UI voor het raadplegen van de audit log",
+      "Exporteren van audit logs naar externe systemen",
+      "Real-time alerting op basis van audit events",
+      "Compliancerapportage"
+    ]
+  },
+  "assumptions": [],
+  "openQuestions": [],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "Bij elke inlogpoging (geslaagd of mislukt) wordt een UserLoginEvent gepubliceerd.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "Bij uitloggen wordt een UserLogoutEvent gepubliceerd.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "Bij het aanmaken van een resource wordt een ResourceCreatedEvent gepubliceerd.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "Bij het wijzigen van een resource wordt een ResourceUpdatedEvent gepubliceerd met het oude en nieuwe veld.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-005",
+      "text": "Bij het verwijderen van een resource wordt een ResourceDeletedEvent gepubliceerd.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "De AuditLogConsumer verwerkt alle events en slaat ze op in de audit-database.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "Elk audit event bevat een correlationId, userId, timestamp en actieomschrijving.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "Bij een mislukte opslag wordt het event opnieuw geprobeerd met exponential backoff (max 3 pogingen).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "Events die na 3 pogingen niet verwerkt kunnen worden, gaan naar de dead letter queue.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "Audit events zijn immutable \u2014 ze mogen nooit gewijzigd of verwijderd worden.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-011",
+      "text": "Elk event krijgt een unieke eventId (UUID) toegewezen bij publicatie.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-012",
+      "text": "Events zijn idempotent \u2014 dubbele verwerking heeft geen side-effects dankzij eventId deduplicatie.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-013",
+      "text": "Event publicatie mag de response tijd van de primaire API niet met meer dan 20ms verhogen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-014",
+      "text": "De consumer moet minimaal 500 events per seconde kunnen verwerken.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-015",
+      "text": "Audit logs moeten minimaal 2 jaar bewaard worden.",
+      "priority": "must"
+    }
+  ],
+  "domain": {
+    "entities": [
+      {
+        "name": "UserLoginEvent",
+        "fields": [
+          {
+            "name": "eventId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "correlationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "userId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "timestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "loginSuccess",
+            "type": "Boolean",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "UserLogoutEvent",
+        "fields": [
+          {
+            "name": "eventId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "correlationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "userId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "timestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ResourceCreatedEvent",
+        "fields": [
+          {
+            "name": "eventId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "correlationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "userId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "timestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "resourceType",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "resourceId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ResourceUpdatedEvent",
+        "fields": [
+          {
+            "name": "eventId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "correlationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "userId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "timestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "resourceType",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "resourceId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "oldFieldValue",
+            "type": "String",
+            "constraints": [],
+            "testCases": [
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "newFieldValue",
+            "type": "String",
+            "constraints": [],
+            "testCases": [
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "fieldName",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ResourceDeletedEvent",
+        "fields": [
+          {
+            "name": "eventId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "correlationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "userId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "timestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "resourceType",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "resourceId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "AuditLog",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "eventId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value",
+              "duplicate_per_day"
+            ]
+          },
+          {
+            "name": "correlationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "userId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "timestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "actionDescription",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1"
+            ],
+            "testCases": [
+              "missing",
+              "empty",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "eventDetails",
+            "type": "String",
+            "constraints": [],
+            "testCases": [
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "errorFormat": {
+      "type": "ApiError",
+      "fields": []
+    },
+    "endpoints": []
+  },
+  "backend": {
+    "modules": [
+      {
+        "name": "common",
+        "classes": [
+          {
+            "name": "EventPublisher",
+            "responsibility": "Verantwoordelijk voor het publiceren van events naar de messaging broker."
+          },
+          {
+            "name": "EventConsumer",
+            "responsibility": "Verantwoordelijk voor het consumeren van events van de messaging broker."
+          },
+          {
+            "name": "RetryTemplateConfig",
+            "responsibility": "Configureert de retry template voor het opnieuw proberen van event verwerking."
+          },
+          {
+            "name": "DlqPublisher",
+            "responsibility": "Verantwoordelijk voor het publiceren van events naar de Dead Letter Queue."
+          },
+          {
+            "name": "EventMapper",
+            "responsibility": "Mapt tussen event DTO's en domain entities."
+          },
+          {
+            "name": "UUIDGenerator",
+            "responsibility": "Genereert unieke UUIDs voor event IDs en correlation IDs."
+          },
+          {
+            "name": "LocalDateTimeProvider",
+            "responsibility": "Biedt de huidige datum en tijd voor timestamps."
+          },
+          {
+            "name": "EventValidationService",
+            "responsibility": "Valideert de payload van inkomende events."
+          },
+          {
+            "name": "EventProcessingException",
+            "responsibility": "Custom exception voor event verwerkingsfouten."
+          },
+          {
+            "name": "DlqProcessingException",
+            "responsibility": "Custom exception voor DLQ verwerkingsfouten."
+          }
+        ]
+      },
+      {
+        "name": "auditlog",
+        "classes": [
+          {
+            "name": "AuditLogController",
+            "responsibility": "Exposeert endpoints voor het beheren van audit logs (indien nodig, anders alleen voor interne communicatie)."
+          },
+          {
+            "name": "AuditLogService",
+            "responsibility": "Beheert de business logica voor het opslaan en ophalen van audit logs."
+          },
+          {
+            "name": "AuditLogRepository",
+            "responsibility": "Verantwoordelijk voor de interactie met de audit log database."
+          },
+          {
+            "name": "AuditLogEntity",
+            "responsibility": "Representeert de audit log entry in de database."
+          },
+          {
+            "name": "AuditLogMapper",
+            "responsibility": "Mapt tussen AuditLogEntity en AuditLogDTO."
+          },
+          {
+            "name": "AuditLogDTO",
+            "responsibility": "Data Transfer Object voor audit log entries."
+          },
+          {
+            "name": "AuditLogConsumer",
+            "responsibility": "Consument die events ontvangt en opslaat als audit logs."
+          },
+          {
+            "name": "AuditLogPersistenceService",
+            "responsibility": "Verantwoordelijk voor het daadwerkelijk opslaan van audit logs, inclusief retry en DLQ logica."
+          },
+          {
+            "name": "AuditLogIdempotencyChecker",
+            "responsibility": "Controleert op duplicaten van audit events op basis van eventId."
+          }
+        ]
+      },
+      {
+        "name": "userevents",
+        "classes": [
+          {
+            "name": "UserEventProducer",
+            "responsibility": "Produceert UserLoginEvent en UserLogoutEvent."
+          },
+          {
+            "name": "UserLoginEventDTO",
+            "responsibility": "Data Transfer Object voor UserLoginEvent."
+          },
+          {
+            "name": "UserLogoutEventDTO",
+            "responsibility": "Data Transfer Object voor UserLogoutEvent."
+          },
+          {
+            "name": "UserEventService",
+            "responsibility": "Verantwoordelijk voor het genereren en publiceren van user events."
+          },
+          {
+            "name": "UserLoginValidator",
+            "responsibility": "Valideert de UserLoginEventDTO."
+          },
+          {
+            "name": "UserLogoutValidator",
+            "responsibility": "Valideert de UserLogoutEventDTO."
+          }
+        ]
+      },
+      {
+        "name": "resourceevents",
+        "classes": [
+          {
+            "name": "ResourceEventProducer",
+            "responsibility": "Produceert ResourceCreatedEvent, ResourceUpdatedEvent en ResourceDeletedEvent."
+          },
+          {
+            "name": "ResourceCreatedEventDTO",
+            "responsibility": "Data Transfer Object voor ResourceCreatedEvent."
+          },
+          {
+            "name": "ResourceUpdatedEventDTO",
+            "responsibility": "Data Transfer Object voor ResourceUpdatedEvent."
+          },
+          {
+            "name": "ResourceDeletedEventDTO",
+            "responsibility": "Data Transfer Object voor ResourceDeletedEvent."
+          },
+          {
+            "name": "ResourceEventService",
+            "responsibility": "Verantwoordelijk voor het genereren en publiceren van resource events."
+          },
+          {
+            "name": "ResourceCreatedValidator",
+            "responsibility": "Valideert de ResourceCreatedEventDTO."
+          },
+          {
+            "name": "ResourceUpdatedValidator",
+            "responsibility": "Valideert de ResourceUpdatedEventDTO."
+          },
+          {
+            "name": "ResourceDeletedValidator",
+            "responsibility": "Valideert de ResourceDeletedEventDTO."
+          }
+        ]
+      },
+      {
+        "name": "configuration",
+        "classes": [
+          {
+            "name": "MessagingConfig",
+            "responsibility": "Configureert de messaging broker (bv. Kafka, RabbitMQ)."
+          },
+          {
+            "name": "DatabaseConfig",
+            "responsibility": "Configureert de database connectie voor audit logs."
+          },
+          {
+            "name": "KafkaTopicConfig",
+            "responsibility": "Definieert en configureert Kafka topics."
+          }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "routes": [],
+    "components": []
+  },
+  "tests": {
+    "unit": [],
+    "integration": [],
+    "e2e": []
+  },
+  "messaging": {
+    "topics": [
+      {
+        "name": "user-events",
+        "producer": "UserEventProducer",
+        "consumer": "AuditLogConsumer",
+        "description": "Publiceert events gerelateerd aan gebruikersactiviteiten zoals login en logout."
+      },
+      {
+        "name": "resource-events",
+        "producer": "ResourceEventProducer",
+        "consumer": "AuditLogConsumer",
+        "description": "Publiceert events gerelateerd aan resource creatie, update en deletie."
+      }
+    ],
+    "events": [
+      {
+        "name": "UserLoginEvent",
+        "trigger": "Bij elke inlogpoging (geslaagd of mislukt).",
+        "payloadFields": [
+          "eventId",
+          "correlationId",
+          "userId",
+          "timestamp",
+          "loginSuccess",
+          "createdAt"
+        ]
+      },
+      {
+        "name": "UserLogoutEvent",
+        "trigger": "Bij uitloggen.",
+        "payloadFields": [
+          "eventId",
+          "correlationId",
+          "userId",
+          "timestamp",
+          "createdAt"
+        ]
+      },
+      {
+        "name": "ResourceCreatedEvent",
+        "trigger": "Bij het aanmaken van een resource.",
+        "payloadFields": [
+          "eventId",
+          "correlationId",
+          "userId",
+          "timestamp",
+          "resourceType",
+          "resourceId",
+          "createdAt"
+        ]
+      },
+      {
+        "name": "ResourceUpdatedEvent",
+        "trigger": "Bij het wijzigen van een resource.",
+        "payloadFields": [
+          "eventId",
+          "correlationId",
+          "userId",
+          "timestamp",
+          "resourceType",
+          "resourceId",
+          "oldFieldValue",
+          "newFieldValue",
+          "fieldName",
+          "createdAt"
+        ]
+      },
+      {
+        "name": "ResourceDeletedEvent",
+        "trigger": "Bij het verwijderen van een resource.",
+        "payloadFields": [
+          "eventId",
+          "correlationId",
+          "userId",
+          "timestamp",
+          "resourceType",
+          "resourceId",
+          "createdAt"
+        ]
+      }
+    ],
+    "dlqStrategy": "Events die na 3 pogingen niet verwerkt kunnen worden door de AuditLogConsumer, worden naar een specifieke Dead Letter Queue (DLQ) gestuurd voor verdere analyse en handmatige interventie. De DLQ zal een aparte topic of queue zijn, afhankelijk van de gekozen messaging broker.",
+    "retryStrategy": "Bij een mislukte opslag van een event door de AuditLogConsumer, wordt het event opnieuw geprobeerd met een exponential backoff strategie. De eerste retry vindt plaats na 1 seconde, de tweede na 2 seconden, en de derde na 4 seconden. Na de derde mislukte poging wordt het event naar de DLQ gestuurd."
+  },
+  "traceability": [
+    {
+      "reqId": "REQ-001",
+      "backendRefs": [
+        "UserEventProducer",
+        "EventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat na een succesvolle en mislukte inlogpoging een UserLoginEvent wordt gepubliceerd."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [
+        "UserEventProducer",
+        "EventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat na uitloggen een UserLogoutEvent wordt gepubliceerd."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [
+        "ResourceEventProducer",
+        "EventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat na het aanmaken van een resource een ResourceCreatedEvent wordt gepubliceerd."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [
+        "ResourceEventProducer",
+        "EventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat na het wijzigen van een resource een ResourceUpdatedEvent wordt gepubliceerd met de oude en nieuwe veldwaarden."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [
+        "ResourceEventProducer",
+        "EventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat na het verwijderen van een resource een ResourceDeletedEvent wordt gepubliceerd."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [
+        "AuditLogConsumer",
+        "AuditLogService",
+        "AuditLogRepository"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat de AuditLogConsumer alle ontvangen events verwerkt en opslaat in de audit-database."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [
+        "AuditLogConsumer",
+        "AuditLogService",
+        "AuditLogRepository",
+        "AuditLogEntity"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat elk opgeslagen audit event de velden correlationId, userId, timestamp en actieomschrijving bevat."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [
+        "RetryTemplateConfig",
+        "AuditLogPersistenceService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Simuleer een mislukte opslag en verifieer dat het event opnieuw wordt geprobeerd met exponential backoff (max 3 pogingen)."
+      ]
+    },
+    {
+      "reqId": "REQ-009",
+      "backendRefs": [
+        "DlqPublisher",
+        "RetryTemplateConfig",
+        "AuditLogPersistenceService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Simuleer een scenario waarbij een event na 3 pogingen niet verwerkt kan worden en verifieer dat het naar de dead letter queue gaat."
+      ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [
+        "AuditLogRepository"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat audit events niet gewijzigd of verwijderd kunnen worden uit de audit-database."
+      ]
+    },
+    {
+      "reqId": "REQ-011",
+      "backendRefs": [
+        "UUIDGenerator",
+        "UserEventProducer",
+        "ResourceEventProducer"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat elk gepubliceerd event een unieke eventId (UUID) heeft."
+      ]
+    },
+    {
+      "reqId": "REQ-012",
+      "backendRefs": [
+        "AuditLogIdempotencyChecker",
+        "AuditLogConsumer"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat het dubbel verwerken van een event met dezelfde eventId geen extra side-effects heeft (bijvoorbeeld door het controleren van de audit-database op duplicaten)."
+      ]
+    },
+    {
+      "reqId": "REQ-013",
+      "backendRefs": [
+        "EventPublisher"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Meet de response tijd van de primaire API tijdens event publicatie en verifieer dat deze niet meer dan 20ms toeneemt."
+      ]
+    },
+    {
+      "reqId": "REQ-014",
+      "backendRefs": [
+        "EventConsumer",
+        "AuditLogConsumer"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Voer een load test uit om te verifi\u00ebren dat de consumer minimaal 500 events per seconde kan verwerken."
+      ]
+    },
+    {
+      "reqId": "REQ-015",
+      "backendRefs": [
+        "AuditLogRepository"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verifieer dat de configuratie van de audit-database ingesteld is op een bewaartermijn van minimaal 2 jaar."
+      ]
+    }
+  ]
+}
