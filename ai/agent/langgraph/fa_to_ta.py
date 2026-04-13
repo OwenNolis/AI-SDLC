@@ -834,14 +834,31 @@ Gegevens: {json.dumps(state["tests_design"], indent=2)}
 """,
     ]
 
-    # ── Secties 1-11 parallel genereren ──────────────────────────────────────
+    # ── Secties 1-11 parallel genereren met voortgangsmelding per sectie ────────
+    section_labels = [
+        "Secties 1-3  (Scope, Assumptions, Open Questions)",
+        "Sectie 4     (Domain Model)",
+        "Sectie 5     (API / Messaging Design)",
+        "Secties 6-7  (Backend + Frontend Design)",
+        "Secties 8-10 (Security, Observability, Performance)",
+        "Sectie 11    (Test Strategy)",
+    ]
+    sections: list[str | None] = [None] * len(prompts)
+
+    def _run_section(idx: int, prompt: str) -> tuple[int, str]:
+        result = _strip_md_fence(llm_text(prompt))
+        print(f"  ✅ {section_labels[idx]}")
+        return idx, result
+
     print("  📝 Secties 1-11 parallel genereren...")
     with ThreadPoolExecutor(max_workers=len(prompts)) as executor:
-        futures = [executor.submit(llm_text, p) for p in prompts]
-        sections = [_strip_md_fence(f.result()) for f in futures]
+        futures = [executor.submit(_run_section, i, p) for i, p in enumerate(prompts)]
+        for f in futures:
+            idx, result = f.result()
+            sections[idx] = result
 
     # ── Sectie 12: Traceability Matrix (direct opgebouwd, geen LLM) ──────────
-    print("  📝 Sectie 12 (Traceability Matrix)...")
+    print("  ✅ Sectie 12    (Traceability Matrix)")
     traceability_rows = ""
     for t in state["traceability"]:
         req_id   = t.get("reqId", "")
