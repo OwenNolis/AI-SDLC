@@ -748,11 +748,29 @@ def generate_ta_markdown(state: TAState) -> dict:
         f"Elke ## heading begint een nieuwe sectie.{extra_context_hint}"
     )
 
-    sections: list[str] = []
+    # ── Bouw prompts (type-specifiek voor sectie 5) ───────────────────────────
+    if fa_type == "event-driven":
+        prompt_s5 = f"""{base_instruction}
 
-    # ── Sectie 1-3: Scope / Assumptions / Open Questions ─────────────────────
-    print("  📝 Secties 1-3 (Scope, Assumptions, Open Questions)...")
-    sections.append(_strip_md_fence(llm_text(f"""{base_instruction}
+Schrijf sectie 5 van de Technische Analyse voor feature: {title}
+
+## 5. Messaging Design
+Beschrijf topics, events, DLQ-strategie en retry-strategie met tabellen.
+Gegevens: {json.dumps(state.get("messaging_design", {}), indent=2)}
+"""
+    else:
+        prompt_s5 = f"""{base_instruction}
+
+Schrijf sectie 5 van de Technische Analyse voor feature: {title}
+
+## 5. API Design
+Gebruik tabellen voor endpoints. Toon per endpoint: method, path, request DTO, responses en validatieregels.
+Toon ook het error formaat als JSON voorbeeld.
+Gegevens: {json.dumps(state["api_design"], indent=2)}
+"""
+
+    prompts = [
+        f"""{base_instruction}
 
 Titel: {title}
 
@@ -767,45 +785,17 @@ Gegevens: {json.dumps(state["scope"], indent=2)}
 
 ## 3. Open Questions
 {json.dumps(state["open_questions"], indent=2)}
-""")))
-
-    # ── Sectie 4: Domain Model ────────────────────────────────────────────────
-    print("  📝 Sectie 4 (Domain Model)...")
-    sections.append(_strip_md_fence(llm_text(f"""{base_instruction}
+""",
+        f"""{base_instruction}
 
 Schrijf sectie 4 van de Technische Analyse voor feature: {title}
 
 ## 4. Domain Model
 Gebruik een Markdown tabel per entiteit met kolommen: Veld | Type | Constraints | Testcases
 Gegevens: {json.dumps(state["domain_model"], indent=2)}
-""")))
-
-    # ── Sectie 5: API Design of Messaging Design (type-specifiek) ─────────────
-    if fa_type == "event-driven":
-        print("  📝 Sectie 5 (Messaging Design)...")
-        sections.append(_strip_md_fence(llm_text(f"""{base_instruction}
-
-Schrijf sectie 5 van de Technische Analyse voor feature: {title}
-
-## 5. Messaging Design
-Beschrijf topics, events, DLQ-strategie en retry-strategie met tabellen.
-Gegevens: {json.dumps(state.get("messaging_design", {}), indent=2)}
-""")))
-    else:
-        print("  📝 Sectie 5 (API Design)...")
-        sections.append(_strip_md_fence(llm_text(f"""{base_instruction}
-
-Schrijf sectie 5 van de Technische Analyse voor feature: {title}
-
-## 5. API Design
-Gebruik tabellen voor endpoints. Toon per endpoint: method, path, request DTO, responses en validatieregels.
-Toon ook het error formaat als JSON voorbeeld.
-Gegevens: {json.dumps(state["api_design"], indent=2)}
-""")))
-
-    # ── Sectie 6-7: Backend + Frontend Design ────────────────────────────────
-    print("  📝 Secties 6-7 (Backend + Frontend Design)...")
-    sections.append(_strip_md_fence(llm_text(f"""{base_instruction}
+""",
+        prompt_s5,
+        f"""{base_instruction}
 
 Schrijf secties 6 en 7 van de Technische Analyse voor feature: {title}
 
@@ -816,11 +806,8 @@ Gegevens: {json.dumps(state["backend_design"], indent=2)}
 ## 7. Frontend Design
 Beschrijf routes en componenten met hun verantwoordelijkheden in tabelvorm.
 Gegevens: {json.dumps(state["frontend_design"], indent=2)}
-""")))
-
-    # ── Sectie 8-10: Security / Observability / Performance ───────────────────
-    print("  📝 Secties 8-10 (Security, Observability, Performance)...")
-    sections.append(_strip_md_fence(llm_text(f"""{base_instruction}
+""",
+        f"""{base_instruction}
 
 Schrijf secties 8, 9 en 10 van de Technische Analyse voor feature: {title}
 
@@ -836,18 +823,22 @@ Performance-eisen, database-indexen en schaalbaarheid voor deze feature.
 Context:
 - Requirements: {json.dumps([r["text"] for r in state["requirements"]], indent=2)}
 - Endpoints: {json.dumps([e["path"] for e in state["api_design"].get("endpoints", [])], indent=2)}
-""")))
-
-    # ── Sectie 11: Test Strategy ──────────────────────────────────────────────
-    print("  📝 Sectie 11 (Test Strategy)...")
-    sections.append(_strip_md_fence(llm_text(f"""{base_instruction}
+""",
+        f"""{base_instruction}
 
 Schrijf sectie 11 van de Technische Analyse voor feature: {title}
 
 ## 11. Test Strategy
 Schrijf subsecties voor unit tests, integration tests en e2e tests als bullet-lijsten.
 Gegevens: {json.dumps(state["tests_design"], indent=2)}
-""")))
+""",
+    ]
+
+    # ── Secties 1-11 parallel genereren ──────────────────────────────────────
+    print("  📝 Secties 1-11 parallel genereren...")
+    with ThreadPoolExecutor(max_workers=len(prompts)) as executor:
+        futures = [executor.submit(llm_text, p) for p in prompts]
+        sections = [_strip_md_fence(f.result()) for f in futures]
 
     # ── Sectie 12: Traceability Matrix (direct opgebouwd, geen LLM) ──────────
     print("  📝 Sectie 12 (Traceability Matrix)...")
