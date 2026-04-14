@@ -29,8 +29,12 @@ on:
       JIRA_DOMAIN:
         type: string
         required: false
-      # PR event data — must be forwarded explicitly by the child repo caller
-      # because github.event is not available when event_name == workflow_call
+      # mode: 'create' or 'close' — set by the child repo caller so the parent
+      # does not need to rely on github.event which is unreliable across repos
+      mode:
+        type: string
+        required: false
+        default: ''
       PR_USER_LOGIN:
         type: string
         required: false
@@ -48,7 +52,7 @@ on:
 
 jobs:
   create-jira-issue:
-    if: github.actor == 'dependabot[bot]' || (github.event_name == 'workflow_dispatch' && inputs.close_pr_number == '')
+    if: inputs.mode == 'create' || github.actor == 'dependabot[bot]' || (github.event_name == 'workflow_dispatch' && inputs.close_pr_number == '')
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -175,8 +179,8 @@ jobs:
 
   close-jira-issue:
     if: >
+      inputs.mode == 'close' ||
       github.event.action == 'closed' ||
-      inputs.PR_ACTION == 'closed' ||
       (github.event_name == 'workflow_dispatch' && inputs.close_pr_number != '')
     runs-on: ubuntu-latest
 
