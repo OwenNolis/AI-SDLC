@@ -176,7 +176,7 @@ jobs:
   close-jira-issue:
     if: >
       ((github.event.pull_request.merged == true || github.event.action == 'closed') && github.event.pull_request.user.login == 'dependabot[bot]') ||
-      (github.event_name == 'workflow_call' && inputs.PR_ACTION == 'closed' && inputs.PR_USER_LOGIN == 'dependabot[bot]') ||
+      (inputs.PR_ACTION == 'closed' && inputs.PR_USER_LOGIN == 'dependabot[bot]') ||
       (github.event_name == 'workflow_dispatch' && inputs.close_pr_number != '')
     runs-on: ubuntu-latest
 
