@@ -9,6 +9,9 @@ updates:
     labels:
       - "dependencies"
       - "backend"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       backend-minor-patch:
         patterns:
@@ -28,7 +31,9 @@ updates:
     labels:
       - "dependencies"
       - "frontend"
-    # Temporarily disable grouping to test PR limits
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       frontend-minor-patch:
         patterns:
@@ -36,12 +41,6 @@ updates:
         update-types:
           - "minor"
           - "patch"
-      frontend-major:
-        patterns:
-          - "react*"
-          - "@types/*"
-        update-types:
-          - "major"
 
   # AI validator tooling (npm)
   - package-ecosystem: "npm"
@@ -54,6 +53,9 @@ updates:
     labels:
       - "dependencies"
       - "ai"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       ai-validator-minor-patch:
         patterns:
@@ -72,3 +74,6 @@ updates:
     labels:
       - "dependencies"
       - "ci"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
