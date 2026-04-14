@@ -223,7 +223,8 @@ jobs:
               "https://${JIRA_DOMAIN}/rest/api/3/issue/${ISSUE_KEY}/transitions" \
               -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}")
 
-            TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.name == "Closed") | .id')
+            TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '
+              .transitions[] | select(.name == "Closed" or .name == "Done") | .id' | head -1)
 
             if [ -z "$TRANSITION_ID" ]; then
               echo "❌ Could not find 'Closed' transition for ${ISSUE_KEY}"
