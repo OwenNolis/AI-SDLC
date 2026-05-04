@@ -15,6 +15,11 @@ Omgevingsvariabelen:
   GEMINI_API_KEY  Verplicht
   GEMINI_MODEL    Optioneel (standaard: gemini-2.5-flash-lite)
 
+Optionele argumenten:
+  --context       Inline tekst als extra context
+  --context-dir   Map met .md/.txt bestanden — alle bestanden worden geladen
+  --context-files Specifieke bestanden als extra context (meerdere mogelijk)
+
 Output:
   docs/technical-analysis/<feature-id>.md
   docs/technical-analysis/<feature-id>.ta.json
@@ -33,9 +38,21 @@ from jsonschema import ValidationError, validate
 from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
+from pypdf import PdfReader
 
 # Laad .env vanuit de repo root
 load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
+
+
+CONTEXT_EXTENSIONS = (".md", ".txt", ".pdf")
+
+
+def read_context_file(f: Path) -> str:
+    """Lees een context bestand (.md, .txt of .pdf) en geef de tekst terug."""
+    if f.suffix == ".pdf":
+        reader = PdfReader(f)
+        return "\n".join(page.extract_text() or "" for page in reader.pages)
+    return f.read_text(encoding="utf-8")
 
 
 # ── State ──────────────────────────────────────────────────────────────────────
@@ -175,15 +192,35 @@ def parse_fa(state: TAState) -> dict:
     Node 1: Parseer de FA en extraheer alle gestructureerde gegevens.
     Haalt requirements, scope, assumptions en open questions op in één call.
     """
+    import re as _re
     print("🔍 FA parseren...")
+
+    # Count items already labelled in the FA to give the LLM a hard upper bound
+    fa_text = state["fa_content"]
+    fa_req_ids  = _re.findall(r'\bREQ-\d+\b', fa_text)
+    fa_br_ids   = _re.findall(r'\bBR-\d+\b',  fa_text)
+    fa_nfr_ids  = _re.findall(r'\bNFR-\d+\b', fa_text)
+    n_reqs  = len(set(fa_req_ids))
+    n_brs   = len(set(fa_br_ids))
+    n_nfrs  = len(set(fa_nfr_ids))
+    total_items = n_reqs + n_brs + n_nfrs
+    max_req_id  = f"REQ-{total_items:03d}" if total_items > 0 else "REQ-999"
+
+    count_hint = (
+        f"\n⚠️ De FA bevat EXACT {total_items} items "
+        f"({n_reqs} requirements, {n_brs} business rules, {n_nfrs} NFRs). "
+        f"Genereer EXACT {total_items} REQ-NNN entries — niet meer, niet minder. "
+        f"Laatste ID mag maximaal {max_req_id} zijn.\n"
+        if total_items > 0 else ""
+    )
 
     prompt = f"""Je bent een SDLC-analyse agent.
 
 Lees de Functionele Analyse en extraheer alle gestructureerde gegevens.
-
+{count_hint}
 FA inhoud:
 ---
-{state["fa_content"]}
+{fa_text}
 ---
 
 Geef ALLEEN een JSON object terug:
@@ -226,8 +263,15 @@ Regels voor openQuestions:
 - Laat leeg ([]) als er geen onduidelijkheden zijn
 """
     result = llm_json(prompt)
+    raw_reqs = result.get("requirements", [])
+
+    # Hard cap: strip any invented requirements beyond the FA item count
+    if total_items > 0 and len(raw_reqs) > total_items:
+        print(f"  ⚠️  LLM genereerde {len(raw_reqs)} requirements; ingekort tot {total_items}")
+        raw_reqs = raw_reqs[:total_items]
+
     return {
-        "requirements": result.get("requirements", []),
+        "requirements": raw_reqs,
         "scope": result.get("scope", {"inScope": [], "outOfScope": []}),
         "assumptions": result.get("openQuestions", []),
         "open_questions": result.get("openQuestions", []),
@@ -294,7 +338,7 @@ Scope van de feature:
 """
 
     extra_context_hint = (
-        f"\nExtra context:\n{state['extra_context']}\n"
+        f"\n⚠️ VERPLICHTE PROJECTREGELS (deze OVERSCHRIJVEN alle aannames en defaults — nooit negeren):\n{state['extra_context']}\n"
         if state.get("extra_context") else ""
     )
 
@@ -457,7 +501,7 @@ def generate_frontend_design(state: TAState) -> dict:
 
     ux_hint = f"\nExpliciet vermelde routes/componenten in de FA:\n{fa_ux_notes}" if fa_ux_notes else ""
     extra_context_hint = (
-        f"\nExtra context:\n{state['extra_context']}\n"
+        f"\n⚠️ VERPLICHTE PROJECTREGELS (deze OVERSCHRIJVEN alle aannames en defaults — nooit negeren):\n{state['extra_context']}\n"
         if state.get("extra_context") else ""
     )
 
@@ -473,8 +517,14 @@ Requirements:
 
 Geef ALLEEN een JSON object terug:
 {{
-  "routes": ["/pad/naar/pagina"],
-  "components": ["ComponentNaam"],
+  "routes": [
+    {{
+      "path": "/pad/naar/pagina",
+      "components": [
+        {{"name": "ComponentNaam", "responsibility": "Wat deze component doet"}}
+      ]
+    }}
+  ],
   "consumedEndpoints": [
     {{"method": "GET", "path": "/api/bestaand-endpoint", "description": "Waarvoor gebruikt"}}
   ],
@@ -486,9 +536,8 @@ Geef ALLEEN een JSON object terug:
 }}
 
 Regels:
-- Routes: paden die de gebruiker kan navigeren
+- Elke route bevat de componenten die op die route worden gebruikt
 - Componenten: PascalCase, inclusief loading/error/empty state componenten
-- consumedEndpoints: bestaande API endpoints die geconsumeerd worden
 - Stack: React 18, TypeScript
 - tests.unit: alle UI states (loading, empty, error, success) testen
 - tests.integration: met gemockte API responses
@@ -511,8 +560,14 @@ Scope van de feature:
 
 Geef ALLEEN een JSON object terug:
 {{
-  "routes": ["/pad/naar/pagina"],
-  "components": ["ComponentNaam"],
+  "routes": [
+    {{
+      "path": "/pad/naar/pagina",
+      "components": [
+        {{"name": "ComponentNaam", "responsibility": "Wat deze component doet"}}
+      ]
+    }}
+  ],
   "tests": {{
     "unit": ["KlasseNaam.methodeNaam of ComponentNaam render"],
     "integration": ["POST /api/endpoint → 201 Created"],
@@ -531,10 +586,21 @@ Regels:
 - tests.e2e: gebruikersflow in gewone taal
 """
     result = llm_json(prompt)
+    routes = result.get("routes", [])
+
+    # Flatten component names from route objects for traceability use
+    all_components = []
+    for r in routes:
+        if isinstance(r, dict):
+            for c in r.get("components", []):
+                name = c.get("name") if isinstance(c, dict) else c
+                if name and name not in all_components:
+                    all_components.append(name)
+
     return {
         "frontend_design": {
-            "routes": result.get("routes", []),
-            "components": result.get("components", []),
+            "routes": routes,
+            "components": all_components,
         },
         "tests_design": result.get("tests", {"unit": [], "integration": [], "e2e": []}),
     }
@@ -580,15 +646,29 @@ Geef ALLEEN een JSON object terug:
 }}
 
 Regels:
-- Elk REQ-item uit de requirements lijst moet voorkomen
+- Gebruik UITSLUITEND de reqId waarden die voorkomen in de requirements lijst hierboven
+- Voeg GEEN nieuwe REQ-nummers toe die niet in de lijst staan — niet voor business rules, NFRs of aannames
+- Elk reqId mag EXACT ÉÉN keer voorkomen — geen duplicaten
 - backendRefs: ALLEEN klassen uit de beschikbare backend klassen
 - frontendRefs: ALLEEN componenten uit de beschikbare frontend componenten
 - testRefs: beschrijf concreet wat getest wordt voor deze requirement
 - Een requirement die puur backend is heeft een lege frontendRefs lijst
 - Een requirement die puur UI is heeft een lege backendRefs lijst
 """
+    valid_req_ids = {r["id"] for r in state["requirements"] if "id" in r}
     result = llm_json(prompt)
-    return {"traceability": result.get("traceability", [])}
+
+    # Keep only entries whose reqId exists in the FA requirements list
+    # Then deduplicate by reqId — keep first occurrence
+    seen: set[str] = set()
+    deduped = []
+    for entry in result.get("traceability", []):
+        req_id = entry.get("reqId", "")
+        if req_id and req_id in valid_req_ids and req_id not in seen:
+            seen.add(req_id)
+            deduped.append(entry)
+
+    return {"traceability": deduped}
 
 
 def assemble_ta_json(state: TAState) -> dict:
@@ -675,8 +755,14 @@ def assemble_ta_json(state: TAState) -> dict:
     fa_type = state.get("fa_type", "full-stack")
 
     # Veilige defaults voor secties die overgeslagen zijn voor dit FA-type
+    # Normalize routes: LLM returns route objects {path, components} but schema expects strings
+    raw_routes = state["frontend_design"].get("routes", [])
+    route_paths = [
+        r["path"] if isinstance(r, dict) and "path" in r else r
+        for r in raw_routes
+    ]
     frontend = {
-        "routes":     state["frontend_design"].get("routes", []),
+        "routes":     route_paths,
         "components": state["frontend_design"].get("components", []),
     }
     tests = {
@@ -769,7 +855,7 @@ def generate_ta_markdown(state: TAState) -> dict:
     title   = state["ta_json"]["meta"]["title"]
     fa_type = state.get("fa_type", "full-stack")
     extra_context_hint = (
-        f"\nExtra context:\n{state['extra_context']}\n"
+        f"\n⚠️ VERPLICHTE PROJECTREGELS (deze OVERSCHRIJVEN alle aannames en defaults — nooit negeren):\n{state['extra_context']}\n"
         if state.get("extra_context") else ""
     )
 
@@ -777,7 +863,8 @@ def generate_ta_markdown(state: TAState) -> dict:
     base_instruction = (
         f"Je bent een SDLC-analyse agent. Schrijf in het Nederlands. "
         f"Wees concreet en technisch. Geef ALLEEN Markdown terug, geen JSON. "
-        f"Elke ## heading begint een nieuwe sectie.{extra_context_hint}"
+        f"Elke ## heading begint een nieuwe sectie."
+        f"{extra_context_hint}"
     )
 
     # ── Bouw prompts (type-specifiek voor sectie 5) ───────────────────────────
@@ -796,8 +883,19 @@ Gegevens: {json.dumps(state.get("messaging_design", {}), indent=2)}
 Schrijf sectie 5 van de Technische Analyse voor feature: {title}
 
 ## 5. API Design
-Gebruik tabellen voor endpoints. Toon per endpoint: method, path, request DTO, responses en validatieregels.
-Toon ook het error formaat als JSON voorbeeld.
+
+Gebruik de volgende structuur — GEEN brede tabellen met alle endpoints op één rij.
+
+### 5.1 Error Formaat
+Toon het standaard error response formaat als JSON code block.
+
+### 5.2 Endpoints
+Maak voor elk endpoint een aparte ### subsectie met:
+- Een regel: `METHOD /pad — korte omschrijving`
+- Een kleine tabel met kolommen: | Veld | Waarde | voor method, path, auth, request DTO
+- Een tabel voor responses met kolommen: | Status | Body | Omschrijving |
+- Een bullet-lijst van validatieregels (alleen indien aanwezig)
+
 Gegevens: {json.dumps(state["api_design"], indent=2)}
 """
 
@@ -823,20 +921,33 @@ Gegevens: {json.dumps(state["scope"], indent=2)}
 Schrijf sectie 4 van de Technische Analyse voor feature: {title}
 
 ## 4. Domain Model
-Gebruik een Markdown tabel per entiteit met kolommen: Veld | Type | Constraints | Testcases
+Maak voor elke entiteit een aparte ### subsectie met naam van de entiteit als heading.
+Daaronder een tabel met kolommen: | Veld | Type | Constraints | Testcases |
+Sluit af met een ### Enums subsectie voor alle enum types.
 Gegevens: {json.dumps(state["domain_model"], indent=2)}
 """,
         prompt_s5,
         f"""{base_instruction}
 
-Schrijf secties 6 en 7 van de Technische Analyse voor feature: {title}
+Schrijf sectie 6 van de Technische Analyse voor feature: {title}
 
 ## 6. Backend Design
-Beschrijf de lagen (Controller/Service/Repository) en toon een tabel van klassen met verantwoordelijkheden.
+Beschrijf kort de gelaagde architectuur (Controller → Service → Repository).
+Maak daarna per module een aparte ### subsectie (bv. ### Order Module, ### Customer Module).
+Binnen elke module: een tabel met kolommen | Klasse | Verantwoordelijkheid |
+Zet NOOIT alle klassen in één grote tabel — splits altijd per module.
 Gegevens: {json.dumps(state["backend_design"], indent=2)}
+""",
+        f"""{base_instruction}
+
+Schrijf sectie 7 van de Technische Analyse voor feature: {title}
 
 ## 7. Frontend Design
-Beschrijf routes en componenten met hun verantwoordelijkheden in tabelvorm.
+De gegevens bevatten een lijst van routes. Elke route heeft een "path" en een "components" lijst.
+Maak voor elke route een aparte ### subsectie met het path als heading (bv. ### /checkout).
+Schrijf binnen elke subsectie een tabel met kolommen: | Component | Verantwoordelijkheid |
+Vul elke rij in met de component naam en zijn responsibility uit de gegevens.
+Sla GEEN enkele route over — alle routes moeten een eigen subsectie krijgen.
 Gegevens: {json.dumps(state["frontend_design"], indent=2)}
 """,
         f"""{base_instruction}
@@ -871,7 +982,8 @@ Gegevens: {json.dumps(state["tests_design"], indent=2)}
         "Secties 1-3  (Scope, Assumptions, Open Questions)",
         "Sectie 4     (Domain Model)",
         "Sectie 5     (API / Messaging Design)",
-        "Secties 6-7  (Backend + Frontend Design)",
+        "Sectie 6     (Backend Design)",
+        "Sectie 7     (Frontend Design)",
         "Secties 8-10 (Security, Observability, Performance)",
         "Sectie 11    (Test Strategy)",
     ]
@@ -1080,6 +1192,18 @@ def parse_args():
         default="",
         help="Extra context voor de agent (bv. technische beslissingen, team conventies).",
     )
+    parser.add_argument(
+        "--context-dir",
+        default="",
+        help="Map met extra context bestanden (.md, .txt). Alle bestanden in de map worden geladen.",
+    )
+    parser.add_argument(
+        "--context-files",
+        nargs="+",
+        default=[],
+        metavar="FILE",
+        help="Specifieke bestanden als extra context (los van --context-dir). Meerdere bestanden mogelijk.",
+    )
     return parser.parse_args()
 
 
@@ -1122,13 +1246,47 @@ def main():
     if args.fa_type:
         print(f"🏷️  FA-type (handmatig opgegeven): {args.fa_type}\n")
 
+    # ── Extra context samenvoegen ──────────────────────────────────────────────
+    context_parts = []
+
+    # 1) Inline --context string
+    if args.context:
+        context_parts.append(args.context)
+
+    # 2) Alle bestanden uit --context-dir
+    if args.context_dir:
+        context_dir = Path(args.context_dir)
+        if not context_dir.is_dir():
+            print(f"⚠️  --context-dir niet gevonden: {context_dir}", file=sys.stderr)
+        else:
+            dir_files = sorted(
+                f for f in context_dir.iterdir()
+                if f.is_file() and f.suffix in CONTEXT_EXTENSIONS
+            )
+            for f in dir_files:
+                context_parts.append(f"### {f.name}\n{read_context_file(f)}")
+                print(f"  📄 Context geladen (dir): {f.name}")
+
+    # 3) Specifieke bestanden via --context-files
+    for file_path_str in args.context_files:
+        f = Path(file_path_str)
+        if not f.is_file():
+            print(f"⚠️  --context-files bestand niet gevonden: {f}", file=sys.stderr)
+            continue
+        context_parts.append(f"### {f.name}\n{read_context_file(f)}")
+        print(f"  📄 Context geladen (file): {f.name}")
+
+    extra_context = "\n\n".join(context_parts)
+    if extra_context:
+        print()
+
     app = build_graph()
     final = app.invoke({
         "feature_id":       feature_id,
         "fa_content":       fa_path.read_text(),
         "fa_type":          "",
         "fa_type_manual":   args.fa_type,
-        "extra_context":    args.context,
+        "extra_context":    extra_context,
         "ta_skeleton":      ta_skeleton,
         "ta_schema":        json.loads(schema_path.read_text()),
         "requirements":     [],

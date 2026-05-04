@@ -1,0 +1,1252 @@
+{
+  "meta": {
+    "featureId": "feature-008-order-management",
+    "title": "Feature-008: Order Management",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "inScope": [
+      "Bestelformulier met productoverzicht",
+      "Bestellingen plaatsen via UI",
+      "Bestellingenhistorie raadplegen",
+      "Bestelling annuleren (alleen indien status PENDING)",
+      "Order button met voldoende breedte en duidelijke feedback",
+      "Validatie van bestelgegevens"
+    ],
+    "outOfScope": [
+      "Betalingsverwerking (externe payment gateway)",
+      "Retouren en terugbetalingen",
+      "Verzendtracking",
+      "Facturatie"
+    ]
+  },
+  "assumptions": [],
+  "openQuestions": [],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "Klant kan een bestelling plaatsen met: producten (lijst), leveringsadres, betaalmethode.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "Elk product in de bestelling heeft: productId, naam, aantal, eenheidsprijs.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "Leveringsadres is verplicht met velden: straat, huisnummer, postcode, stad, land.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "Betaalmethode is verplicht en \u00e9\u00e9n van: CREDIT_CARD, BANK_TRANSFER, IDEAL.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-005",
+      "text": "Na plaatsen krijgt klant een orderNumber + status PENDING te zien.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "Klant kan bestellingen bekijken gefilterd op status: PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "Klant kan een bestelling annuleren indien status = PENDING.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "Order button moet minimaal 200px breed zijn voor duidelijke zichtbaarheid.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "Order button toont loading state tijdens het plaatsen van de bestelling.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "Bij validatiefouten worden veldspecifieke foutmeldingen getoond.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-011",
+      "text": "Server errors tonen generieke foutmelding met correlationId.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-012",
+      "text": "orderNumber is uniek en volgt het formaat: ORD-YYYY-000001 (sequence per jaar).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-013",
+      "text": "Status bij aanmaken van een bestelling is altijd PENDING.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-014",
+      "text": "Annuleren van een bestelling is alleen mogelijk binnen 30 minuten na het plaatsen ervan.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-015",
+      "text": "Minimale bestelwaarde voor een bestelling is \u20ac5,00.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-016",
+      "text": "Maximaal 20 verschillende producten mogen per bestelling worden opgenomen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-017",
+      "text": "Voorraadcontrole vindt plaats bij het plaatsen van de bestelling, niet bij het toevoegen aan de winkelwagen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-018",
+      "text": "API response time voor order plaatsen moet p95 < 500ms zijn.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-019",
+      "text": "API response time voor het ophalen van de bestellingenlijst moet p95 < 200ms zijn.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-020",
+      "text": "Logging moet een correlationId bevatten voor elke order transactie.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-021",
+      "text": "Order data moet minimaal 7 jaar bewaard worden vanwege wettelijke verplichtingen.",
+      "priority": "must"
+    }
+  ],
+  "domain": {
+    "entities": [
+      {
+        "name": "Customer",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "name",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1",
+              "maxLength:255"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "email",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:5",
+              "maxLength:255"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Order",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "orderNumber",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:13",
+              "maxLength:13"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value",
+              "duplicate_per_day"
+            ]
+          },
+          {
+            "name": "customer",
+            "type": "Customer",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "orderItems",
+            "type": "List<OrderItem>",
+            "constraints": [
+              "notNull",
+              "minLength:1",
+              "maxLength:20"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "deliveryAddress",
+            "type": "Address",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "paymentMethod",
+            "type": "PaymentMethod",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "status",
+            "type": "OrderStatus",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "totalPrice",
+            "type": "BigDecimal",
+            "constraints": [
+              "notNull",
+              "minValue:5.00"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "lastUpdatedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "correlationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "OrderItem",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "product",
+            "type": "Product",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "quantity",
+            "type": "Integer",
+            "constraints": [
+              "notNull",
+              "minValue:1"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "unitPrice",
+            "type": "BigDecimal",
+            "constraints": [
+              "notNull",
+              "minValue:0.00"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "order",
+            "type": "Order",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Product",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "productId",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1",
+              "maxLength:255"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "name",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1",
+              "maxLength:255"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "currentPrice",
+            "type": "BigDecimal",
+            "constraints": [
+              "notNull",
+              "minValue:0.00"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "stockQuantity",
+            "type": "Integer",
+            "constraints": [
+              "notNull",
+              "minValue:0"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Address",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "street",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1",
+              "maxLength:255"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "houseNumber",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1",
+              "maxLength:20"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "postalCode",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:4",
+              "maxLength:10"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "city",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:1",
+              "maxLength:255"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "country",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "minLength:2",
+              "maxLength:100"
+            ],
+            "testCases": [
+              "empty",
+              "too_short",
+              "too_long",
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "errorFormat": {
+      "type": "ApiError",
+      "fields": [
+        "status",
+        "error",
+        "correlationId",
+        "fields"
+      ]
+    },
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/api/orders",
+        "summary": "Plaatst een nieuwe bestelling.",
+        "request": {
+          "bodySchemaRef": "CreateOrderRequest",
+          "validationRules": [
+            "customerId: Moet een geldige UUID zijn.",
+            "orderItems: Moet een lijst zijn met minimaal 1 en maximaal 20 items.",
+            "deliveryAddress.street: Mag niet leeg zijn en maximaal 255 karakters.",
+            "deliveryAddress.houseNumber: Mag niet leeg zijn en maximaal 20 karakters.",
+            "deliveryAddress.postalCode: Mag niet leeg zijn en tussen 4 en 10 karakters.",
+            "deliveryAddress.city: Mag niet leeg zijn en maximaal 255 karakters.",
+            "deliveryAddress.country: Mag niet leeg zijn en tussen 2 en 100 karakters.",
+            "paymentMethod: Moet een geldige PaymentMethod zijn (CREDIT_CARD, BANK_TRANSFER, IDEAL).",
+            "orderItems[].productId: Moet een geldige String zijn.",
+            "orderItems[].quantity: Moet een integer zijn groter dan of gelijk aan 1.",
+            "orderItems[].unitPrice: Moet een BigDecimal zijn groter dan of gelijk aan 0.00."
+          ]
+        },
+        "responses": [
+          {
+            "status": 201,
+            "bodySchemaRef": "OrderResponse",
+            "notes": "Bestelling succesvol aangemaakt. Geeft de details van de aangemaakte bestelling terug, inclusief het gegenereerde orderNumber."
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in de request body. Bevat details over de specifieke velden die niet voldoen aan de regels."
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Conflict, bijvoorbeeld als de voorraad van een product ontoereikend is."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout tijdens het verwerken van de bestelling."
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/orders",
+        "summary": "Haalt een lijst met bestellingen op, gefilterd op klant en status.",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "PaginatedOrderResponse",
+            "notes": "Lijst met bestellingen. Geeft een lege lijst terug als er geen bestellingen zijn."
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Ongeldige query parameters."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout bij het ophalen van bestellingen."
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/orders/{id}",
+        "summary": "Annuleert een specifieke bestelling.",
+        "request": {},
+        "responses": [
+          {
+            "status": 204,
+            "notes": "Bestelling succesvol geannuleerd.",
+            "bodySchemaRef": "EmptyResponse"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Ongeldig bestel-ID of bestelling kan niet geannuleerd worden (bv. te laat)."
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Bestelling niet gevonden."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout bij het annuleren van de bestelling."
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/products",
+        "summary": "Haalt een gepagineerde lijst met producten op, inclusief voorraad.",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "PaginatedProductResponse",
+            "notes": "Lijst met producten."
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Ongeldige query parameters."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout bij het ophalen van producten."
+          }
+        ],
+        "auth": "none"
+      },
+      {
+        "method": "GET",
+        "path": "/api/customers/{id}/address",
+        "summary": "Haalt de opgeslagen leveringsadressen voor een klant op.",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "ListAddressResponse",
+            "notes": "Lijst met opgeslagen adressen voor de klant."
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Klant niet gevonden."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout bij het ophalen van adressen."
+          }
+        ],
+        "auth": "bearer"
+      }
+    ]
+  },
+  "backend": {
+    "modules": [
+      {
+        "name": "order",
+        "classes": [
+          {
+            "name": "OrderController",
+            "responsibility": "Verwerkt inkomende HTTP-verzoeken voor orders en stuurt ze door naar de OrderService."
+          },
+          {
+            "name": "OrderService",
+            "responsibility": "Bevat de kernlogica voor het aanmaken, ophalen en annuleren van bestellingen."
+          },
+          {
+            "name": "OrderRepository",
+            "responsibility": "Verantwoordelijk voor de interactie met de database voor Order-entiteiten."
+          },
+          {
+            "name": "OrderEntity",
+            "responsibility": "Representeert de Order-entiteit in de database."
+          },
+          {
+            "name": "CreateOrderRequestDto",
+            "responsibility": "Data Transfer Object voor het aanmaken van een nieuwe bestelling."
+          },
+          {
+            "name": "OrderResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van bestelgegevens."
+          },
+          {
+            "name": "PaginatedOrderResponseDto",
+            "responsibility": "Data Transfer Object voor gepagineerde lijsten met bestellingen."
+          },
+          {
+            "name": "OrderItemEntity",
+            "responsibility": "Representeert de OrderItem-entiteit in de database."
+          },
+          {
+            "name": "OrderItemDto",
+            "responsibility": "Data Transfer Object voor individuele order items."
+          },
+          {
+            "name": "OrderNotFoundException",
+            "responsibility": "Exception die wordt gegooid wanneer een bestelling niet wordt gevonden."
+          },
+          {
+            "name": "OrderAlreadyCancelledException",
+            "responsibility": "Exception die wordt gegooid wanneer een bestelling al geannuleerd is."
+          },
+          {
+            "name": "OrderCancellationTimeExpiredException",
+            "responsibility": "Exception die wordt gegooid wanneer de annuleringstermijn voor een bestelling is verstreken."
+          },
+          {
+            "name": "InsufficientStockException",
+            "responsibility": "Exception die wordt gegooid wanneer er onvoldoende voorraad is voor een product."
+          },
+          {
+            "name": "OrderNumberGenerator",
+            "responsibility": "Genereert unieke ordernummers volgens het gespecificeerde formaat."
+          },
+          {
+            "name": "OrderValidationService",
+            "responsibility": "Valideert de input voor het aanmaken van een bestelling volgens de business rules."
+          },
+          {
+            "name": "OrderCancellationService",
+            "responsibility": "Behandelt de logica voor het annuleren van bestellingen."
+          },
+          {
+            "name": "OrderPersistenceService",
+            "responsibility": "Verantwoordelijk voor het opslaan en ophalen van ordergegevens met een lange bewaartermijn."
+          }
+        ]
+      },
+      {
+        "name": "product",
+        "classes": [
+          {
+            "name": "ProductController",
+            "responsibility": "Verwerkt inkomende HTTP-verzoeken voor producten."
+          },
+          {
+            "name": "ProductService",
+            "responsibility": "Bevat de logica voor het ophalen van productinformatie."
+          },
+          {
+            "name": "ProductRepository",
+            "responsibility": "Verantwoordelijk voor de interactie met de database voor Product-entiteiten."
+          },
+          {
+            "name": "ProductEntity",
+            "responsibility": "Representeert de Product-entiteit in de database."
+          },
+          {
+            "name": "ProductResponseDto",
+            "responsibility": "Data Transfer Object voor productinformatie."
+          },
+          {
+            "name": "PaginatedProductResponseDto",
+            "responsibility": "Data Transfer Object voor gepagineerde lijsten met producten."
+          },
+          {
+            "name": "StockService",
+            "responsibility": "Beheert de voorraad van producten en voert controles uit."
+          }
+        ]
+      },
+      {
+        "name": "customer",
+        "classes": [
+          {
+            "name": "CustomerController",
+            "responsibility": "Verwerkt inkomende HTTP-verzoeken voor klantgerelateerde data."
+          },
+          {
+            "name": "CustomerService",
+            "responsibility": "Bevat de logica voor het ophalen van klantgegevens."
+          },
+          {
+            "name": "CustomerRepository",
+            "responsibility": "Verantwoordelijk voor de interactie met de database voor Customer-entiteiten."
+          },
+          {
+            "name": "CustomerEntity",
+            "responsibility": "Representeert de Customer-entiteit in de database."
+          },
+          {
+            "name": "AddressService",
+            "responsibility": "Bevat de logica voor het ophalen van adressen van een klant."
+          },
+          {
+            "name": "AddressRepository",
+            "responsibility": "Verantwoordelijk voor de interactie met de database voor Address-entiteiten."
+          },
+          {
+            "name": "AddressEntity",
+            "responsibility": "Representeert de Address-entiteit in de database."
+          },
+          {
+            "name": "ListAddressResponseDto",
+            "responsibility": "Data Transfer Object voor een lijst met adressen."
+          }
+        ]
+      },
+      {
+        "name": "common",
+        "classes": [
+          {
+            "name": "ApiError",
+            "responsibility": "Standaard foutmelding object voor API responses."
+          },
+          {
+            "name": "ApiExceptionHandler",
+            "responsibility": "Globale exception handler voor het afhandelen van API-gerelateerde exceptions."
+          },
+          {
+            "name": "CorrelationIdFilter",
+            "responsibility": "Filter om een correlationId te genereren en toe te voegen aan elke request."
+          },
+          {
+            "name": "LoggingAspect",
+            "responsibility": "Aspect voor het loggen van requests en responses met correlationId."
+          },
+          {
+            "name": "ValidationConfig",
+            "responsibility": "Configuratie voor bean validation."
+          },
+          {
+            "name": "SecurityConfig",
+            "responsibility": "Configuratie voor authenticatie en autorisatie (Bearer token)."
+          },
+          {
+            "name": "PaymentMethodEnum",
+            "responsibility": "Enum voor de verschillende betaalmethoden."
+          },
+          {
+            "name": "OrderStatusEnum",
+            "responsibility": "Enum voor de verschillende orderstatussen."
+          }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "routes": [
+      "/checkout",
+      "/order-history"
+    ],
+    "components": [
+      "CheckoutPage",
+      "StepIndicator",
+      "ProductSelectionStep",
+      "AddressSelectionStep",
+      "PaymentMethodSelectionStep",
+      "OrderSummaryStep",
+      "OrderButton",
+      "FormErrorDisplay",
+      "LoadingSpinner",
+      "OrderHistoryPage",
+      "OrderList",
+      "OrderItem",
+      "CancelOrderButton",
+      "OrderStatusBadge"
+    ]
+  },
+  "tests": {
+    "unit": [
+      "ProductSelectionStep.render",
+      "AddressSelectionStep.render",
+      "PaymentMethodSelectionStep.render",
+      "OrderSummaryStep.render",
+      "OrderButton.render",
+      "FormErrorDisplay.render",
+      "OrderHistoryPage.render",
+      "OrderList.render",
+      "OrderItem.render",
+      "CancelOrderButton.render",
+      "OrderStatusBadge.render",
+      "useProductSelectionForm",
+      "useAddressForm",
+      "usePaymentForm",
+      "useOrderMutation"
+    ],
+    "integration": [
+      "POST /api/orders \u2192 201 Created",
+      "GET /api/orders?customerId={id} \u2192 200 OK",
+      "GET /api/products \u2192 200 OK",
+      "GET /api/customers/{id}/address \u2192 200 OK",
+      "DELETE /api/orders/{id} \u2192 204 No Content",
+      "POST /api/orders \u2192 400 Bad Request (validation error)",
+      "POST /api/orders \u2192 409 Conflict (insufficient stock)"
+    ],
+    "e2e": [
+      "Gebruiker navigeert naar checkout, selecteert producten, vult adres en betaalmethode in, plaatst bestelling en ziet bevestiging.",
+      "Gebruiker navigeert naar bestelgeschiedenis, bekijkt lijst met bestellingen, en annuleert een PENDING bestelling binnen de toegestane tijd."
+    ]
+  },
+  "traceability": [
+    {
+      "reqId": "REQ-001",
+      "backendRefs": [
+        "OrderController",
+        "OrderService",
+        "CreateOrderRequestDto"
+      ],
+      "frontendRefs": [
+        "CheckoutPage",
+        "ProductSelectionStep",
+        "AddressSelectionStep",
+        "PaymentMethodSelectionStep"
+      ],
+      "testRefs": [
+        "Test het plaatsen van een bestelling met een geldige lijst van producten, leveringsadres en betaalmethode.",
+        "Test het plaatsen van een bestelling met een lege lijst van producten.",
+        "Test het plaatsen van een bestelling zonder leveringsadres.",
+        "Test het plaatsen van een bestelling zonder betaalmethode."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [
+        "CreateOrderRequestDto",
+        "OrderItemDto"
+      ],
+      "frontendRefs": [
+        "ProductSelectionStep",
+        "OrderSummaryStep"
+      ],
+      "testRefs": [
+        "Valideer dat elk product in de bestelling de juiste productId, naam, aantal en eenheidsprijs bevat.",
+        "Test met een product met een negatief aantal.",
+        "Test met een product met een negatieve eenheidsprijs."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [
+        "CreateOrderRequestDto",
+        "AddressEntity",
+        "AddressService",
+        "OrderValidationService"
+      ],
+      "frontendRefs": [
+        "AddressSelectionStep"
+      ],
+      "testRefs": [
+        "Test het invoeren van een volledig en geldig leveringsadres.",
+        "Test het invoeren van een leveringsadres met ontbrekende verplichte velden (straat, huisnummer, postcode, stad, land).",
+        "Test met ongeldige postcode formaten."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [
+        "CreateOrderRequestDto",
+        "PaymentMethodEnum",
+        "OrderValidationService"
+      ],
+      "frontendRefs": [
+        "PaymentMethodSelectionStep"
+      ],
+      "testRefs": [
+        "Test het selecteren van elke geldige betaalmethode (CREDIT_CARD, BANK_TRANSFER, IDEAL).",
+        "Test het plaatsen van een bestelling zonder een betaalmethode te selecteren.",
+        "Test met een ongeldige betaalmethode."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [
+        "OrderController",
+        "OrderService",
+        "OrderResponseDto"
+      ],
+      "frontendRefs": [
+        "CheckoutPage",
+        "OrderSummaryStep"
+      ],
+      "testRefs": [
+        "Valideer dat na succesvol plaatsen van een bestelling, de response een orderNumber en status PENDING bevat.",
+        "Controleer de structuur van de orderNumber en de initi\u00eble status."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [
+        "OrderController",
+        "OrderService",
+        "PaginatedOrderResponseDto"
+      ],
+      "frontendRefs": [
+        "OrderHistoryPage",
+        "OrderList",
+        "OrderStatusBadge"
+      ],
+      "testRefs": [
+        "Test het ophalen van bestellingen en filteren op PENDING.",
+        "Test het ophalen van bestellingen en filteren op CONFIRMED.",
+        "Test het ophalen van bestellingen en filteren op SHIPPED.",
+        "Test het ophalen van bestellingen en filteren op DELIVERED.",
+        "Test het ophalen van bestellingen en filteren op CANCELLED.",
+        "Test het ophalen van bestellingen zonder filter (alle statussen).",
+        "Test met een ongeldige status filter."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [
+        "OrderController",
+        "OrderService",
+        "OrderCancellationService"
+      ],
+      "frontendRefs": [
+        "OrderHistoryPage",
+        "CancelOrderButton"
+      ],
+      "testRefs": [
+        "Test het annuleren van een bestelling met status PENDING.",
+        "Test het proberen te annuleren van een bestelling met een andere status dan PENDING."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [],
+      "frontendRefs": [
+        "OrderButton"
+      ],
+      "testRefs": [
+        "Controleer visueel of de 'Order' knop minimaal 200px breed is op verschillende schermresoluties."
+      ]
+    },
+    {
+      "reqId": "REQ-009",
+      "backendRefs": [],
+      "frontendRefs": [
+        "OrderButton",
+        "LoadingSpinner"
+      ],
+      "testRefs": [
+        "Test of de 'Order' knop een loading state toont tijdens het plaatsen van de bestelling.",
+        "Controleer of de loading state verdwijnt na succesvolle of mislukte order plaatsing."
+      ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [
+        "ApiExceptionHandler",
+        "OrderValidationService"
+      ],
+      "frontendRefs": [
+        "FormErrorDisplay"
+      ],
+      "testRefs": [
+        "Test het indienen van een formulier met ongeldige invoer (bijv. ongeldig adres, ongeldig aantal producten) en controleer of veldspecifieke foutmeldingen worden getoond.",
+        "Test verschillende validatiefouten op verschillende velden."
+      ]
+    },
+    {
+      "reqId": "REQ-011",
+      "backendRefs": [
+        "ApiExceptionHandler",
+        "ApiError"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Simuleer een server error tijdens het plaatsen van een bestelling en controleer of een generieke foutmelding met een correlationId wordt geretourneerd.",
+        "Controleer de structuur van de foutmelding."
+      ]
+    },
+    {
+      "reqId": "REQ-012",
+      "backendRefs": [
+        "OrderNumberGenerator",
+        "OrderRepository",
+        "OrderEntity"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Valideer dat gegenereerde orderNumbers uniek zijn en het formaat ORD-YYYY-000001 volgen.",
+        "Test de sequentie van orderNumbers binnen een jaar.",
+        "Test de overgang naar een nieuw jaar en de reset van de sequentie."
+      ]
+    },
+    {
+      "reqId": "REQ-013",
+      "backendRefs": [
+        "OrderService",
+        "OrderEntity",
+        "OrderStatusEnum"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Controleer dat de status van een nieuw aangemaakte bestelling altijd PENDING is."
+      ]
+    },
+    {
+      "reqId": "REQ-014",
+      "backendRefs": [
+        "OrderCancellationService",
+        "OrderCancellationTimeExpiredException"
+      ],
+      "frontendRefs": [
+        "CancelOrderButton"
+      ],
+      "testRefs": [
+        "Test het annuleren van een bestelling binnen 30 minuten na het plaatsen.",
+        "Test het proberen te annuleren van een bestelling na 30 minuten na het plaatsen.",
+        "Test het annuleren van een bestelling die al langer dan 30 minuten geleden is geplaatst."
+      ]
+    },
+    {
+      "reqId": "REQ-015",
+      "backendRefs": [
+        "OrderValidationService"
+      ],
+      "frontendRefs": [
+        "OrderSummaryStep"
+      ],
+      "testRefs": [
+        "Test het plaatsen van een bestelling met een totale waarde van precies \u20ac5,00.",
+        "Test het plaatsen van een bestelling met een totale waarde van minder dan \u20ac5,00.",
+        "Test het plaatsen van een bestelling met een totale waarde van meer dan \u20ac5,00."
+      ]
+    },
+    {
+      "reqId": "REQ-016",
+      "backendRefs": [
+        "OrderValidationService"
+      ],
+      "frontendRefs": [
+        "ProductSelectionStep",
+        "OrderSummaryStep"
+      ],
+      "testRefs": [
+        "Test het toevoegen van maximaal 20 verschillende producten aan een bestelling.",
+        "Test het proberen toe te voegen van het 21e verschillende product aan een bestelling."
+      ]
+    },
+    {
+      "reqId": "REQ-017",
+      "backendRefs": [
+        "StockService",
+        "OrderService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat voorraadcontrole plaatsvindt bij het definitief plaatsen van de bestelling, niet bij het toevoegen aan de winkelwagen.",
+        "Simuleer een situatie waarbij een product niet op voorraad is en controleer de foutmelding bij het plaatsen van de bestelling."
+      ]
+    },
+    {
+      "reqId": "REQ-018",
+      "backendRefs": [
+        "OrderController",
+        "OrderService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Meet de response time van de API voor het plaatsen van een bestelling en valideer dat p95 < 500ms is onder normale belasting.",
+        "Voer performance tests uit om de p95 response time te valideren."
+      ]
+    },
+    {
+      "reqId": "REQ-019",
+      "backendRefs": [
+        "OrderController",
+        "OrderService",
+        "PaginatedOrderResponseDto"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Meet de response time van de API voor het ophalen van de bestellingenlijst en valideer dat p95 < 200ms is onder normale belasting.",
+        "Voer performance tests uit om de p95 response time te valideren."
+      ]
+    },
+    {
+      "reqId": "REQ-020",
+      "backendRefs": [
+        "CorrelationIdFilter",
+        "LoggingAspect",
+        "OrderService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Controleer de logs voor order transacties en valideer dat elke log entry een correlationId bevat.",
+        "Traceer een order transactie door de logs om de aanwezigheid van correlationId te verifi\u00ebren."
+      ]
+    },
+    {
+      "reqId": "REQ-021",
+      "backendRefs": [
+        "OrderRepository",
+        "OrderPersistenceService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Valideer dat order data na 7 jaar nog steeds beschikbaar is in de database.",
+        "Simuleer het verstrijken van 7 jaar en controleer de data retentie."
+      ]
+    }
+  ]
+}
