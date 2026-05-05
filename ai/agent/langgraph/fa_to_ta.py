@@ -26,6 +26,7 @@ Output:
 """
 
 import argparse
+import base64
 import json
 import os
 import sys
@@ -44,12 +45,57 @@ from pypdf import PdfReader
 load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
 
 
-CONTEXT_EXTENSIONS = (".md", ".txt", ".pdf")
+CONTEXT_EXTENSIONS = (".md", ".txt", ".pdf", ".png", ".jpg", ".jpeg", ".gif", ".webp")
+
+IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+
+_IMAGE_MIME: dict[str, str] = {
+    ".png":  "image/png",
+    ".jpg":  "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif":  "image/gif",
+    ".webp": "image/webp",
+}
+
+
+def _describe_image(f: Path) -> str:
+    """Stuur een afbeelding naar het LLM en geef een gestructureerde tekstbeschrijving terug."""
+    mime = _IMAGE_MIME[f.suffix.lower()]
+    data = base64.standard_b64encode(f.read_bytes()).decode()
+    message = HumanMessage(content=[
+        {
+            "type": "image_url",
+            "image_url": {"url": f"data:{mime};base64,{data}"},
+        },
+        {
+            "type": "text",
+            "text": (
+                "Je bent een SDLC-documentatie assistent. "
+                "Analyseer deze afbeelding en beschrijf de inhoud in gestructureerde tekst "
+                "zodat het bruikbaar is als context voor het genereren van een Technische Analyse.\n\n"
+                "Regels:\n"
+                "- Als het een domeinmodel of ERD is: beschrijf alle entiteiten, hun velden en relaties\n"
+                "- Als het een sequentiediagram is: beschrijf de stappen en actoren in volgorde\n"
+                "- Als het een flowchart of procesdiagram is: beschrijf elke stap en beslissing\n"
+                "- Als het een UI-mockup of wireframe is: beschrijf de schermopbouw, componenten en interacties\n"
+                "- Als het een architectuurdiagram is: beschrijf services, verbindingen en verantwoordelijkheden\n"
+                "- Geef de beschrijving in het Nederlands\n"
+                "- Gebruik koppen en bullet-lijsten voor structuur\n"
+                "- Wees concreet en volledig — laat geen details weg"
+            ),
+        },
+    ])
+    llm = get_llm()
+    response = llm.invoke([message])
+    return response.content.strip()
 
 
 def read_context_file(f: Path) -> str:
-    """Lees een context bestand (.md, .txt of .pdf) en geef de tekst terug."""
-    if f.suffix == ".pdf":
+    """Lees een context bestand (.md, .txt, .pdf of afbeelding) en geef de tekst terug."""
+    suffix = f.suffix.lower()
+    if suffix in IMAGE_EXTENSIONS:
+        return _describe_image(f)
+    if suffix == ".pdf":
         reader = PdfReader(f)
         return "\n".join(page.extract_text() or "" for page in reader.pages)
     return f.read_text(encoding="utf-8")
@@ -1360,8 +1406,14 @@ def main():
                 if f.is_file() and f.suffix in CONTEXT_EXTENSIONS
             )
             for f in dir_files:
+                label = "🖼️  Afbeelding" if f.suffix.lower() in IMAGE_EXTENSIONS else "📄 Context"
+                if f.suffix.lower() in IMAGE_EXTENSIONS:
+                    print(f"  {label} analyseren (dir): {f.name}")
                 context_parts.append(f"### {f.name}\n{read_context_file(f)}")
-                print(f"  📄 Context geladen (dir): {f.name}")
+                if f.suffix.lower() not in IMAGE_EXTENSIONS:
+                    print(f"  📄 Context geladen (dir): {f.name}")
+                else:
+                    print(f"  ✅ Afbeelding verwerkt (dir): {f.name}")
 
     # 3) Specifieke bestanden via --context-files
     for file_path_str in args.context_files:
@@ -1369,8 +1421,13 @@ def main():
         if not f.is_file():
             print(f"⚠️  --context-files bestand niet gevonden: {f}", file=sys.stderr)
             continue
+        if f.suffix.lower() in IMAGE_EXTENSIONS:
+            print(f"  🖼️  Afbeelding analyseren (file): {f.name}")
         context_parts.append(f"### {f.name}\n{read_context_file(f)}")
-        print(f"  📄 Context geladen (file): {f.name}")
+        if f.suffix.lower() in IMAGE_EXTENSIONS:
+            print(f"  ✅ Afbeelding verwerkt (file): {f.name}")
+        else:
+            print(f"  📄 Context geladen (file): {f.name}")
 
     extra_context = "\n\n".join(context_parts)
     if extra_context:
