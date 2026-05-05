@@ -209,49 +209,37 @@ def _build_prompt_pages(
     lang: str,
     num_pages: int,
     img_dir_name: str,
-    visual_pages: dict[int, str],
+    entries: "list[_VisualEntry]",
 ) -> str:
-    """Genereer de FA op basis van pagina-afbeeldingen en bekende visuele pagina's."""
+    """Genereer de FA op basis van pagina-afbeeldingen en de exacte bestandsnamen per design."""
     lang_instruction = (
         "Schrijf de output in het Nederlands."
         if lang == "nl"
         else "Write the output in English."
     )
 
-    visual_hint = "\n".join(
-        f"  Pagina {p}: {title}"
-        for p, title in sorted(visual_pages.items())
-    ) or "  (geen visuele pagina's gedetecteerd)"
+    # Exacte titel → bestandsnaam mapping voor Pass 2
+    design_lines = "\n".join(
+        f'  "{e.title}" → {img_dir_name}/{e.out_name}  (pagina {e.page})'
+        for e in entries
+    ) or "  (geen visuele designs gedetecteerd)"
 
     return f"""Je bent een SDLC-documentatie assistent.
 Jouw taak: converteer ALLE inhoud van deze PDF naar een gestructureerde Markdown FA.
 {lang_instruction}
 
-Je ontvangt {num_pages} afbeeldingen (één per pagina). De volgende pagina's zijn visueel:
-{visual_hint}
+Je ontvangt {num_pages} afbeeldingen (één per pagina).
+De onderstaande visuele designs zijn uit de PDF geëxtraheerd en opgeslagen als afbeeldingen.
+Gebruik UITSLUITEND de opgegeven bestandsnamen — verzin geen andere paden:
 
-── REGELS VOOR VISUELE PAGINA'S ───────────────────────────────────────────────
-Voor elke visuele pagina (diagram, ERD, UI-design, etc.):
-1. Maak een ## sectie met de EXACTE PDF-titel
-2. Voeg DIRECT NA de ## titel de afbeeldingsreferentie in — en NIETS ANDERS:
-   ![<titel>]({img_dir_name}/page-N[-M].png)
-   waarbij N het paginanummer is en M het volgnummer als een pagina meerdere
-   designs heeft (bv. page-3-1.png en page-3-2.png)
-3. GEEN beschrijvingstekst, GEEN samenvatting, GEEN bullets — alleen titel + afbeelding
+{design_lines}
 
-Voorbeeld voor pagina 3 "Database ERD":
-## Database ERD
-
-![Database ERD]({img_dir_name}/page-3.png)
-
-Voorbeeld voor pagina 5 met twee designs:
-## Homepage
-
-![Homepage]({img_dir_name}/page-5-1.png)
-
-## Checkout
-
-![Checkout]({img_dir_name}/page-5-2.png)
+── REGELS VOOR VISUELE DESIGNS ────────────────────────────────────────────────
+Voor elk design uit de lijst hierboven:
+1. Maak een ## sectie met exact de opgegeven titel
+2. Voeg op de volgende regel de afbeeldingsreferentie in met het EXACTE opgegeven pad:
+   ![titel](pad/zoals/hierboven/opgegeven.png)
+3. GEEN beschrijvingstekst, GEEN samenvatting, GEEN bullets — alleen ## titel + afbeelding
 
 ── REGELS VOOR TEKSTPAGINA'S ──────────────────────────────────────────────────
 Extraheer de volledige tekstinhoud. Behoud alle technische details:
@@ -261,11 +249,10 @@ Gebruik de REQ-/BR-/NFR-/AC-nummering exact zoals in de PDF.
 ── STRUCTUUR ───────────────────────────────────────────────────────────────────
 - Begin met: # Feature-{feature_id}: {{exacte titel uit de PDF}}
 - Gebruik de EXACTE sectietitels uit de PDF als ## headings
+- Plaatst visuele design-secties op de positie waar ze in de PDF staan
 - Standaardsecties (als aanwezig): ## Doel, ## Scope, ## Requirements,
   ## Business rules, ## Non-functional, ## Data, ## API notes,
   ## Acceptance Criteria, ## UX notes
-- Voeg diagram-secties toe met hun exacte PDF-titel (bv. ## Database ERD,
-  ## Deployment Diagram, ## Sequence Diagram, ## UI Designs, ## Recap)
 - Verzin NIETS — laat weg wat niet in de PDF staat
 - Geef de output als RAW Markdown — geen code block omheen
 
@@ -432,15 +419,12 @@ def convert_with_page_images(
         _crop_and_save(src, out, entry.crop)
     print("  ✅ Bijsnijden klaar")
 
-    # Bouw visual_pages dict voor Pass 2 prompt {paginanummer: titel}
-    visual_pages = {e.page: e.title for e in entries}
-
-    # Pass 2: genereer FA
+    # Pass 2: genereer FA met exacte bestandsnamen per design
     print(f"  📤 Pass 2 — FA genereren ({len(page_images)} pagina's)...")
     content = _build_image_content(page_images)
     content.append({
         "type": "text",
-        "text": _build_prompt_pages(feature_id, lang, len(page_images), img_dir_name, visual_pages),
+        "text": _build_prompt_pages(feature_id, lang, len(page_images), img_dir_name, entries),
     })
     response = get_llm().invoke([HumanMessage(content=content)])
     return response.content.strip()
