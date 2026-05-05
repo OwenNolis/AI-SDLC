@@ -696,18 +696,57 @@ def generate_acceptance_criteria(state: TAState) -> dict:
     """
     Node 5b: Genereer acceptance criteria voor elke requirement.
     Elke AC beschrijft een meetbaar, testbaar scenario in Given/When/Then formaat.
+    Gebruikt requirements, domeinmodel, API design en FA-inhoud als context.
     """
     print("✅ Acceptance Criteria genereren...")
 
     valid_req_ids = {r["id"] for r in state["requirements"] if "id" in r}
 
-    prompt = f"""Je bent een SDLC-analyse agent.
+    # Extraheer bestaande ACs uit de FA als startpunt (kunnen leeg zijn)
+    fa_ac_section = ""
+    in_ac = False
+    for line in state["fa_content"].splitlines():
+        low = line.lower().strip()
+        if low.startswith("## acceptance criteria"):
+            in_ac = True
+        elif low.startswith("## ") and in_ac:
+            in_ac = False
+        if in_ac:
+            fa_ac_section += line + "\n"
 
-Genereer acceptance criteria (AC) voor elke requirement.
-Elk AC beschrijft een concreet, testbaar scenario in Given/When/Then formaat.
+    fa_ac_hint = (
+        f"\nDe FA bevat al de volgende (mogelijk onvolledige) acceptance criteria — gebruik deze als startpunt "
+        f"en vul ze aan of verbeter ze waar nodig:\n{fa_ac_section}\n"
+        if fa_ac_section.strip() else
+        "\nDe FA bevat geen acceptance criteria — genereer ze volledig op basis van de requirements, het domeinmodel en de API.\n"
+    )
 
+    # Compacte samenvatting van endpoints voor concrete HTTP-waarden in ACs
+    endpoint_summary = "\n".join(
+        f"  {ep.get('method')} {ep.get('path')} → "
+        + ", ".join(f"{r.get('status')} {r.get('bodySchemaRef','')}" for r in ep.get("responses", []))
+        for ep in state["api_design"].get("endpoints", [])
+    )
+
+    # Compacte samenvatting van entiteiten voor concrete veldnamen in ACs
+    entity_summary = "\n".join(
+        f"  {ent.get('name')}: " + ", ".join(f.get("name","") for f in ent.get("fields", []))
+        for ent in state["domain_model"].get("entities", [])
+    )
+
+    prompt = f"""Je bent een ervaren SDLC-kwaliteitsborging agent.
+
+Jouw taak: schrijf VOLLEDIGE, CONCRETE en TESTBARE acceptance criteria voor elke requirement.
+Dit is een kritisch onderdeel van de Technische Analyse — slechte of vage ACs zijn onacceptabel.
+{fa_ac_hint}
 Requirements:
 {json.dumps(state["requirements"], indent=2)}
+
+Beschikbare API endpoints:
+{endpoint_summary if endpoint_summary else "  (nog niet beschikbaar)"}
+
+Beschikbare domeinentiteiten en velden:
+{entity_summary if entity_summary else "  (nog niet beschikbaar)"}
 
 Geef ALLEEN een JSON object terug:
 {{
@@ -723,18 +762,31 @@ Geef ALLEEN een JSON object terug:
   ]
 }}
 
-Regels:
-- acId formaat: AC-{{reqId nummer}}-{{volgnummer}} (bv. AC-001-1, AC-001-2 voor REQ-001)
-- reqId: UITSLUITEND IDs uit de requirements lijst — geen nieuwe IDs verzinnen
-- given: beschrijf de beginstaat (bv. "Een ingelogde gebruiker met een gevulde winkelwagen")
-- when: beschrijf de actie (bv. "De gebruiker klikt op de 'Bestellen' knop")
-- then: beschrijf het meetbare resultaat (bv. "De API retourneert HTTP 201 met een orderNumber en status PENDING")
-- testType: kies exact één van: unit, integration, e2e
-  * unit = puur logica (validators, calculaties, state machines)
-  * integration = API endpoint, database interactie
-  * e2e = volledige gebruikersstroom in de browser
-- Genereer 1-3 ACs per requirement: minimaal 1 happy path, maximaal 2 negatieve/randgevallen
-- Zorg dat elke AC concreet en meetbaar is — geen vage omschrijvingen
+VERPLICHTE KWALITEITSREGELS — elke AC die hier niet aan voldoet is onvoldoende:
+
+Structuur:
+- acId formaat: AC-{{reqId nummer}}-{{volgnummer}} (bv. AC-001-1, AC-001-2)
+- reqId: UITSLUITEND IDs uit de bovenstaande requirements lijst
+- Minimaal 2 ACs per requirement: altijd 1 happy path + minimaal 1 negatief/randgeval
+- Voor requirements met validatieregels, constraints of business rules: genereer een AC per validatieregel
+
+Concreetheid (meest kritieke regel):
+- given: noem de exacte beginstaat met echte waarden (bv. "Een product met voorraad 5 stuks en drempel 10")
+- when: noem de exacte actie met echte invoerwaarden (bv. "POST /api/orders met quantity=3 en productId=<uuid>")
+- then: noem het exacte meetbare resultaat (bv. "HTTP 201 met body {{orderNumber: 'ORD-2024-000001', status: 'PENDING'}}")
+- Gebruik NOOIT vage formuleringen zoals "de juiste foutmelding", "succesvol verwerkt" of "correct gedrag"
+- Gebruik WEL: HTTP-statuscodes, veldnamen, enum-waarden, grensbedragen, aantallen uit de requirements
+
+Dekking — voor elke requirement:
+- Happy path: de normale, succesvolle werking
+- Validatiefout: ontbrekend verplicht veld, te lange waarde, ongeldige enum, negatief getal, etc.
+- Randgeval (indien van toepassing): grenswaarden (exact max, exact min, exact 0), duplicaten, conflicten
+- Autorisatie (indien van toepassing): ROLE_USER vs ROLE_ADMIN
+
+testType:
+- unit = pure logica zonder I/O (validators, berekeningen, state machines, domeinregels)
+- integration = API-endpoint aanroep met database-interactie (de meeste backend ACs)
+- e2e = volledige gebruikersstroom van UI tot database (formulier invullen, knop klikken, resultaat zien)
 """
     result = llm_json(prompt)
     raw_acs = result.get("acceptanceCriteria", [])

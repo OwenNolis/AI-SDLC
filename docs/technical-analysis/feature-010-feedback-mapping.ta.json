@@ -670,297 +670,545 @@
     {
       "acId": "AC-001-1",
       "reqId": "REQ-001",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder maakt een nieuwe FeedbackMapping aan met geldige waarden voor serviceNotificationId, businessUnitCode, plannerFeedbackType, mainReasonCode, mainReasonCodeDescription, subReasonCode en subReasonCodeDescription.",
-      "then": "De FeedbackMapping wordt succesvol aangemaakt en de API retourneert een 201 Created status met de details van de aangemaakte mapping.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder maakt een nieuwe FeedbackMapping aan via POST /api/feedback-mappings met de volgende data: serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY', mainReasonCode='MR001', mainReasonCodeDescription='Main reason description', subReasonCode='SR001', subReasonCodeDescription='Sub reason description'.",
+      "then": "De API retourneert HTTP 201 Created met een FeedbackMappingResponse body die de aangemaakte mapping bevat, inclusief een gegenereerd uniek id, serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY', mainReasonCode='MR001', mainReasonCodeDescription='Main reason description', subReasonCode='SR001', subReasonCodeDescription='Sub reason description', en active=true.",
       "testType": "integration"
     },
     {
       "acId": "AC-001-2",
       "reqId": "REQ-001",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken zonder een verplicht veld (bv. mainReasonCode).",
-      "then": "De API retourneert een 400 Bad Request status met een duidelijke foutmelding die aangeeft welk veld ontbreekt.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings zonder het verplichte veld 'mainReasonCode'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'mainReasonCode'.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-001-3",
+      "reqId": "REQ-001",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met een lege string voor 'mainReasonCodeDescription' terwijl 'mainReasonCode' wel is ingevuld.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'mainReasonCodeDescription'.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-001-4",
+      "reqId": "REQ-001",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met een 'subReasonCode' maar zonder 'subReasonCodeDescription'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'subReasonCodeDescription'.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-001-5",
+      "reqId": "REQ-001",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met een 'mainReasonCode' van 51 tekens.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'mainReasonCode' (lengte).",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-001-6",
+      "reqId": "REQ-001",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met een 'subReasonCode' van 51 tekens.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'subReasonCode' (lengte).",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-001-7",
+      "reqId": "REQ-001",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met een 'mainReasonCodeDescription' van 256 tekens.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'mainReasonCodeDescription' (lengte).",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-001-8",
+      "reqId": "REQ-001",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met een 'subReasonCodeDescription' van 256 tekens.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'subReasonCodeDescription' (lengte).",
       "testType": "integration"
     },
     {
       "acId": "AC-002-1",
       "reqId": "REQ-002",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een ongeldige waarde voor plannerFeedbackType (bv. 'INVALID_TYPE').",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat plannerFeedbackType een ongeldige waarde heeft.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'plannerFeedbackType' ingesteld op 'INVALID_TYPE'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'plannerFeedbackType' met de melding dat de waarde ongeldig is.",
       "testType": "integration"
     },
     {
       "acId": "AC-002-2",
       "reqId": "REQ-002",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken zonder een waarde voor plannerFeedbackType.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat plannerFeedbackType verplicht is.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'plannerFeedbackType' ingesteld op 'DELIVERY'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-002-3",
+      "reqId": "REQ-002",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'plannerFeedbackType' ingesteld op 'PICKUP'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-002-4",
+      "reqId": "REQ-002",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'plannerFeedbackType' ingesteld op 'CROSSDOCK'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-002-5",
+      "reqId": "REQ-002",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'plannerFeedbackType' ingesteld op 'NOT_CAPTURED'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
       "testType": "integration"
     },
     {
       "acId": "AC-003-1",
       "reqId": "REQ-003",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een mainReasonCode die langer is dan 50 tekens.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat mainReasonCode de maximale lengte overschrijdt.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met een 'mainReasonCode' van 50 tekens.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
       "testType": "integration"
     },
     {
       "acId": "AC-003-2",
       "reqId": "REQ-003",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken zonder een waarde voor mainReasonCode.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat mainReasonCode verplicht is.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met een 'mainReasonCode' van 51 tekens.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'mainReasonCode' (lengte).",
       "testType": "integration"
     },
     {
       "acId": "AC-004-1",
       "reqId": "REQ-004",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder maakt een nieuwe FeedbackMapping aan met een subReasonCode en een bijbehorende subReasonCodeDescription.",
-      "then": "De FeedbackMapping wordt succesvol aangemaakt met de opgegeven subReasonCode en subReasonCodeDescription.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'subReasonCode' ingesteld op 'SR002' en 'subReasonCodeDescription' ingesteld op 'Sub reason description 2'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
       "testType": "integration"
     },
     {
       "acId": "AC-004-2",
       "reqId": "REQ-004",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een subReasonCode die langer is dan 50 tekens.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat subReasonCode de maximale lengte overschrijdt.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'subReasonCode' ingesteld op 'SR003' maar zonder 'subReasonCodeDescription'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'subReasonCodeDescription'.",
       "testType": "integration"
     },
     {
       "acId": "AC-004-3",
       "reqId": "REQ-004",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een subReasonCode maar zonder subReasonCodeDescription.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat subReasonCodeDescription verplicht is wanneer subReasonCode wordt opgegeven.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'subReasonCode' ingesteld op 'SR004' en 'subReasonCodeDescription' ingesteld op een lege string.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'subReasonCodeDescription'.",
       "testType": "integration"
     },
     {
       "acId": "AC-004-4",
       "reqId": "REQ-004",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder maakt een nieuwe FeedbackMapping aan zonder subReasonCode en subReasonCodeDescription.",
-      "then": "De FeedbackMapping wordt succesvol aangemaakt zonder subReasonCode en subReasonCodeDescription.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings zonder 'subReasonCode' en zonder 'subReasonCodeDescription'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-5",
+      "reqId": "REQ-004",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'subReasonCode' ingesteld op een string van 50 tekens en 'subReasonCodeDescription' ingesteld op 'Valid description'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-6",
+      "reqId": "REQ-004",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met 'subReasonCode' ingesteld op een string van 51 tekens en 'subReasonCodeDescription' ingesteld op 'Valid description'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'subReasonCode' (lengte).",
       "testType": "integration"
     },
     {
       "acId": "AC-005-1",
       "reqId": "REQ-005",
-      "given": "Er bestaat al een actieve FeedbackMapping voor een specifieke combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType.",
-      "when": "Een beheerder probeert een nieuwe FeedbackMapping aan te maken met dezelfde combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType.",
-      "then": "De API retourneert een 409 Conflict status met een foutmelding die aangeeft dat de combinatie al bestaat.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN, een actieve FeedbackMapping met id 'FM1' voor (serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY').",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met dezelfde combinatie: serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY', mainReasonCode='MR002', mainReasonCodeDescription='Another reason'.",
+      "then": "De API retourneert HTTP 409 Conflict met een ApiError body die aangeeft dat de combinatie al bestaat.",
       "testType": "integration"
     },
     {
       "acId": "AC-005-2",
       "reqId": "REQ-005",
-      "given": "Er bestaat een gedeactiveerde FeedbackMapping voor een specifieke combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType.",
-      "when": "Een beheerder probeert een nieuwe FeedbackMapping aan te maken met dezelfde combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType.",
-      "then": "De FeedbackMapping wordt succesvol aangemaakt, omdat de bestaande mapping gedeactiveerd is.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN, een gedeactiveerde FeedbackMapping met id 'FM2' voor (serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY').",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met dezelfde combinatie: serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY', mainReasonCode='MR003', mainReasonCodeDescription='Yet another reason'.",
+      "then": "De API retourneert HTTP 409 Conflict met een ApiError body die aangeeft dat de combinatie al bestaat en niet opnieuw geactiveerd kan worden zolang de oude mapping niet definitief verwijderd is.",
       "testType": "integration"
     },
     {
       "acId": "AC-006-1",
       "reqId": "REQ-006",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het bewerken van FeedbackMappings.",
-      "when": "De beheerder bewerkt een bestaande FeedbackMapping en wijzigt de plannerFeedbackType, mainReasonCodeDescription en subReasonCodeDescription.",
-      "then": "De FeedbackMapping wordt succesvol bijgewerkt met de nieuwe waarden en de API retourneert een 200 OK status.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een bestaande FeedbackMapping met id 'FM1' (serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY', mainReasonCode='MR001', mainReasonCodeDescription='Original description').",
+      "when": "De beheerder bewerkt de FeedbackMapping met id 'FM1' via PUT /api/feedback-mappings/FM1 met de volgende data: mainReasonCodeDescription='Updated description', subReasonCode='SR005', subReasonCodeDescription='Updated sub description'.",
+      "then": "De API retourneert HTTP 200 OK met een FeedbackMappingResponse body die de bijgewerkte mapping bevat met id 'FM1', serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY', mainReasonCode='MR001', mainReasonCodeDescription='Updated description', subReasonCode='SR005', subReasonCodeDescription='Updated sub description', en active=true.",
       "testType": "integration"
     },
     {
       "acId": "AC-006-2",
       "reqId": "REQ-006",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het bewerken van FeedbackMappings.",
-      "when": "De beheerder probeert een bestaande FeedbackMapping te bewerken door de serviceNotificationId te wijzigen.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de sleutelcombinatie niet gewijzigd kan worden.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een bestaande FeedbackMapping met id 'FM1' (serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY').",
+      "when": "De beheerder probeert de FeedbackMapping met id 'FM1' te bewerken via PUT /api/feedback-mappings/FM1 door de 'serviceNotificationId' te wijzigen naar 'SN456'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die aangeeft dat de sleutelcombinatie niet gewijzigd kan worden.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-006-3",
+      "reqId": "REQ-006",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een bestaande FeedbackMapping met id 'FM1' (serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY').",
+      "when": "De beheerder probeert de FeedbackMapping met id 'FM1' te bewerken via PUT /api/feedback-mappings/FM1 door de 'businessUnitCode' te wijzigen naar 'BU789'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die aangeeft dat de sleutelcombinatie niet gewijzigd kan worden.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-006-4",
+      "reqId": "REQ-006",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een bestaande FeedbackMapping met id 'FM1' (serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY').",
+      "when": "De beheerder probeert de FeedbackMapping met id 'FM1' te bewerken via PUT /api/feedback-mappings/FM1 door de 'plannerFeedbackType' te wijzigen naar 'PICKUP'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die aangeeft dat de sleutelcombinatie niet gewijzigd kan worden.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-006-5",
+      "reqId": "REQ-006",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een bestaande FeedbackMapping met id 'FM1'.",
+      "when": "De beheerder probeert de FeedbackMapping met id 'FM1' te bewerken via PUT /api/feedback-mappings/FM1 met een ongeldige 'plannerFeedbackType' waarde 'INVALID_TYPE'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'plannerFeedbackType'.",
       "testType": "integration"
     },
     {
       "acId": "AC-007-1",
       "reqId": "REQ-007",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het deactiveren van FeedbackMappings.",
-      "when": "De beheerder deactiveert een bestaande FeedbackMapping.",
-      "then": "De FeedbackMapping wordt gemarkeerd als inactief (active = false) en de API retourneert een 200 OK status.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een actieve FeedbackMapping met id 'FM1'.",
+      "when": "De beheerder deactiveert de FeedbackMapping met id 'FM1' via DELETE /api/feedback-mappings/FM1 (aannemende dat DELETE soft delete implementeert).",
+      "then": "De API retourneert HTTP 204 No Content. De FeedbackMapping met id 'FM1' heeft nu active=false. Bij het opvragen van de lijst met GET /api/feedback-mappings (standaard filter op active=true) is de mapping niet zichtbaar.",
       "testType": "integration"
     },
     {
       "acId": "AC-007-2",
       "reqId": "REQ-007",
-      "given": "Een FeedbackMapping is gedeactiveerd.",
-      "when": "Er wordt geprobeerd om feedback te verwerken die overeenkomt met deze gedeactiveerde FeedbackMapping.",
-      "then": "De gedeactiveerde FeedbackMapping wordt niet gebruikt voor de feedbackverwerking.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een gedeactiveerde FeedbackMapping met id 'FM1'.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?active=false.",
+      "then": "De FeedbackMapping met id 'FM1' is zichtbaar in de response.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-007-3",
+      "reqId": "REQ-007",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een actieve FeedbackMapping met id 'FM1'.",
+      "when": "De beheerder probeert de FeedbackMapping met id 'FM1' te deactiveren via DELETE /api/feedback-mappings/FM1, maar de mapping bestaat niet.",
+      "then": "De API retourneert HTTP 404 Not Found met een ApiError body.",
       "testType": "integration"
     },
     {
       "acId": "AC-008-1",
       "reqId": "REQ-008",
-      "given": "Er zijn meerdere FeedbackMappings aangemaakt met verschillende serviceNotificationIds, businessUnitCodes en plannerFeedbackTypes.",
-      "when": "De beheerder vraagt de lijst van FeedbackMappings op met een filter op serviceNotificationId='SN123' en plannerFeedbackType='DELIVERY'.",
-      "then": "De API retourneert een lijst met alleen de FeedbackMappings die voldoen aan de opgegeven filters.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en minimaal 15 FeedbackMappings, waarvan er 7 met serviceNotificationId='SN123', 5 met businessUnitCode='BU456', en 3 met plannerFeedbackType='DELIVERY'.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?serviceNotificationId=SN123&businessUnitCode=BU456&plannerFeedbackType=DELIVERY&page=1&size=10.",
+      "then": "De API retourneert HTTP 200 OK met een FeedbackMappingListResponse body die maximaal 10 FeedbackMappings bevat, gefilterd op de opgegeven criteria. De response bevat ook informatie over het totaal aantal resultaten en het aantal pagina's.",
       "testType": "integration"
     },
     {
       "acId": "AC-008-2",
       "reqId": "REQ-008",
-      "given": "Er zijn meer dan 10 FeedbackMappings beschikbaar.",
-      "when": "De beheerder vraagt de lijst van FeedbackMappings op zonder specifieke filters.",
-      "then": "De API retourneert de eerste 10 FeedbackMappings (pagina 1).",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en minimaal 15 FeedbackMappings.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?page=2&size=10.",
+      "then": "De API retourneert HTTP 200 OK met een FeedbackMappingListResponse body die de volgende 10 FeedbackMappings bevat (resultaten 11-20).",
       "testType": "integration"
     },
     {
       "acId": "AC-008-3",
       "reqId": "REQ-008",
-      "given": "Er zijn meer dan 10 FeedbackMappings beschikbaar.",
-      "when": "De beheerder vraagt de lijst van FeedbackMappings op met paginering parameter 'page=2'.",
-      "then": "De API retourneert de volgende 10 FeedbackMappings (pagina 2).",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en minimaal 15 FeedbackMappings.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?page=3&size=10.",
+      "then": "De API retourneert HTTP 200 OK met een FeedbackMappingListResponse body die de resterende FeedbackMappings bevat (resultaten 21-30, of minder indien er minder dan 30 zijn).",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-008-4",
+      "reqId": "REQ-008",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?page=1&size=5.",
+      "then": "De API retourneert HTTP 200 OK met een FeedbackMappingListResponse body die maximaal 5 FeedbackMappings bevat.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-008-5",
+      "reqId": "REQ-008",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?page=1&size=100.",
+      "then": "De API retourneert HTTP 200 OK met een FeedbackMappingListResponse body die maximaal 100 FeedbackMappings bevat.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-008-6",
+      "reqId": "REQ-008",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?page=0&size=10.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'page' (pagina mag niet 0 zijn).",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-008-7",
+      "reqId": "REQ-008",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?page=1&size=0.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'size' (aantal per pagina mag niet 0 zijn).",
       "testType": "integration"
     },
     {
       "acId": "AC-009-1",
       "reqId": "REQ-009",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een serviceNotificationId die niet bestaat in het systeem.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de ServiceNotification niet bestaat.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met serviceNotificationId='SN_NON_EXISTENT' en businessUnitCode='BU456'.",
+      "then": "De API retourneert HTTP 404 Not Found met een ApiError body die aangeeft dat de ServiceNotification niet bestaat.",
       "testType": "integration"
     },
     {
       "acId": "AC-009-2",
       "reqId": "REQ-009",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een serviceNotificationId die wel bestaat maar gedeactiveerd is.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de ServiceNotification niet actief is.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met serviceNotificationId='SN_INACTIVE' (een ServiceNotification die niet actief is) en businessUnitCode='BU456'.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die aangeeft dat de opgegeven ServiceNotification niet actief is.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-009-3",
+      "reqId": "REQ-009",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een actieve ServiceNotification met id 'SN123' en een BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met serviceNotificationId='SN123' en businessUnitCode='BU456'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
       "testType": "integration"
     },
     {
       "acId": "AC-010-1",
       "reqId": "REQ-010",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een businessUnitCode die niet bestaat in het systeem.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de BusinessUnit niet bestaat.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een actieve ServiceNotification met id 'SN123'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met serviceNotificationId='SN123' en businessUnitCode='BU_NON_EXISTENT'.",
+      "then": "De API retourneert HTTP 404 Not Found met een ApiError body die aangeeft dat de BusinessUnit niet bestaat.",
       "testType": "integration"
     },
     {
       "acId": "AC-010-2",
       "reqId": "REQ-010",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een businessUnitCode die wel bestaat maar gedeactiveerd is.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de BusinessUnit niet actief is.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een actieve ServiceNotification met id 'SN123'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met serviceNotificationId='SN123' en businessUnitCode='BU_INACTIVE' (een BusinessUnit die niet actief is).",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die aangeeft dat de opgegeven BusinessUnit niet actief is.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-010-3",
+      "reqId": "REQ-010",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een actieve ServiceNotification met id 'SN123' en een actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met serviceNotificationId='SN123' en businessUnitCode='BU456'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
       "testType": "integration"
     },
     {
       "acId": "AC-011-1",
       "reqId": "REQ-011",
-      "given": "Er zijn zowel actieve als gedeactiveerde FeedbackMappings in het systeem.",
-      "when": "Het systeem verwerkt feedback die overeenkomt met een actieve FeedbackMapping.",
-      "then": "De actieve FeedbackMapping wordt gebruikt voor de feedbackverwerking.",
+      "given": "Er zijn actieve FeedbackMappings (active=true) en gedeactiveerde FeedbackMappings (active=false) in het systeem.",
+      "when": "Een proces dat feedback verwerkt, vraagt de beschikbare FeedbackMappings op.",
+      "then": "Alleen de FeedbackMappings met active=true worden doorgegeven aan het feedbackverwerkingsproces.",
       "testType": "integration"
     },
     {
       "acId": "AC-011-2",
       "reqId": "REQ-011",
-      "given": "Er zijn zowel actieve als gedeactiveerde FeedbackMappings in het systeem.",
-      "when": "Het systeem verwerkt feedback die overeenkomt met een gedeactiveerde FeedbackMapping.",
-      "then": "De gedeactiveerde FeedbackMapping wordt niet gebruikt voor de feedbackverwerking, maar blijft wel bewaard in de database.",
+      "given": "Een gedeactiveerde FeedbackMapping met id 'FM1' bestaat in het systeem.",
+      "when": "De gedeactiveerde FeedbackMapping met id 'FM1' wordt opgevraagd via GET /api/feedback-mappings/FM1.",
+      "then": "De mapping wordt succesvol opgehaald en de 'active' vlag is false.",
       "testType": "integration"
     },
     {
       "acId": "AC-012-1",
       "reqId": "REQ-012",
-      "given": "Een FeedbackMapping is gedeactiveerd.",
-      "when": "Een beheerder probeert de gedeactiveerde FeedbackMapping opnieuw te activeren.",
-      "then": "De FeedbackMapping wordt succesvol geactiveerd en de API retourneert een 200 OK status.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een gedeactiveerde FeedbackMapping met id 'FM1' voor (serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY').",
+      "when": "De beheerder bewerkt de FeedbackMapping met id 'FM1' via PUT /api/feedback-mappings/FM1 om deze opnieuw te activeren (active=true) met dezelfde sleutelcombinatie.",
+      "then": "De API retourneert HTTP 200 OK met de bijgewerkte mapping (active=true).",
       "testType": "integration"
     },
     {
       "acId": "AC-012-2",
       "reqId": "REQ-012",
-      "given": "Een FeedbackMapping is gedeactiveerd en er bestaat al een actieve FeedbackMapping met dezelfde sleutelcombinatie.",
-      "when": "Een beheerder probeert de gedeactiveerde FeedbackMapping opnieuw te activeren.",
-      "then": "De API retourneert een 409 Conflict status met een foutmelding die aangeeft dat de combinatie al bestaat en actief is.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN, een gedeactiveerde FeedbackMapping met id 'FM1' voor (serviceNotificationId='SN123', businessUnitCode='BU456', plannerFeedbackType='DELIVERY') en een actieve FeedbackMapping met id 'FM2' voor dezelfde combinatie.",
+      "when": "De beheerder probeert de gedeactiveerde FeedbackMapping met id 'FM1' via PUT /api/feedback-mappings/FM1 opnieuw te activeren (active=true).",
+      "then": "De API retourneert HTTP 409 Conflict met een ApiError body die aangeeft dat de combinatie al bestaat en actief is.",
       "testType": "integration"
     },
     {
       "acId": "AC-013-1",
       "reqId": "REQ-013",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een mainReasonCode maar zonder mainReasonCodeDescription.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat mainReasonCodeDescription verplicht is wanneer mainReasonCode is ingevuld.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met mainReasonCode='MR001' en mainReasonCodeDescription='Valid description'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
       "testType": "integration"
     },
     {
       "acId": "AC-013-2",
       "reqId": "REQ-013",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een mainReasonCodeDescription die langer is dan 255 tekens.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat mainReasonCodeDescription de maximale lengte overschrijdt.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met mainReasonCode='MR001' maar zonder mainReasonCodeDescription.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'mainReasonCodeDescription'.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-013-3",
+      "reqId": "REQ-013",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met mainReasonCode='MR001' en mainReasonCodeDescription=''.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'mainReasonCodeDescription'.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-013-4",
+      "reqId": "REQ-013",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met mainReasonCode='MR001' en mainReasonCodeDescription met 255 tekens.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-013-5",
+      "reqId": "REQ-013",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met mainReasonCode='MR001' en mainReasonCodeDescription met 256 tekens.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'mainReasonCodeDescription' (lengte).",
       "testType": "integration"
     },
     {
       "acId": "AC-014-1",
       "reqId": "REQ-014",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een subReasonCode maar zonder subReasonCodeDescription.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat subReasonCodeDescription verplicht is wanneer subReasonCode wordt opgegeven.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met subReasonCode='SR001' en subReasonCodeDescription='Valid sub description'.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
       "testType": "integration"
     },
     {
       "acId": "AC-014-2",
       "reqId": "REQ-014",
-      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
-      "when": "De beheerder probeert een FeedbackMapping aan te maken met een subReasonCodeDescription die langer is dan 255 tekens.",
-      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat subReasonCodeDescription de maximale lengte overschrijdt.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met subReasonCode='SR002' maar zonder subReasonCodeDescription.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'subReasonCodeDescription'.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-014-3",
+      "reqId": "REQ-014",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met subReasonCode='SR003' en subReasonCodeDescription=''.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'subReasonCodeDescription'.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-014-4",
+      "reqId": "REQ-014",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met subReasonCode='SR004' en subReasonCodeDescription met 255 tekens.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-014-5",
+      "reqId": "REQ-014",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige ServiceNotification met id 'SN123' en actieve BusinessUnit met code 'BU456'.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings met subReasonCode='SR005' en subReasonCodeDescription met 256 tekens.",
+      "then": "De API retourneert HTTP 400 Bad Request met een ApiError body die een veldspecifieke foutmelding bevat voor 'subReasonCodeDescription' (lengte).",
       "testType": "integration"
     },
     {
       "acId": "AC-015-1",
       "reqId": "REQ-015",
-      "given": "Er zijn voldoende FeedbackMappings in het systeem om paginering en filtering te testen.",
-      "when": "Een beheerder vraagt de lijst van FeedbackMappings op met een combinatie van filters en paginering.",
-      "then": "De API response time voor deze request is kleiner dan 300ms (p95).",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een dataset van 1000 FeedbackMappings.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?page=1&size=10.",
+      "then": "De response tijd van de API is p95 < 300ms.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-015-2",
+      "reqId": "REQ-015",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een dataset van 1000 FeedbackMappings met specifieke filters toegepast.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met GET /api/feedback-mappings?serviceNotificationId=SN123&businessUnitCode=BU456&page=1&size=10.",
+      "then": "De response tijd van de API is p95 < 300ms.",
       "testType": "integration"
     },
     {
       "acId": "AC-016-1",
       "reqId": "REQ-016",
-      "given": "Een beheerder is ingelogd en heeft een geldige correlationId en gebruiker-id.",
-      "when": "De beheerder maakt een nieuwe FeedbackMapping aan.",
-      "then": "De aanmaakoperatie wordt gelogd met de opgegeven correlationId en gebruiker-id.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige correlationId 'corr-123'.",
+      "when": "De beheerder maakt een nieuwe FeedbackMapping aan via POST /api/feedback-mappings met alle verplichte velden correct ingevuld.",
+      "then": "De schrijfoperatie wordt gelogd met de correlationId 'corr-123' en de id van de ingelogde beheerder.",
       "testType": "integration"
     },
     {
       "acId": "AC-016-2",
       "reqId": "REQ-016",
-      "given": "Een beheerder is ingelogd en heeft een geldige correlationId en gebruiker-id.",
-      "when": "De beheerder bewerkt een bestaande FeedbackMapping.",
-      "then": "De bewerkingsoperatie wordt gelogd met de opgegeven correlationId en gebruiker-id.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige correlationId 'corr-456'.",
+      "when": "De beheerder bewerkt een bestaande FeedbackMapping via PUT /api/feedback-mappings/{id}.",
+      "then": "De schrijfoperatie wordt gelogd met de correlationId 'corr-456' en de id van de ingelogde beheerder.",
       "testType": "integration"
     },
     {
       "acId": "AC-016-3",
       "reqId": "REQ-016",
-      "given": "Een beheerder is ingelogd en heeft een geldige correlationId en gebruiker-id.",
-      "when": "De beheerder deactiveert een FeedbackMapping.",
-      "then": "De deactivatieoperatie wordt gelogd met de opgegeven correlationId en gebruiker-id.",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN en een geldige correlationId 'corr-789'.",
+      "when": "De beheerder deactiveert een FeedbackMapping via DELETE /api/feedback-mappings/{id}.",
+      "then": "De schrijfoperatie wordt gelogd met de correlationId 'corr-789' en de id van de ingelogde beheerder.",
       "testType": "integration"
     },
     {
       "acId": "AC-017-1",
       "reqId": "REQ-017",
-      "given": "Een gebruiker die niet de rol ROLE_ADMIN heeft, is ingelogd.",
-      "when": "De gebruiker probeert toegang te krijgen tot het endpoint voor het aanmaken van FeedbackMappings.",
-      "then": "De API retourneert een 403 Forbidden status.",
+      "given": "Een gebruiker met de rol ROLE_USER (niet ROLE_ADMIN).",
+      "when": "De gebruiker probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings.",
+      "then": "De API retourneert HTTP 403 Forbidden.",
       "testType": "integration"
     },
     {
       "acId": "AC-017-2",
       "reqId": "REQ-017",
-      "given": "Een gebruiker met de rol ROLE_ADMIN is ingelogd.",
-      "when": "De gebruiker probeert toegang te krijgen tot het endpoint voor het bewerken van FeedbackMappings.",
-      "then": "De API retourneert een 200 OK status en de bewerking kan worden uitgevoerd.",
+      "given": "Een gebruiker met de rol ROLE_USER (niet ROLE_ADMIN).",
+      "when": "De gebruiker probeert een bestaande FeedbackMapping te bewerken via PUT /api/feedback-mappings/{id}.",
+      "then": "De API retourneert HTTP 403 Forbidden.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-017-3",
+      "reqId": "REQ-017",
+      "given": "Een gebruiker met de rol ROLE_USER (niet ROLE_ADMIN).",
+      "when": "De gebruiker probeert een FeedbackMapping te deactiveren via DELETE /api/feedback-mappings/{id}.",
+      "then": "De API retourneert HTTP 403 Forbidden.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-017-4",
+      "reqId": "REQ-017",
+      "given": "Een gebruiker met de rol ROLE_USER (niet ROLE_ADMIN).",
+      "when": "De gebruiker probeert de lijst van FeedbackMappings op te vragen met GET /api/feedback-mappings.",
+      "then": "De API retourneert HTTP 200 OK (lezen is toegestaan voor alle ingelogde gebruikers).",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-017-5",
+      "reqId": "REQ-017",
+      "given": "Een ingelogde beheerder met ROLE_ADMIN.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken via POST /api/feedback-mappings.",
+      "then": "De API accepteert de aanvraag en retourneert HTTP 201 Created.",
       "testType": "integration"
     }
   ],
