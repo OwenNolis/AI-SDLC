@@ -166,75 +166,83 @@ def get_llm() -> ChatGoogleGenerativeAI:
 
 # ── Prompts ────────────────────────────────────────────────────────────────────
 
-def _build_prompt_pages(feature_id: str, lang: str, num_pages: int, img_dir_name: str) -> str:
-    """Prompt voor conversie op basis van individuele pagina-afbeeldingen."""
+_IDENTIFY_PROMPT = """\
+Je ontvangt {n} afbeeldingen — elke afbeelding is één pagina van een PDF.
+Afbeelding 1 = Pagina 1, Afbeelding 2 = Pagina 2, …, Afbeelding {n} = Pagina {n}.
+
+Geef voor ELKE pagina aan of het een visuele pagina is (diagram, ERD, UI-mockup,
+wireframe, deployment/component/sequence diagram, Figma-design, grafiek, foto)
+of een tekstpagina.
+
+Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
+{{
+  "pages": [
+    {{"page": 1, "visual": false, "title": "exacte sectietitel of null"}},
+    {{"page": 2, "visual": true,  "title": "exacte diagramtitel uit de PDF", "type": "ui-mockup"}},
+    ...
+  ]
+}}
+
+type is één van: erd, deployment, component, sequence, ui-mockup, other-visual
+"""
+
+
+def _build_prompt_pages(
+    feature_id: str,
+    lang: str,
+    num_pages: int,
+    img_dir_name: str,
+    visual_pages: dict[int, str],
+) -> str:
+    """Genereer de FA op basis van pagina-afbeeldingen en bekende visuele pagina's."""
     lang_instruction = (
         "Schrijf de output in het Nederlands."
         if lang == "nl"
         else "Write the output in English."
     )
 
-    return f"""Je bent een SDLC-documentatie assistent met expertise in technische documentatie.
-Jouw taak: converteer ALLE inhoud van deze PDF naar een volledige Markdown FA.
+    visual_hint = "\n".join(
+        f"  Pagina {p}: {title}"
+        for p, title in sorted(visual_pages.items())
+    ) or "  (geen visuele pagina's gedetecteerd)"
+
+    return f"""Je bent een SDLC-documentatie assistent.
+Jouw taak: converteer ALLE inhoud van deze PDF naar een gestructureerde Markdown FA.
 {lang_instruction}
 
-Je ontvangt {num_pages} afbeeldingen. Elke afbeelding is één pagina van de PDF:
-Afbeelding 1 = Pagina 1, Afbeelding 2 = Pagina 2, …, Afbeelding {num_pages} = Pagina {num_pages}.
+Je ontvangt {num_pages} afbeeldingen (één per pagina). De volgende pagina's zijn visueel:
+{visual_hint}
 
-Werk in drie fasen:
+── REGELS VOOR VISUELE PAGINA'S ───────────────────────────────────────────────
+Voor elke visuele pagina (diagram, ERD, UI-design, etc.):
+1. Maak een ## sectie met de EXACTE PDF-titel van die pagina
+2. Voeg DIRECT NA de ## titel deze afbeeldingsreferentie in:
+   ![<titel>]({img_dir_name}/page-N.png)   (N = het paginanummer)
+3. Voeg daarna maximaal 3 zinnen samenvatting toe — beschrijf NIET elk element
+   afzonderlijk, de afbeelding spreekt voor zichzelf
 
-── FASE 1: INVENTARISEER ELKE PAGINA ──────────────────────────────────────────
-Ga door elke afbeelding. Stel voor jezelf vast:
-- Wat is de exacte sectietitel of heading op deze pagina?
-- Bevat de pagina tekst, een diagram, een tabel, een UI-mockup of een combinatie?
+Voorbeeld voor pagina 3 met titel "Database ERD":
+## Database ERD
 
-── FASE 2: EXTRAHEER VISUELE INHOUD ───────────────────────────────────────────
-Voor ELKE pagina met een diagram, afbeelding of UI-ontwerp — beschrijf de inhoud
-VOLLEDIG en EXACT. Per diagramtype:
+![Database ERD]({img_dir_name}/page-3.png)
 
-- **Database ERD / datamodel**: per tabel/entiteit: alle kolommen, datatypen,
-  nullable/not-null, primary keys, foreign keys en relaties (1:1, 1:N, N:M)
-- **Deployment diagram**: elke service/node met naam, technologie, poort, verbindingen
-- **Component diagram**: alle componenten, interfaces en afhankelijkheden
-- **Sequence diagram**: alle actoren en stappen in volgorde met retourwaarden
-- **Figma / UI-mockup / wireframe**: elk scherm apart; elk formulierveld, label,
-  placeholder, knop, dropdown, validatie, navigatieflow en foutstate
-- **Overige afbeeldingen**: beschrijf inhoud volledig
+ERD met 5 tabellen: users, orders, products, categories en stock_adjustments.
 
-── FASE 3: SCHRIJF DE VOLLEDIGE MARKDOWN FA ────────────────────────────────────
-VERPLICHTE REGELS:
+── REGELS VOOR TEKSTPAGINA'S ──────────────────────────────────────────────────
+Extraheer de volledige tekstinhoud. Behoud alle technische details:
+veldnamen, types, constraints, HTTP-methodes, paden, statuscodes, enum-waarden.
+Gebruik de REQ-/BR-/NFR-/AC-nummering exact zoals in de PDF.
 
-Afbeeldingen insluiten:
-- Voor elke pagina die een diagram of UI-design bevat: voeg DIRECT NA de sectietitel
-  de volgende Markdown-afbeeldingsreferentie in:
-  ![<exacte diagramtitel uit de PDF>]({img_dir_name}/page-N.png)
-  waarbij N het paginanummer is (bv. page-3.png voor pagina 3)
-- Beschrijf daarna alsnog de volledige inhoud van het diagram in tekst
-- Tekstpagina's krijgen GEEN afbeeldingsreferentie
-
-Structuur:
+── STRUCTUUR ───────────────────────────────────────────────────────────────────
 - Begin met: # Feature-{feature_id}: {{exacte titel uit de PDF}}
 - Gebruik de EXACTE sectietitels uit de PDF als ## headings
-- Voeg voor elk diagram/UI-design een eigen ## sectie toe met de exacte PDF-titel
-  (bv. ## Database ERD, ## Deployment Diagram, ## Component Diagram,
-   ## Sequence Diagram, ## UI Designs, ## Recap)
-- Standaardsecties (als aanwezig in PDF): ## Doel, ## Scope, ## Requirements,
+- Standaardsecties (als aanwezig): ## Doel, ## Scope, ## Requirements,
   ## Business rules, ## Non-functional, ## Data, ## API notes,
   ## Acceptance Criteria, ## UX notes
-
-Inhoud:
-- Verzin NIETS — als iets niet in de PDF staat, laat het dan weg
-- Behoud alle technische details exact: veldnamen, types, constraints,
-  HTTP-methodes, paden, statuscodes, enum-waarden
-- Gebruik REQ-/BR-/NFR-/AC-nummering exact zoals in de PDF;
-  genereer doorlopende nummering als die ontbreekt
-- Laat geen enkel requirement, business rule, acceptance criterion of
-  diagramsectie weg
-
-Opmaak:
+- Voeg diagram-secties toe met hun exacte PDF-titel (bv. ## Database ERD,
+  ## Deployment Diagram, ## Sequence Diagram, ## UI Designs, ## Recap)
+- Verzin NIETS — laat weg wat niet in de PDF staat
 - Geef de output als RAW Markdown — geen code block omheen
-- Gebruik bullet lists voor requirements, business rules en NFRs
-- Gebruik tabellen of geneste bullet lists voor diagraminhoud
 
 Het feature-id voor dit document is: {feature_id}
 """
@@ -251,8 +259,6 @@ def _build_prompt_blob(feature_id: str, lang: str) -> str:
     return f"""Je bent een SDLC-documentatie assistent met expertise in technische documentatie.
 Jouw taak: converteer ALLE inhoud van deze PDF naar een volledige Markdown FA.
 {lang_instruction}
-
-Werk in drie fasen:
 
 ── FASE 1: INVENTARISEER ELKE PAGINA ──────────────────────────────────────────
 Ga door elke pagina van de PDF. Stel voor jezelf vast:
@@ -288,28 +294,75 @@ Het feature-id voor dit document is: {feature_id}
 
 # ── Conversie ──────────────────────────────────────────────────────────────────
 
+def _build_image_content(page_images: list[Path]) -> list[dict]:
+    """Bouw de lijst van base64-afbeelding content blocks op."""
+    content: list[dict] = []
+    for img_path in page_images:
+        b64 = base64.standard_b64encode(img_path.read_bytes()).decode()
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/png;base64,{b64}"},
+        })
+    return content
+
+
+def _identify_visual_pages(page_images: list[Path]) -> dict[int, str]:
+    """
+    Pass 1: vraag Gemini welke pagina's visueel zijn en wat hun titels zijn.
+    Geeft {paginanummer: titel} terug voor alle visuele pagina's.
+    """
+    import json as _json
+    n = len(page_images)
+    print(f"  🔍 Pass 1 — visuele pagina's identificeren ({n} pagina's)...")
+    content = _build_image_content(page_images)
+    content.append({
+        "type": "text",
+        "text": _IDENTIFY_PROMPT.format(n=n),
+    })
+    response = get_llm().invoke([HumanMessage(content=content)])
+    raw = response.content.strip()
+
+    # Strip eventuele code fences
+    if "```" in raw:
+        raw = raw[raw.find("{"):raw.rfind("}") + 1]
+
+    try:
+        data = _json.loads(raw)
+        result = {
+            p["page"]: p["title"]
+            for p in data.get("pages", [])
+            if p.get("visual") and p.get("title")
+        }
+        visual_count = len(result)
+        print(f"  ✅ {visual_count} visuele pagina('s) gevonden: {sorted(result.keys())}")
+        return result
+    except Exception as e:
+        print(f"  ⚠️  Identificatie mislukt ({e}) — alle pagina's als visueel behandeld")
+        return {i: f"Pagina {i}" for i in range(1, n + 1)}
+
+
 def convert_with_page_images(
     page_images: list[Path],
     feature_id: str,
     lang: str,
     img_dir_name: str,
 ) -> str:
-    """Stuur alle pagina-afbeeldingen naar Gemini en genereer de FA Markdown."""
-    print(f"  📤 {len(page_images)} pagina-afbeeldingen versturen naar Gemini...")
-    content: list[dict] = []
+    """
+    Twee-pass conversie:
+    Pass 1 — identificeer welke pagina's visueel zijn (diagram, UI, etc.)
+    Pass 2 — genereer de FA met afbeeldingsreferenties voor visuele pagina's
+              en tekst-extractie voor tekstpagina's
+    """
+    # Pass 1
+    visual_pages = _identify_visual_pages(page_images)
 
-    for img_path in page_images:
-        img_b64 = base64.standard_b64encode(img_path.read_bytes()).decode()
-        content.append({
-            "type": "image_url",
-            "image_url": {"url": f"data:image/png;base64,{img_b64}"},
-        })
-
+    # Pass 2
+    print(f"  📤 Pass 2 — FA genereren ({len(page_images)} pagina's)...")
+    content = _build_image_content(page_images)
     content.append({
         "type": "text",
-        "text": _build_prompt_pages(feature_id, lang, len(page_images), img_dir_name),
+        "text": _build_prompt_pages(feature_id, lang, len(page_images), img_dir_name, visual_pages),
     })
-
     response = get_llm().invoke([HumanMessage(content=content)])
     return response.content.strip()
 
