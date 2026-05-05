@@ -1,0 +1,1262 @@
+{
+  "meta": {
+    "featureId": "feature-010-feedback-mapping",
+    "title": "Feature-010: Feedback Mapping Beheer",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "inScope": [
+      "Beheren van FeedbackMapping-regels: aanmaken, bewerken en deactiveren",
+      "Koppelen van een FeedbackMapping aan een ServiceNotification en een BusinessUnit",
+      "Instellen van plannerFeedbackType (enum: DELIVERY, PICKUP, CROSSDOCK, NOT_CAPTURED)",
+      "Instellen van mainReasonCode + mainReasonCodeDescription en subReasonCode + subReasonCodeDescription",
+      "Filteren en zoeken van FeedbackMappings op servicenotificatie, businessunit en activiteitstype",
+      "Validatie: per combinatie van (ServiceNotification, BusinessUnit, PlannerFeedbackActivityType) mag maximaal \u00e9\u00e9n actieve FeedbackMapping bestaan"
+    ],
+    "outOfScope": [
+      "Aanmaken of bewerken van ServiceNotifications zelf",
+      "Aanmaken of bewerken van BusinessUnits",
+      "Automatische verwerking van feedbackberichten (dit is uitsluitend beheerconfiguratie)",
+      "Historische audit van wijzigingen aan FeedbackMappings"
+    ]
+  },
+  "assumptions": [],
+  "openQuestions": [],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "Een beheerder kan een nieuwe FeedbackMapping aanmaken met: serviceNotificationId, businessUnitCode, plannerFeedbackType, mainReasonCode, mainReasonCodeDescription, subReasonCode en subReasonCodeDescription.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "plannerFeedbackType is verplicht en moet \u00e9\u00e9n van de volgende waarden zijn: DELIVERY, PICKUP, CROSSDOCK, NOT_CAPTURED.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "mainReasonCode is verplicht en maximaal 50 tekens lang.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "subReasonCode is optioneel en maximaal 50 tekens lang; indien opgegeven moet ook subReasonCodeDescription worden ingevuld.",
+      "priority": "should"
+    },
+    {
+      "id": "REQ-005",
+      "text": "Per combinatie van (serviceNotificationId, businessUnitCode, plannerFeedbackType) mag maximaal \u00e9\u00e9n actieve FeedbackMapping bestaan; een poging tot duplicaat wordt afgewezen met HTTP 409 Conflict.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "Een beheerder kan een bestaande FeedbackMapping bewerken (alle velden behalve de sleutelcombinatie).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "Een beheerder kan een FeedbackMapping deactiveren (soft delete via active-vlag); gedeactiveerde mappings worden niet gebruikt bij feedbackverwerking.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "De lijst van FeedbackMappings ondersteunt filteren op serviceNotificationId, businessUnitCode en plannerFeedbackType, en paginering (10 per pagina).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "Bij het aanmaken wordt gevalideerd dat de opgegeven ServiceNotification bestaat en actief is.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "Bij het aanmaken wordt gevalideerd dat de opgegeven BusinessUnit bestaat en actief is.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-011",
+      "text": "Alleen actieve FeedbackMappings (active = true) worden meegenomen bij feedbackverwerking; gedeactiveerde mappings blijven bewaard voor auditdoeleinden.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-012",
+      "text": "Een gedeactiveerde FeedbackMapping kan opnieuw geactiveerd worden; hierbij geldt opnieuw de uniekheidscontrole op de sleutelcombinatie.",
+      "priority": "should"
+    },
+    {
+      "id": "REQ-013",
+      "text": "mainReasonCodeDescription is verplicht als mainReasonCode is ingevuld en mag maximaal 255 tekens bevatten.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-014",
+      "text": "subReasonCodeDescription is verplicht als subReasonCode is ingevuld en mag maximaal 255 tekens bevatten.",
+      "priority": "should"
+    },
+    {
+      "id": "REQ-015",
+      "text": "API response time p95 < 300ms voor het ophalen van de gefilterde FeedbackMapping-lijst.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-016",
+      "text": "Alle schrijfoperaties worden gelogd met correlationId en gebruiker-id.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-017",
+      "text": "Toegang tot alle endpoints is beperkt tot gebruikers met de rol ROLE_ADMIN.",
+      "priority": "must"
+    }
+  ],
+  "domain": {
+    "entities": [
+      {
+        "name": "ServiceNotification",
+        "fields": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ]
+          },
+          {
+            "name": "serviceType",
+            "type": "ShipmentServiceTypeClass",
+            "constraints": [
+              "notNull"
+            ]
+          },
+          {
+            "name": "taskName",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ]
+          },
+          {
+            "name": "active",
+            "type": "Boolean",
+            "constraints": [
+              "notNull"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "BusinessUnit",
+        "fields": [
+          {
+            "name": "code",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ]
+          },
+          {
+            "name": "lastModifiedBy",
+            "type": "String"
+          },
+          {
+            "name": "active",
+            "type": "Boolean",
+            "constraints": [
+              "notNull"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "PlannerFeedbackActivityType",
+        "fields": [
+          {
+            "name": "DELIVERY",
+            "type": "enum_value"
+          },
+          {
+            "name": "PICKUP",
+            "type": "enum_value"
+          },
+          {
+            "name": "CROSSDOCK",
+            "type": "enum_value"
+          },
+          {
+            "name": "NOT_CAPTURED",
+            "type": "enum_value"
+          }
+        ]
+      },
+      {
+        "name": "FeedbackMapping",
+        "fields": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ]
+          },
+          {
+            "name": "serviceNotificationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "businessUnitCode",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "plannerFeedbackType",
+            "type": "PlannerFeedbackActivityType",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "mainReasonCode",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "maxLength:50"
+            ],
+            "testCases": [
+              "empty",
+              "too_long",
+              "missing"
+            ]
+          },
+          {
+            "name": "mainReasonCodeDescription",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "maxLength:255"
+            ],
+            "testCases": [
+              "empty",
+              "too_long",
+              "missing"
+            ]
+          },
+          {
+            "name": "subReasonCode",
+            "type": "String",
+            "constraints": [
+              "maxLength:50"
+            ],
+            "testCases": [
+              "too_long"
+            ]
+          },
+          {
+            "name": "subReasonCodeDescription",
+            "type": "String",
+            "constraints": [
+              "maxLength:255"
+            ],
+            "testCases": [
+              "too_long"
+            ]
+          },
+          {
+            "name": "active",
+            "type": "Boolean",
+            "constraints": [
+              "notNull"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ]
+          },
+          {
+            "name": "updatedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ]
+          },
+          {
+            "name": "deletedAt",
+            "type": "LocalDateTime"
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "errorFormat": {
+      "type": "ApiError",
+      "fields": [
+        "status",
+        "error",
+        "correlationId",
+        "fields"
+      ]
+    },
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/api/feedback-mappings",
+        "summary": "Maak een nieuwe FeedbackMapping aan",
+        "request": {
+          "bodySchemaRef": "CreateFeedbackMappingRequest",
+          "validationRules": [
+            "serviceNotificationId: Moet een geldige UUID zijn en verwijzen naar een actieve ServiceNotification.",
+            "businessUnitCode: Moet een geldige String zijn en verwijzen naar een actieve BusinessUnit.",
+            "plannerFeedbackType: Moet een geldige enum waarde zijn (DELIVERY, PICKUP, CROSSDOCK, NOT_CAPTURED).",
+            "mainReasonCode: Moet een verplichte String zijn, maximaal 50 tekens lang.",
+            "mainReasonCodeDescription: Moet een verplichte String zijn, maximaal 255 tekens lang.",
+            "subReasonCode: Optionele String, maximaal 50 tekens lang.",
+            "subReasonCodeDescription: Verplichte String als subReasonCode is opgegeven, maximaal 255 tekens lang."
+          ]
+        },
+        "responses": [
+          {
+            "status": 201,
+            "bodySchemaRef": "FeedbackMappingResponse",
+            "notes": "FeedbackMapping succesvol aangemaakt."
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in de request body."
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "ServiceNotification of BusinessUnit niet gevonden of inactief."
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Een actieve FeedbackMapping met deze combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType bestaat al."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout."
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/feedback-mappings",
+        "summary": "Haal een gepagineerde lijst van FeedbackMappings op met filtering",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "FeedbackMappingListResponse",
+            "notes": "Lijst van FeedbackMappings succesvol opgehaald."
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Ongeldige query parameters."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout."
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/feedback-mappings/{id}",
+        "summary": "Haal een specifieke FeedbackMapping op",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "FeedbackMappingResponse",
+            "notes": "FeedbackMapping succesvol opgehaald."
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "FeedbackMapping niet gevonden."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout."
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/feedback-mappings/{id}",
+        "summary": "Bewerk een bestaande FeedbackMapping",
+        "request": {
+          "bodySchemaRef": "UpdateFeedbackMappingRequest",
+          "validationRules": [
+            "mainReasonCode: Moet een verplichte String zijn, maximaal 50 tekens lang.",
+            "mainReasonCodeDescription: Moet een verplichte String zijn, maximaal 255 tekens lang.",
+            "subReasonCode: Optionele String, maximaal 50 tekens lang.",
+            "subReasonCodeDescription: Verplichte String als subReasonCode is opgegeven, maximaal 255 tekens lang.",
+            "active: Boolean, bepaalt of de mapping actief is."
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "FeedbackMappingResponse",
+            "notes": "FeedbackMapping succesvol bijgewerkt."
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in de request body."
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "FeedbackMapping niet gevonden."
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Een andere actieve FeedbackMapping met deze combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType bestaat al na de wijziging."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout."
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/feedback-mappings/{id}",
+        "summary": "Deactiveer een FeedbackMapping (soft delete)",
+        "request": {},
+        "responses": [
+          {
+            "status": 204,
+            "notes": "FeedbackMapping succesvol gedeactiveerd.",
+            "bodySchemaRef": "EmptyResponse"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "FeedbackMapping niet gevonden."
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout."
+          }
+        ],
+        "auth": "bearer"
+      }
+    ]
+  },
+  "backend": {
+    "modules": [
+      {
+        "name": "feedbackmapping",
+        "classes": [
+          {
+            "name": "FeedbackMappingController",
+            "responsibility": "Exposeert de REST API endpoints voor FeedbackMappings."
+          },
+          {
+            "name": "FeedbackMappingService",
+            "responsibility": "Orchestreert de business logica voor FeedbackMappings."
+          },
+          {
+            "name": "FeedbackMappingRepository",
+            "responsibility": "Verantwoordelijk voor data-access operaties op FeedbackMappings."
+          },
+          {
+            "name": "FeedbackMapping",
+            "responsibility": "Representeert de FeedbackMapping entiteit in de database."
+          },
+          {
+            "name": "CreateFeedbackMappingRequest",
+            "responsibility": "DTO voor het aanmaken van een nieuwe FeedbackMapping."
+          },
+          {
+            "name": "UpdateFeedbackMappingRequest",
+            "responsibility": "DTO voor het bijwerken van een bestaande FeedbackMapping."
+          },
+          {
+            "name": "FeedbackMappingResponse",
+            "responsibility": "DTO voor het retourneren van een FeedbackMapping."
+          },
+          {
+            "name": "FeedbackMappingListResponse",
+            "responsibility": "DTO voor het retourneren van een lijst van FeedbackMappings."
+          },
+          {
+            "name": "FeedbackMappingNotFoundException",
+            "responsibility": "Exception die wordt gegooid wanneer een FeedbackMapping niet wordt gevonden."
+          },
+          {
+            "name": "FeedbackMappingConflictException",
+            "responsibility": "Exception die wordt gegooid wanneer een duplicaat FeedbackMapping wordt gedetecteerd."
+          },
+          {
+            "name": "ServiceNotificationNotFoundException",
+            "responsibility": "Exception die wordt gegooid wanneer een ServiceNotification niet wordt gevonden."
+          },
+          {
+            "name": "BusinessUnitNotFoundException",
+            "responsibility": "Exception die wordt gegooid wanneer een BusinessUnit niet wordt gevonden."
+          },
+          {
+            "name": "FeedbackMappingCreateValidator",
+            "responsibility": "Valideert de input voor het aanmaken van een FeedbackMapping."
+          },
+          {
+            "name": "FeedbackMappingUpdateValidator",
+            "responsibility": "Valideert de input voor het bijwerken van een FeedbackMapping."
+          },
+          {
+            "name": "FeedbackMappingExistsService",
+            "responsibility": "Controleert op de uniekheid van FeedbackMappings op basis van serviceNotificationId, businessUnitCode en plannerFeedbackType."
+          },
+          {
+            "name": "ActiveServiceNotificationValidator",
+            "responsibility": "Valideert of een ServiceNotification actief is."
+          },
+          {
+            "name": "ActiveBusinessUnitValidator",
+            "responsibility": "Valideert of een BusinessUnit actief is."
+          },
+          {
+            "name": "PlannerFeedbackTypeValidator",
+            "responsibility": "Valideert of de plannerFeedbackType een geldige enum waarde is."
+          },
+          {
+            "name": "FeedbackMappingLoggingService",
+            "responsibility": "Logt schrijfoperaties op FeedbackMappings met correlationId en gebruiker-id."
+          }
+        ]
+      },
+      {
+        "name": "common",
+        "classes": [
+          {
+            "name": "ApiError",
+            "responsibility": "Standaard foutformaat voor API responses."
+          },
+          {
+            "name": "ApiErrorResponse",
+            "responsibility": "DTO voor het retourneren van API fouten."
+          },
+          {
+            "name": "PageableRequest",
+            "responsibility": "DTO voor paginering en sortering parameters."
+          },
+          {
+            "name": "SecurityConfig",
+            "responsibility": "Configureert beveiligingsinstellingen, inclusief rolgebaseerde toegang."
+          },
+          {
+            "name": "JwtAuthenticationFilter",
+            "responsibility": "Filter voor het valideren van JWT tokens voor authenticatie."
+          },
+          {
+            "name": "CustomUserDetailsService",
+            "responsibility": "Laadt gebruikersdetails voor authenticatie."
+          },
+          {
+            "name": "AuthenticationFacade",
+            "responsibility": "Biedt toegang tot de huidige geauthenticeerde gebruiker."
+          }
+        ]
+      },
+      {
+        "name": "domain",
+        "classes": [
+          {
+            "name": "ServiceNotification",
+            "responsibility": "Representeert de ServiceNotification entiteit."
+          },
+          {
+            "name": "BusinessUnit",
+            "responsibility": "Representeert de BusinessUnit entiteit."
+          },
+          {
+            "name": "PlannerFeedbackActivityType",
+            "responsibility": "Enum voor de mogelijke waarden van plannerFeedbackType."
+          },
+          {
+            "name": "ShipmentServiceTypeClass",
+            "responsibility": "Enum voor de mogelijke waarden van serviceType."
+          }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "routes": [
+      "/admin/feedback-mappings",
+      "/admin/feedback-mappings/new",
+      "/admin/feedback-mappings/:id/edit"
+    ],
+    "components": [
+      "FeedbackMappingTable",
+      "FeedbackMappingFilterBar",
+      "LoadingSpinner",
+      "ErrorDisplay",
+      "FeedbackMappingForm",
+      "ServiceNotificationSelect",
+      "BusinessUnitSelect",
+      "ActivityTypeSelect",
+      "ReasonCodeFields"
+    ]
+  },
+  "tests": {
+    "unit": [
+      "FeedbackMappingTable.render",
+      "FeedbackMappingFilterBar.render",
+      "FeedbackMappingForm.render",
+      "ServiceNotificationSelect.render",
+      "BusinessUnitSelect.render",
+      "ActivityTypeSelect.render",
+      "ReasonCodeFields.render",
+      "FeedbackMappingTable.fetchData",
+      "FeedbackMappingForm.submit",
+      "FeedbackMappingForm.validation"
+    ],
+    "integration": [
+      "POST /api/feedback-mappings \u2192 201 Created",
+      "GET /api/feedback-mappings \u2192 200 OK",
+      "GET /api/feedback-mappings/{id} \u2192 200 OK",
+      "PUT /api/feedback-mappings/{id} \u2192 200 OK",
+      "DELETE /api/feedback-mappings/{id} \u2192 204 No Content",
+      "POST /api/feedback-mappings \u2192 400 Bad Request (validation error)",
+      "POST /api/feedback-mappings \u2192 404 Not Found (ServiceNotification/BusinessUnit)",
+      "POST /api/feedback-mappings \u2192 409 Conflict (duplicate mapping)",
+      "PUT /api/feedback-mappings/{id} \u2192 404 Not Found",
+      "PUT /api/feedback-mappings/{id} \u2192 409 Conflict (duplicate mapping after update)",
+      "DELETE /api/feedback-mappings/{id} \u2192 404 Not Found"
+    ],
+    "e2e": [
+      "Als beheerder navigeer naar /admin/feedback-mappings, maak een nieuwe mapping aan, controleer of deze in de lijst verschijnt, bewerk de mapping, deactiveer de mapping en controleer of deze niet meer actief is in de lijst."
+    ]
+  },
+  "acceptanceCriteria": [
+    {
+      "acId": "AC-001-1",
+      "reqId": "REQ-001",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder maakt een nieuwe FeedbackMapping aan met geldige waarden voor serviceNotificationId, businessUnitCode, plannerFeedbackType, mainReasonCode, mainReasonCodeDescription, subReasonCode en subReasonCodeDescription.",
+      "then": "De FeedbackMapping wordt succesvol aangemaakt en de API retourneert een 201 Created status met de details van de aangemaakte mapping.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-001-2",
+      "reqId": "REQ-001",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een nieuwe FeedbackMapping aan te maken zonder een verplicht veld (bv. mainReasonCode).",
+      "then": "De API retourneert een 400 Bad Request status met een duidelijke foutmelding die aangeeft welk veld ontbreekt.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-002-1",
+      "reqId": "REQ-002",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een ongeldige waarde voor plannerFeedbackType (bv. 'INVALID_TYPE').",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat plannerFeedbackType een ongeldige waarde heeft.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-002-2",
+      "reqId": "REQ-002",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken zonder een waarde voor plannerFeedbackType.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat plannerFeedbackType verplicht is.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-003-1",
+      "reqId": "REQ-003",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een mainReasonCode die langer is dan 50 tekens.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat mainReasonCode de maximale lengte overschrijdt.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-003-2",
+      "reqId": "REQ-003",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken zonder een waarde voor mainReasonCode.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat mainReasonCode verplicht is.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-1",
+      "reqId": "REQ-004",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder maakt een nieuwe FeedbackMapping aan met een subReasonCode en een bijbehorende subReasonCodeDescription.",
+      "then": "De FeedbackMapping wordt succesvol aangemaakt met de opgegeven subReasonCode en subReasonCodeDescription.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-2",
+      "reqId": "REQ-004",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een subReasonCode die langer is dan 50 tekens.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat subReasonCode de maximale lengte overschrijdt.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-3",
+      "reqId": "REQ-004",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een subReasonCode maar zonder subReasonCodeDescription.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat subReasonCodeDescription verplicht is wanneer subReasonCode wordt opgegeven.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-4",
+      "reqId": "REQ-004",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder maakt een nieuwe FeedbackMapping aan zonder subReasonCode en subReasonCodeDescription.",
+      "then": "De FeedbackMapping wordt succesvol aangemaakt zonder subReasonCode en subReasonCodeDescription.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-005-1",
+      "reqId": "REQ-005",
+      "given": "Er bestaat al een actieve FeedbackMapping voor een specifieke combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType.",
+      "when": "Een beheerder probeert een nieuwe FeedbackMapping aan te maken met dezelfde combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType.",
+      "then": "De API retourneert een 409 Conflict status met een foutmelding die aangeeft dat de combinatie al bestaat.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-005-2",
+      "reqId": "REQ-005",
+      "given": "Er bestaat een gedeactiveerde FeedbackMapping voor een specifieke combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType.",
+      "when": "Een beheerder probeert een nieuwe FeedbackMapping aan te maken met dezelfde combinatie van serviceNotificationId, businessUnitCode en plannerFeedbackType.",
+      "then": "De FeedbackMapping wordt succesvol aangemaakt, omdat de bestaande mapping gedeactiveerd is.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-006-1",
+      "reqId": "REQ-006",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het bewerken van FeedbackMappings.",
+      "when": "De beheerder bewerkt een bestaande FeedbackMapping en wijzigt de plannerFeedbackType, mainReasonCodeDescription en subReasonCodeDescription.",
+      "then": "De FeedbackMapping wordt succesvol bijgewerkt met de nieuwe waarden en de API retourneert een 200 OK status.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-006-2",
+      "reqId": "REQ-006",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het bewerken van FeedbackMappings.",
+      "when": "De beheerder probeert een bestaande FeedbackMapping te bewerken door de serviceNotificationId te wijzigen.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de sleutelcombinatie niet gewijzigd kan worden.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-007-1",
+      "reqId": "REQ-007",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het deactiveren van FeedbackMappings.",
+      "when": "De beheerder deactiveert een bestaande FeedbackMapping.",
+      "then": "De FeedbackMapping wordt gemarkeerd als inactief (active = false) en de API retourneert een 200 OK status.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-007-2",
+      "reqId": "REQ-007",
+      "given": "Een FeedbackMapping is gedeactiveerd.",
+      "when": "Er wordt geprobeerd om feedback te verwerken die overeenkomt met deze gedeactiveerde FeedbackMapping.",
+      "then": "De gedeactiveerde FeedbackMapping wordt niet gebruikt voor de feedbackverwerking.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-008-1",
+      "reqId": "REQ-008",
+      "given": "Er zijn meerdere FeedbackMappings aangemaakt met verschillende serviceNotificationIds, businessUnitCodes en plannerFeedbackTypes.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met een filter op serviceNotificationId='SN123' en plannerFeedbackType='DELIVERY'.",
+      "then": "De API retourneert een lijst met alleen de FeedbackMappings die voldoen aan de opgegeven filters.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-008-2",
+      "reqId": "REQ-008",
+      "given": "Er zijn meer dan 10 FeedbackMappings beschikbaar.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op zonder specifieke filters.",
+      "then": "De API retourneert de eerste 10 FeedbackMappings (pagina 1).",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-008-3",
+      "reqId": "REQ-008",
+      "given": "Er zijn meer dan 10 FeedbackMappings beschikbaar.",
+      "when": "De beheerder vraagt de lijst van FeedbackMappings op met paginering parameter 'page=2'.",
+      "then": "De API retourneert de volgende 10 FeedbackMappings (pagina 2).",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-009-1",
+      "reqId": "REQ-009",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een serviceNotificationId die niet bestaat in het systeem.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de ServiceNotification niet bestaat.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-009-2",
+      "reqId": "REQ-009",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een serviceNotificationId die wel bestaat maar gedeactiveerd is.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de ServiceNotification niet actief is.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-010-1",
+      "reqId": "REQ-010",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een businessUnitCode die niet bestaat in het systeem.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de BusinessUnit niet bestaat.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-010-2",
+      "reqId": "REQ-010",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een businessUnitCode die wel bestaat maar gedeactiveerd is.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat de BusinessUnit niet actief is.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-011-1",
+      "reqId": "REQ-011",
+      "given": "Er zijn zowel actieve als gedeactiveerde FeedbackMappings in het systeem.",
+      "when": "Het systeem verwerkt feedback die overeenkomt met een actieve FeedbackMapping.",
+      "then": "De actieve FeedbackMapping wordt gebruikt voor de feedbackverwerking.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-011-2",
+      "reqId": "REQ-011",
+      "given": "Er zijn zowel actieve als gedeactiveerde FeedbackMappings in het systeem.",
+      "when": "Het systeem verwerkt feedback die overeenkomt met een gedeactiveerde FeedbackMapping.",
+      "then": "De gedeactiveerde FeedbackMapping wordt niet gebruikt voor de feedbackverwerking, maar blijft wel bewaard in de database.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-012-1",
+      "reqId": "REQ-012",
+      "given": "Een FeedbackMapping is gedeactiveerd.",
+      "when": "Een beheerder probeert de gedeactiveerde FeedbackMapping opnieuw te activeren.",
+      "then": "De FeedbackMapping wordt succesvol geactiveerd en de API retourneert een 200 OK status.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-012-2",
+      "reqId": "REQ-012",
+      "given": "Een FeedbackMapping is gedeactiveerd en er bestaat al een actieve FeedbackMapping met dezelfde sleutelcombinatie.",
+      "when": "Een beheerder probeert de gedeactiveerde FeedbackMapping opnieuw te activeren.",
+      "then": "De API retourneert een 409 Conflict status met een foutmelding die aangeeft dat de combinatie al bestaat en actief is.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-013-1",
+      "reqId": "REQ-013",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een mainReasonCode maar zonder mainReasonCodeDescription.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat mainReasonCodeDescription verplicht is wanneer mainReasonCode is ingevuld.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-013-2",
+      "reqId": "REQ-013",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een mainReasonCodeDescription die langer is dan 255 tekens.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat mainReasonCodeDescription de maximale lengte overschrijdt.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-014-1",
+      "reqId": "REQ-014",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een subReasonCode maar zonder subReasonCodeDescription.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat subReasonCodeDescription verplicht is wanneer subReasonCode wordt opgegeven.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-014-2",
+      "reqId": "REQ-014",
+      "given": "Een beheerder is ingelogd en heeft toegang tot het aanmaken van FeedbackMappings.",
+      "when": "De beheerder probeert een FeedbackMapping aan te maken met een subReasonCodeDescription die langer is dan 255 tekens.",
+      "then": "De API retourneert een 400 Bad Request status met een foutmelding die aangeeft dat subReasonCodeDescription de maximale lengte overschrijdt.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-015-1",
+      "reqId": "REQ-015",
+      "given": "Er zijn voldoende FeedbackMappings in het systeem om paginering en filtering te testen.",
+      "when": "Een beheerder vraagt de lijst van FeedbackMappings op met een combinatie van filters en paginering.",
+      "then": "De API response time voor deze request is kleiner dan 300ms (p95).",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-016-1",
+      "reqId": "REQ-016",
+      "given": "Een beheerder is ingelogd en heeft een geldige correlationId en gebruiker-id.",
+      "when": "De beheerder maakt een nieuwe FeedbackMapping aan.",
+      "then": "De aanmaakoperatie wordt gelogd met de opgegeven correlationId en gebruiker-id.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-016-2",
+      "reqId": "REQ-016",
+      "given": "Een beheerder is ingelogd en heeft een geldige correlationId en gebruiker-id.",
+      "when": "De beheerder bewerkt een bestaande FeedbackMapping.",
+      "then": "De bewerkingsoperatie wordt gelogd met de opgegeven correlationId en gebruiker-id.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-016-3",
+      "reqId": "REQ-016",
+      "given": "Een beheerder is ingelogd en heeft een geldige correlationId en gebruiker-id.",
+      "when": "De beheerder deactiveert een FeedbackMapping.",
+      "then": "De deactivatieoperatie wordt gelogd met de opgegeven correlationId en gebruiker-id.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-017-1",
+      "reqId": "REQ-017",
+      "given": "Een gebruiker die niet de rol ROLE_ADMIN heeft, is ingelogd.",
+      "when": "De gebruiker probeert toegang te krijgen tot het endpoint voor het aanmaken van FeedbackMappings.",
+      "then": "De API retourneert een 403 Forbidden status.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-017-2",
+      "reqId": "REQ-017",
+      "given": "Een gebruiker met de rol ROLE_ADMIN is ingelogd.",
+      "when": "De gebruiker probeert toegang te krijgen tot het endpoint voor het bewerken van FeedbackMappings.",
+      "then": "De API retourneert een 200 OK status en de bewerking kan worden uitgevoerd.",
+      "testType": "integration"
+    }
+  ],
+  "traceability": [
+    {
+      "reqId": "REQ-001",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingRepository",
+        "CreateFeedbackMappingRequest"
+      ],
+      "frontendRefs": [
+        "FeedbackMappingForm",
+        "ServiceNotificationSelect",
+        "BusinessUnitSelect",
+        "ActivityTypeSelect",
+        "ReasonCodeFields"
+      ],
+      "testRefs": [
+        "Test the creation of a new FeedbackMapping with all specified fields.",
+        "Verify that a new FeedbackMapping is persisted in the database."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingCreateValidator",
+        "PlannerFeedbackTypeValidator"
+      ],
+      "frontendRefs": [
+        "ActivityTypeSelect"
+      ],
+      "testRefs": [
+        "Test creating a FeedbackMapping with a valid plannerFeedbackType.",
+        "Test creating a FeedbackMapping with an invalid plannerFeedbackType and verify error.",
+        "Test creating a FeedbackMapping without a plannerFeedbackType and verify error."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingCreateValidator"
+      ],
+      "frontendRefs": [
+        "ReasonCodeFields"
+      ],
+      "testRefs": [
+        "Test creating a FeedbackMapping with a mainReasonCode of exactly 50 characters.",
+        "Test creating a FeedbackMapping with a mainReasonCode longer than 50 characters and verify error.",
+        "Test creating a FeedbackMapping without a mainReasonCode and verify error."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingCreateValidator"
+      ],
+      "frontendRefs": [
+        "ReasonCodeFields"
+      ],
+      "testRefs": [
+        "Test creating a FeedbackMapping with subReasonCode and subReasonCodeDescription.",
+        "Test creating a FeedbackMapping with only subReasonCode and verify error.",
+        "Test creating a FeedbackMapping with only subReasonCodeDescription and verify it's ignored.",
+        "Test creating a FeedbackMapping with a subReasonCode of exactly 50 characters.",
+        "Test creating a FeedbackMapping with a subReasonCode longer than 50 characters and verify error."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingRepository",
+        "FeedbackMappingExistsService",
+        "FeedbackMappingConflictException"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test creating a FeedbackMapping with a unique key combination.",
+        "Test creating a FeedbackMapping with an existing key combination and verify HTTP 409 Conflict.",
+        "Test creating a FeedbackMapping with an existing key combination but different case and verify it's treated as duplicate."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingRepository",
+        "UpdateFeedbackMappingRequest",
+        "FeedbackMappingUpdateValidator"
+      ],
+      "frontendRefs": [
+        "FeedbackMappingForm"
+      ],
+      "testRefs": [
+        "Test updating all editable fields of an existing FeedbackMapping.",
+        "Test attempting to update the key combination of a FeedbackMapping and verify it's not allowed.",
+        "Test updating a FeedbackMapping with valid data.",
+        "Test updating a FeedbackMapping with invalid data and verify error."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingRepository"
+      ],
+      "frontendRefs": [
+        "FeedbackMappingTable"
+      ],
+      "testRefs": [
+        "Test deactivating an active FeedbackMapping.",
+        "Verify that a deactivated FeedbackMapping is no longer considered active.",
+        "Verify that deactivated FeedbackMappings are still retrievable for audit."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingRepository",
+        "PageableRequest"
+      ],
+      "frontendRefs": [
+        "FeedbackMappingTable",
+        "FeedbackMappingFilterBar"
+      ],
+      "testRefs": [
+        "Test filtering FeedbackMappings by serviceNotificationId.",
+        "Test filtering FeedbackMappings by businessUnitCode.",
+        "Test filtering FeedbackMappings by plannerFeedbackType.",
+        "Test filtering FeedbackMappings by a combination of fields.",
+        "Test paginating through the list of FeedbackMappings (10 per page).",
+        "Test requesting a page beyond the available results."
+      ]
+    },
+    {
+      "reqId": "REQ-009",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingCreateValidator",
+        "ActiveServiceNotificationValidator",
+        "ServiceNotificationNotFoundException"
+      ],
+      "frontendRefs": [
+        "ServiceNotificationSelect"
+      ],
+      "testRefs": [
+        "Test creating a FeedbackMapping with an existing and active ServiceNotification.",
+        "Test creating a FeedbackMapping with a non-existent ServiceNotification and verify error.",
+        "Test creating a FeedbackMapping with a deactivated ServiceNotification and verify error."
+      ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingCreateValidator",
+        "ActiveBusinessUnitValidator",
+        "BusinessUnitNotFoundException"
+      ],
+      "frontendRefs": [
+        "BusinessUnitSelect"
+      ],
+      "testRefs": [
+        "Test creating a FeedbackMapping with an existing and active BusinessUnit.",
+        "Test creating a FeedbackMapping with a non-existent BusinessUnit and verify error.",
+        "Test creating a FeedbackMapping with a deactivated BusinessUnit and verify error."
+      ]
+    },
+    {
+      "reqId": "REQ-011",
+      "backendRefs": [
+        "FeedbackMappingService",
+        "FeedbackMappingRepository"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verify that only active FeedbackMappings are used in feedback processing.",
+        "Verify that deactivated FeedbackMappings are not used in feedback processing.",
+        "Verify that deactivated FeedbackMappings are retained for audit purposes."
+      ]
+    },
+    {
+      "reqId": "REQ-012",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingRepository",
+        "FeedbackMappingExistsService",
+        "FeedbackMappingConflictException"
+      ],
+      "frontendRefs": [
+        "FeedbackMappingTable"
+      ],
+      "testRefs": [
+        "Test reactivating a deactivated FeedbackMapping.",
+        "Test reactivating a deactivated FeedbackMapping with a unique key combination.",
+        "Test reactivating a deactivated FeedbackMapping with a key combination that already exists (active or inactive) and verify HTTP 409 Conflict."
+      ]
+    },
+    {
+      "reqId": "REQ-013",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingCreateValidator",
+        "FeedbackMappingUpdateValidator"
+      ],
+      "frontendRefs": [
+        "ReasonCodeFields"
+      ],
+      "testRefs": [
+        "Test creating a FeedbackMapping with mainReasonCode and mainReasonCodeDescription.",
+        "Test creating a FeedbackMapping with only mainReasonCode and verify error.",
+        "Test creating a FeedbackMapping with mainReasonCode and an empty mainReasonCodeDescription and verify error.",
+        "Test creating a FeedbackMapping with mainReasonCode of 255 characters.",
+        "Test creating a FeedbackMapping with mainReasonCodeDescription longer than 255 characters and verify error."
+      ]
+    },
+    {
+      "reqId": "REQ-014",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingCreateValidator",
+        "FeedbackMappingUpdateValidator"
+      ],
+      "frontendRefs": [
+        "ReasonCodeFields"
+      ],
+      "testRefs": [
+        "Test creating a FeedbackMapping with subReasonCode and subReasonCodeDescription.",
+        "Test creating a FeedbackMapping with only subReasonCode and verify error.",
+        "Test creating a FeedbackMapping with subReasonCode and an empty subReasonCodeDescription and verify error.",
+        "Test creating a FeedbackMapping with subReasonCodeDescription of 255 characters.",
+        "Test creating a FeedbackMapping with subReasonCodeDescription longer than 255 characters and verify error."
+      ]
+    },
+    {
+      "reqId": "REQ-015",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService"
+      ],
+      "frontendRefs": [
+        "FeedbackMappingTable",
+        "FeedbackMappingFilterBar"
+      ],
+      "testRefs": [
+        "Measure the response time for fetching the filtered FeedbackMapping list under load.",
+        "Ensure p95 response time is below 300ms for the filtered list endpoint."
+      ]
+    },
+    {
+      "reqId": "REQ-016",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "FeedbackMappingService",
+        "FeedbackMappingRepository",
+        "FeedbackMappingLoggingService"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Verify that create operations are logged with correlationId and userId.",
+        "Verify that update operations are logged with correlationId and userId.",
+        "Verify that delete/deactivate operations are logged with correlationId and userId."
+      ]
+    },
+    {
+      "reqId": "REQ-017",
+      "backendRefs": [
+        "FeedbackMappingController",
+        "SecurityConfig",
+        "JwtAuthenticationFilter",
+        "CustomUserDetailsService",
+        "AuthenticationFacade"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test access to all FeedbackMapping endpoints with a user having ROLE_ADMIN.",
+        "Test access to all FeedbackMapping endpoints with a user not having ROLE_ADMIN and verify unauthorized access."
+      ]
+    }
+  ]
+}

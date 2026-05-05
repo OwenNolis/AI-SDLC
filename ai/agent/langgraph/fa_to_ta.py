@@ -335,13 +335,41 @@ Regels voor openQuestions:
 
 
 def generate_domain_model(state: TAState) -> dict:
-    """Node 2: Genereer domain model op basis van requirements."""
+    """Node 2: Genereer domain model op basis van requirements en FA data-sectie."""
     print("🏗️  Domain model genereren...")
+
+    # Extraheer alle entiteit/data omschrijvingen uit de FA (## Data sectie + afbeeldingsbeschrijvingen)
+    fa_data_notes = ""
+    in_data = False
+    for line in state["fa_content"].splitlines():
+        low = line.lower().strip()
+        if low.startswith("## data") or low.startswith("## domein") or low.startswith("## domain"):
+            in_data = True
+        elif low.startswith("## ") and in_data:
+            in_data = False
+        if in_data and line.strip():
+            fa_data_notes += f"  {line}\n"
+
+    # Voeg ook beschrijvingen van afbeeldingen toe (beginnen met **[Afbeelding:)
+    for line in state["fa_content"].splitlines():
+        if line.startswith("**[Afbeelding:") or line.startswith("### "):
+            fa_data_notes += f"  {line}\n"
+
+    data_hint = (
+        f"\nExpliciet beschreven entiteiten en velden in de FA "
+        f"(gebruik dit als primaire bron — neem ALLE genoemde velden over):\n{fa_data_notes}\n"
+        if fa_data_notes.strip() else ""
+    )
+
+    extra_context_hint = (
+        f"\n⚠️ VERPLICHTE PROJECTREGELS (deze OVERSCHRIJVEN alle aannames en defaults — nooit negeren):\n{state['extra_context']}\n"
+        if state.get("extra_context") else ""
+    )
 
     prompt = f"""Je bent een SDLC-analyse agent.
 
 Genereer een domain model voor een Java/Spring Boot applicatie.
-
+{extra_context_hint}{data_hint}
 Requirements:
 {json.dumps(state["requirements"], indent=2)}
 
@@ -353,7 +381,7 @@ Geef ALLEEN een JSON object terug:
       "fields": [
         {{
           "name": "fieldName",
-          "type": "String|Long|Integer|Boolean|LocalDateTime|UUID",
+          "type": "String|Integer|Boolean|LocalDateTime|UUID|BigDecimal|<EnumTypeName>",
           "constraints": ["notNull", "minLength:5", "maxLength:255"],
           "testCases": ["empty", "too_short", "too_long", "missing", "invalid_value"]
         }}
@@ -363,11 +391,13 @@ Geef ALLEEN een JSON object terug:
 }}
 
 Regels:
+- Als entiteiten en velden expliciet beschreven zijn in de FA (zie boven): neem die EXACT over — verzin geen velden, laat er ook geen weg
+- Als een enum type zichtbaar is in de FA (bv. PlannerFeedbackActivityType, OrderStatus): voeg het toe als aparte entiteit met name="<EnumNaam>" en fields=[{{"name": "WAARDE", "type": "enum_value"}}], EN gebruik de exacte enum-naam als type voor het veld dat ernaar verwijst
 - testCases ALLEEN uit: empty, too_short, too_long, missing, invalid_value, duplicate_per_day
 - Geen extra velden buiten name, type, constraints en testCases
 - Stack: Java/Spring Boot (JPA entiteiten)
-- Voeg technische velden toe die logisch voortvloeien uit de requirements
-  (bv. id, createdAt, userId als dat relevant is)
+- Voeg standaard technische velden toe die niet in de FA staan maar logisch noodzakelijk zijn
+  (bv. createdAt, updatedAt) — maar NOOIT ten koste van FA-beschreven velden
 """
     return {"domain_model": llm_json(prompt)}
 
