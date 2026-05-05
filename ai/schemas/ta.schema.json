@@ -210,6 +210,23 @@
       "additionalProperties": false
     },
 
+    "acceptanceCriteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["acId", "reqId", "given", "when", "then", "testType"],
+        "properties": {
+          "acId":     { "type": "string", "pattern": "^AC-[0-9]{3}-[0-9]+$" },
+          "reqId":    { "type": "string", "pattern": "^REQ-[0-9]{3}$" },
+          "given":    { "type": "string" },
+          "when":     { "type": "string" },
+          "then":     { "type": "string" },
+          "testType": { "type": "string", "enum": ["unit", "integration", "e2e"] }
+        },
+        "additionalProperties": false
+      }
+    },
+
     "traceability": {
       "type": "array",
       "items": {

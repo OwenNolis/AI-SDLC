@@ -945,6 +945,264 @@
       "Gebruiker navigeert naar bestelgeschiedenis, bekijkt lijst met bestellingen, en annuleert een PENDING bestelling binnen de toegestane tijd."
     ]
   },
+  "acceptanceCriteria": [
+    {
+      "acId": "AC-001-1",
+      "reqId": "REQ-001",
+      "given": "Een klant heeft producten toegevoegd aan zijn winkelwagen en is op de checkout pagina.",
+      "when": "De klant vult een geldig leveringsadres in, selecteert een betaalmethode en klikt op 'Bestelling plaatsen'.",
+      "then": "De bestelling wordt succesvol geplaatst en de klant ziet een ordernummer en de status PENDING.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-001-2",
+      "reqId": "REQ-001",
+      "given": "Een klant heeft producten toegevoegd aan zijn winkelwagen en is op de checkout pagina.",
+      "when": "De klant probeert een bestelling te plaatsen zonder een leveringsadres in te vullen.",
+      "then": "Er wordt een foutmelding getoond dat het leveringsadres verplicht is en de bestelling wordt niet geplaatst.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-002-1",
+      "reqId": "REQ-002",
+      "given": "Een bestelling is succesvol geplaatst.",
+      "when": "De orderdetails worden opgevraagd.",
+      "then": "Elk product in de bestelling bevat een productId, naam, aantal en eenheidsprijs.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-003-1",
+      "reqId": "REQ-003",
+      "given": "Een klant probeert een bestelling te plaatsen.",
+      "when": "Het leveringsadres veld 'straat' is leeg.",
+      "then": "Er wordt een veldspecifieke foutmelding getoond voor het 'straat' veld en de bestelling wordt niet geplaatst.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-003-2",
+      "reqId": "REQ-003",
+      "given": "Een klant probeert een bestelling te plaatsen.",
+      "when": "Het leveringsadres veld 'postcode' is ongeldig (bv. te kort).",
+      "then": "Er wordt een veldspecifieke foutmelding getoond voor het 'postcode' veld en de bestelling wordt niet geplaatst.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-004-1",
+      "reqId": "REQ-004",
+      "given": "Een klant probeert een bestelling te plaatsen.",
+      "when": "De betaalmethode is ingesteld op 'CREDIT_CARD'.",
+      "then": "De bestelling wordt succesvol geplaatst.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-2",
+      "reqId": "REQ-004",
+      "given": "Een klant probeert een bestelling te plaatsen.",
+      "when": "De betaalmethode is ingesteld op een ongeldige waarde (bv. 'PAYPAL').",
+      "then": "Er wordt een veldspecifieke foutmelding getoond voor de betaalmethode en de bestelling wordt niet geplaatst.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-005-1",
+      "reqId": "REQ-005",
+      "given": "Een klant heeft succesvol een bestelling geplaatst.",
+      "when": "De bestelling is verwerkt door het systeem.",
+      "then": "De klant ziet een uniek orderNumber en de status PENDING op de orderbevestigingspagina.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-006-1",
+      "reqId": "REQ-006",
+      "given": "Een klant heeft meerdere bestellingen met verschillende statussen (PENDING, CONFIRMED, SHIPPED).",
+      "when": "De klant navigeert naar de bestellingenpagina en filtert op 'CONFIRMED'.",
+      "then": "Alleen bestellingen met de status CONFIRMED worden getoond.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-006-2",
+      "reqId": "REQ-006",
+      "given": "Een klant heeft meerdere bestellingen met verschillende statussen.",
+      "when": "De klant navigeert naar de bestellingenpagina en filtert op 'CANCELLED'.",
+      "then": "Alleen bestellingen met de status CANCELLED worden getoond.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-007-1",
+      "reqId": "REQ-007",
+      "given": "Een klant heeft een bestelling met status PENDING.",
+      "when": "De klant klikt op de 'Annuleer bestelling' knop voor deze bestelling.",
+      "then": "De bestelling wordt geannuleerd en de status wordt bijgewerkt naar CANCELLED.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-007-2",
+      "reqId": "REQ-007",
+      "given": "Een klant heeft een bestelling met status CONFIRMED.",
+      "when": "De klant probeert de bestelling te annuleren.",
+      "then": "De 'Annuleer bestelling' knop is niet zichtbaar of niet klikbaar, en de bestelling blijft CONFIRMED.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-008-1",
+      "reqId": "REQ-008",
+      "given": "De 'Bestellen' knop is zichtbaar op de checkout pagina.",
+      "when": "De pagina wordt geladen.",
+      "then": "De 'Bestellen' knop heeft een breedte van minimaal 200px.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-009-1",
+      "reqId": "REQ-009",
+      "given": "Een klant heeft alle benodigde informatie ingevuld voor een bestelling.",
+      "when": "De klant klikt op de 'Bestellen' knop.",
+      "then": "De 'Bestellen' knop toont een loading indicator (bv. spinner) en is niet klikbaar totdat de bestelling is geplaatst of een fout optreedt.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-010-1",
+      "reqId": "REQ-010",
+      "given": "Een klant probeert een bestelling te plaatsen met een ongeldig huisnummer.",
+      "when": "De klant klikt op 'Bestellen'.",
+      "then": "Er wordt een veldspecifieke foutmelding getoond onder het huisnummer veld, bv. 'Ongeldig huisnummer formaat'.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-010-2",
+      "reqId": "REQ-010",
+      "given": "Een klant probeert een bestelling te plaatsen met een lege stad.",
+      "when": "De klant klikt op 'Bestellen'.",
+      "then": "Er wordt een veldspecifieke foutmelding getoond onder het stad veld, bv. 'Stad is verplicht'.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-011-1",
+      "reqId": "REQ-011",
+      "given": "Er treedt een onverwachte server error op tijdens het plaatsen van een bestelling.",
+      "when": "De API response wordt ontvangen.",
+      "then": "De gebruiker ziet een generieke foutmelding, bv. 'Er is een onverwachte fout opgetreden. Probeer het later opnieuw.', en een correlationId wordt gelogd.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-012-1",
+      "reqId": "REQ-012",
+      "given": "Een bestelling wordt succesvol geplaatst in het huidige jaar (bv. 2023).",
+      "when": "Het ordernummer wordt gegenereerd.",
+      "then": "Het ordernummer volgt het formaat ORD-2023-000001.",
+      "testType": "unit"
+    },
+    {
+      "acId": "AC-012-2",
+      "reqId": "REQ-012",
+      "given": "De eerste bestelling van het volgende jaar (bv. 2024) wordt geplaatst.",
+      "when": "Het ordernummer wordt gegenereerd.",
+      "then": "Het ordernummer volgt het formaat ORD-2024-000001.",
+      "testType": "unit"
+    },
+    {
+      "acId": "AC-013-1",
+      "reqId": "REQ-013",
+      "given": "Een klant plaatst een nieuwe bestelling.",
+      "when": "De bestelling wordt aangemaakt in het systeem.",
+      "then": "De status van de nieuw aangemaakte bestelling is PENDING.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-014-1",
+      "reqId": "REQ-014",
+      "given": "Een klant heeft een bestelling geplaatst 20 minuten geleden en de status is PENDING.",
+      "when": "De klant probeert de bestelling te annuleren.",
+      "then": "De bestelling wordt succesvol geannuleerd.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-014-2",
+      "reqId": "REQ-014",
+      "given": "Een klant heeft een bestelling geplaatst 40 minuten geleden en de status is PENDING.",
+      "when": "De klant probeert de bestelling te annuleren.",
+      "then": "De bestelling kan niet geannuleerd worden omdat de tijdslimiet van 30 minuten is verstreken.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-015-1",
+      "reqId": "REQ-015",
+      "given": "Een klant voegt producten toe aan de winkelwagen met een totale waarde van \u20ac6,00.",
+      "when": "De klant probeert de bestelling te plaatsen.",
+      "then": "De bestelling wordt succesvol geplaatst.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-015-2",
+      "reqId": "REQ-015",
+      "given": "Een klant voegt producten toe aan de winkelwagen met een totale waarde van \u20ac4,50.",
+      "when": "De klant probeert de bestelling te plaatsen.",
+      "then": "Er wordt een foutmelding getoond dat de minimale bestelwaarde van \u20ac5,00 niet is bereikt en de bestelling wordt niet geplaatst.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-016-1",
+      "reqId": "REQ-016",
+      "given": "Een klant voegt 15 verschillende producten toe aan de winkelwagen.",
+      "when": "De klant probeert de bestelling te plaatsen.",
+      "then": "De bestelling wordt succesvol geplaatst.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-016-2",
+      "reqId": "REQ-016",
+      "given": "Een klant voegt 21 verschillende producten toe aan de winkelwagen.",
+      "when": "De klant probeert de bestelling te plaatsen.",
+      "then": "Er wordt een foutmelding getoond dat het maximaal aantal verschillende producten (20) is overschreden en de bestelling wordt niet geplaatst.",
+      "testType": "e2e"
+    },
+    {
+      "acId": "AC-017-1",
+      "reqId": "REQ-017",
+      "given": "Een product heeft een beperkte voorraad van 5 stuks.",
+      "when": "Een klant voegt 3 stuks van dit product toe aan de winkelwagen en probeert de bestelling te plaatsen.",
+      "then": "De bestelling wordt succesvol geplaatst en de voorraad wordt verminderd met 3.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-017-2",
+      "reqId": "REQ-017",
+      "given": "Een product heeft een beperkte voorraad van 5 stuks.",
+      "when": "Een klant voegt 6 stuks van dit product toe aan de winkelwagen en probeert de bestelling te plaatsen.",
+      "then": "Er wordt een foutmelding getoond dat het product niet op voorraad is in de gevraagde hoeveelheid en de bestelling wordt niet geplaatst.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-018-1",
+      "reqId": "REQ-018",
+      "given": "Een klant plaatst een bestelling met een gemiddelde complexiteit.",
+      "when": "De API request voor het plaatsen van de bestelling wordt uitgevoerd.",
+      "then": "De response time van de API is p95 < 500ms.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-019-1",
+      "reqId": "REQ-019",
+      "given": "Een klant heeft meerdere bestellingen.",
+      "when": "De API request voor het ophalen van de bestellingenlijst wordt uitgevoerd.",
+      "then": "De response time van de API is p95 < 200ms.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-020-1",
+      "reqId": "REQ-020",
+      "given": "Een klant plaatst een bestelling.",
+      "when": "De bestellingstransactie wordt verwerkt door de server.",
+      "then": "De logboeken bevatten een uniek correlationId voor deze specifieke order transactie.",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-021-1",
+      "reqId": "REQ-021",
+      "given": "Een bestelling is geplaatst en verwerkt.",
+      "when": "De data van de bestelling wordt opgevraagd na 7 jaar.",
+      "then": "De bestelgegevens zijn nog steeds beschikbaar in het systeem.",
+      "testType": "integration"
+    }
+  ],
   "traceability": [
     {
       "reqId": "REQ-001",

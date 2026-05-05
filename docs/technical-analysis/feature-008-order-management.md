@@ -401,7 +401,45 @@ Alle backend logging zal gestructureerd zijn in JSON-formaat voor productieomgev
 *   User navigates to checkout, selects products, fills in address and payment method, places an order, and sees the confirmation page.
 *   User navigates to order history, views the list of orders, and cancels a `PENDING` order within the allowed timeframe.
 
-## 12. Traceability Matrix
+## 12. Acceptance Criteria
+
+| AC-ID | REQ | Gegeven | Wanneer | Dan | Testtype |
+|-------|-----|---------|---------|-----|----------|
+| AC-001-1 | REQ-001 | Een klant heeft producten toegevoegd aan zijn winkelwagen en is op de checkout pagina. | De klant vult een geldig leveringsadres in, selecteert een betaalmethode en klikt op 'Bestelling plaatsen'. | De bestelling wordt succesvol geplaatst en de klant ziet een ordernummer en de status PENDING. | e2e |
+| AC-001-2 | REQ-001 | Een klant heeft producten toegevoegd aan zijn winkelwagen en is op de checkout pagina. | De klant probeert een bestelling te plaatsen zonder een leveringsadres in te vullen. | Er wordt een foutmelding getoond dat het leveringsadres verplicht is en de bestelling wordt niet geplaatst. | e2e |
+| AC-002-1 | REQ-002 | Een bestelling is succesvol geplaatst. | De orderdetails worden opgevraagd. | Elk product in de bestelling bevat een productId, naam, aantal en eenheidsprijs. | integration |
+| AC-003-1 | REQ-003 | Een klant probeert een bestelling te plaatsen. | Het leveringsadres veld 'straat' is leeg. | Er wordt een veldspecifieke foutmelding getoond voor het 'straat' veld en de bestelling wordt niet geplaatst. | e2e |
+| AC-003-2 | REQ-003 | Een klant probeert een bestelling te plaatsen. | Het leveringsadres veld 'postcode' is ongeldig (bv. te kort). | Er wordt een veldspecifieke foutmelding getoond voor het 'postcode' veld en de bestelling wordt niet geplaatst. | e2e |
+| AC-004-1 | REQ-004 | Een klant probeert een bestelling te plaatsen. | De betaalmethode is ingesteld op 'CREDIT_CARD'. | De bestelling wordt succesvol geplaatst. | integration |
+| AC-004-2 | REQ-004 | Een klant probeert een bestelling te plaatsen. | De betaalmethode is ingesteld op een ongeldige waarde (bv. 'PAYPAL'). | Er wordt een veldspecifieke foutmelding getoond voor de betaalmethode en de bestelling wordt niet geplaatst. | e2e |
+| AC-005-1 | REQ-005 | Een klant heeft succesvol een bestelling geplaatst. | De bestelling is verwerkt door het systeem. | De klant ziet een uniek orderNumber en de status PENDING op de orderbevestigingspagina. | e2e |
+| AC-006-1 | REQ-006 | Een klant heeft meerdere bestellingen met verschillende statussen (PENDING, CONFIRMED, SHIPPED). | De klant navigeert naar de bestellingenpagina en filtert op 'CONFIRMED'. | Alleen bestellingen met de status CONFIRMED worden getoond. | e2e |
+| AC-006-2 | REQ-006 | Een klant heeft meerdere bestellingen met verschillende statussen. | De klant navigeert naar de bestellingenpagina en filtert op 'CANCELLED'. | Alleen bestellingen met de status CANCELLED worden getoond. | e2e |
+| AC-007-1 | REQ-007 | Een klant heeft een bestelling met status PENDING. | De klant klikt op de 'Annuleer bestelling' knop voor deze bestelling. | De bestelling wordt geannuleerd en de status wordt bijgewerkt naar CANCELLED. | e2e |
+| AC-007-2 | REQ-007 | Een klant heeft een bestelling met status CONFIRMED. | De klant probeert de bestelling te annuleren. | De 'Annuleer bestelling' knop is niet zichtbaar of niet klikbaar, en de bestelling blijft CONFIRMED. | e2e |
+| AC-008-1 | REQ-008 | De 'Bestellen' knop is zichtbaar op de checkout pagina. | De pagina wordt geladen. | De 'Bestellen' knop heeft een breedte van minimaal 200px. | e2e |
+| AC-009-1 | REQ-009 | Een klant heeft alle benodigde informatie ingevuld voor een bestelling. | De klant klikt op de 'Bestellen' knop. | De 'Bestellen' knop toont een loading indicator (bv. spinner) en is niet klikbaar totdat de bestelling is geplaatst of een fout optreedt. | e2e |
+| AC-010-1 | REQ-010 | Een klant probeert een bestelling te plaatsen met een ongeldig huisnummer. | De klant klikt op 'Bestellen'. | Er wordt een veldspecifieke foutmelding getoond onder het huisnummer veld, bv. 'Ongeldig huisnummer formaat'. | e2e |
+| AC-010-2 | REQ-010 | Een klant probeert een bestelling te plaatsen met een lege stad. | De klant klikt op 'Bestellen'. | Er wordt een veldspecifieke foutmelding getoond onder het stad veld, bv. 'Stad is verplicht'. | e2e |
+| AC-011-1 | REQ-011 | Er treedt een onverwachte server error op tijdens het plaatsen van een bestelling. | De API response wordt ontvangen. | De gebruiker ziet een generieke foutmelding, bv. 'Er is een onverwachte fout opgetreden. Probeer het later opnieuw.', en een correlationId wordt gelogd. | integration |
+| AC-012-1 | REQ-012 | Een bestelling wordt succesvol geplaatst in het huidige jaar (bv. 2023). | Het ordernummer wordt gegenereerd. | Het ordernummer volgt het formaat ORD-2023-000001. | unit |
+| AC-012-2 | REQ-012 | De eerste bestelling van het volgende jaar (bv. 2024) wordt geplaatst. | Het ordernummer wordt gegenereerd. | Het ordernummer volgt het formaat ORD-2024-000001. | unit |
+| AC-013-1 | REQ-013 | Een klant plaatst een nieuwe bestelling. | De bestelling wordt aangemaakt in het systeem. | De status van de nieuw aangemaakte bestelling is PENDING. | integration |
+| AC-014-1 | REQ-014 | Een klant heeft een bestelling geplaatst 20 minuten geleden en de status is PENDING. | De klant probeert de bestelling te annuleren. | De bestelling wordt succesvol geannuleerd. | e2e |
+| AC-014-2 | REQ-014 | Een klant heeft een bestelling geplaatst 40 minuten geleden en de status is PENDING. | De klant probeert de bestelling te annuleren. | De bestelling kan niet geannuleerd worden omdat de tijdslimiet van 30 minuten is verstreken. | e2e |
+| AC-015-1 | REQ-015 | Een klant voegt producten toe aan de winkelwagen met een totale waarde van €6,00. | De klant probeert de bestelling te plaatsen. | De bestelling wordt succesvol geplaatst. | e2e |
+| AC-015-2 | REQ-015 | Een klant voegt producten toe aan de winkelwagen met een totale waarde van €4,50. | De klant probeert de bestelling te plaatsen. | Er wordt een foutmelding getoond dat de minimale bestelwaarde van €5,00 niet is bereikt en de bestelling wordt niet geplaatst. | e2e |
+| AC-016-1 | REQ-016 | Een klant voegt 15 verschillende producten toe aan de winkelwagen. | De klant probeert de bestelling te plaatsen. | De bestelling wordt succesvol geplaatst. | e2e |
+| AC-016-2 | REQ-016 | Een klant voegt 21 verschillende producten toe aan de winkelwagen. | De klant probeert de bestelling te plaatsen. | Er wordt een foutmelding getoond dat het maximaal aantal verschillende producten (20) is overschreden en de bestelling wordt niet geplaatst. | e2e |
+| AC-017-1 | REQ-017 | Een product heeft een beperkte voorraad van 5 stuks. | Een klant voegt 3 stuks van dit product toe aan de winkelwagen en probeert de bestelling te plaatsen. | De bestelling wordt succesvol geplaatst en de voorraad wordt verminderd met 3. | integration |
+| AC-017-2 | REQ-017 | Een product heeft een beperkte voorraad van 5 stuks. | Een klant voegt 6 stuks van dit product toe aan de winkelwagen en probeert de bestelling te plaatsen. | Er wordt een foutmelding getoond dat het product niet op voorraad is in de gevraagde hoeveelheid en de bestelling wordt niet geplaatst. | integration |
+| AC-018-1 | REQ-018 | Een klant plaatst een bestelling met een gemiddelde complexiteit. | De API request voor het plaatsen van de bestelling wordt uitgevoerd. | De response time van de API is p95 < 500ms. | integration |
+| AC-019-1 | REQ-019 | Een klant heeft meerdere bestellingen. | De API request voor het ophalen van de bestellingenlijst wordt uitgevoerd. | De response time van de API is p95 < 200ms. | integration |
+| AC-020-1 | REQ-020 | Een klant plaatst een bestelling. | De bestellingstransactie wordt verwerkt door de server. | De logboeken bevatten een uniek correlationId voor deze specifieke order transactie. | integration |
+| AC-021-1 | REQ-021 | Een bestelling is geplaatst en verwerkt. | De data van de bestelling wordt opgevraagd na 7 jaar. | De bestelgegevens zijn nog steeds beschikbaar in het systeem. | integration |
+
+
+## 13. Traceability Matrix
 
 | REQ | Backend | Frontend | Tests |
 |-----|---------|----------|-------|

@@ -82,6 +82,7 @@ class TAState(TypedDict):
     backend_design: dict    # {"modules": [...]}
     frontend_design: dict   # {"routes": [...], "components": [...]}
     tests_design: dict      # {"unit": [...], "integration": [...], "e2e": [...]}
+    acceptance_criteria: list  # [{"acId": "AC-001-1", "reqId": "REQ-001", "given": "...", "when": "...", "then": "...", "testType": "integration"}]
     traceability: list      # [{"reqId": "REQ-001", "backendRefs": [...], ...}]
     # Outputs
     ta_json: dict
@@ -606,6 +607,59 @@ Regels:
     }
 
 
+def generate_acceptance_criteria(state: TAState) -> dict:
+    """
+    Node 5b: Genereer acceptance criteria voor elke requirement.
+    Elke AC beschrijft een meetbaar, testbaar scenario in Given/When/Then formaat.
+    """
+    print("✅ Acceptance Criteria genereren...")
+
+    valid_req_ids = {r["id"] for r in state["requirements"] if "id" in r}
+
+    prompt = f"""Je bent een SDLC-analyse agent.
+
+Genereer acceptance criteria (AC) voor elke requirement.
+Elk AC beschrijft een concreet, testbaar scenario in Given/When/Then formaat.
+
+Requirements:
+{json.dumps(state["requirements"], indent=2)}
+
+Geef ALLEEN een JSON object terug:
+{{
+  "acceptanceCriteria": [
+    {{
+      "acId": "AC-001-1",
+      "reqId": "REQ-001",
+      "given": "de beginsituatie of context",
+      "when": "de actie die de gebruiker of het systeem uitvoert",
+      "then": "het meetbare, verwachte resultaat",
+      "testType": "integration"
+    }}
+  ]
+}}
+
+Regels:
+- acId formaat: AC-{{reqId nummer}}-{{volgnummer}} (bv. AC-001-1, AC-001-2 voor REQ-001)
+- reqId: UITSLUITEND IDs uit de requirements lijst — geen nieuwe IDs verzinnen
+- given: beschrijf de beginstaat (bv. "Een ingelogde gebruiker met een gevulde winkelwagen")
+- when: beschrijf de actie (bv. "De gebruiker klikt op de 'Bestellen' knop")
+- then: beschrijf het meetbare resultaat (bv. "De API retourneert HTTP 201 met een orderNumber en status PENDING")
+- testType: kies exact één van: unit, integration, e2e
+  * unit = puur logica (validators, calculaties, state machines)
+  * integration = API endpoint, database interactie
+  * e2e = volledige gebruikersstroom in de browser
+- Genereer 1-3 ACs per requirement: minimaal 1 happy path, maximaal 2 negatieve/randgevallen
+- Zorg dat elke AC concreet en meetbaar is — geen vage omschrijvingen
+"""
+    result = llm_json(prompt)
+    raw_acs = result.get("acceptanceCriteria", [])
+
+    # Filter out any ACs referencing invented reqIds
+    valid_acs = [ac for ac in raw_acs if ac.get("reqId", "") in valid_req_ids]
+
+    return {"acceptance_criteria": valid_acs}
+
+
 def generate_traceability(state: TAState) -> dict:
     """
     Node 6: Genereer de traceability matrix.
@@ -801,6 +855,24 @@ def assemble_ta_json(state: TAState) -> dict:
         "tests": tests,
         # Voeg messaging sectie toe voor event-driven features
         **({"messaging": _clean_messaging(state["messaging_design"])} if fa_type == "event-driven" else {}),
+        # Acceptance criteria: filter op geldige AC-NNN-N IDs en bekende reqIds
+        "acceptanceCriteria": [
+            {
+                "acId":     ac["acId"],
+                "reqId":    ac["reqId"],
+                "given":    ac.get("given", ""),
+                "when":     ac.get("when", ""),
+                "then":     ac.get("then", ""),
+                "testType": ac.get("testType", "integration"),
+            }
+            for ac in state.get("acceptance_criteria", [])
+            if (
+                isinstance(ac.get("acId"), str)
+                and _re.match(r"^AC-[0-9]{3}-[0-9]+$", ac["acId"])
+                and isinstance(ac.get("reqId"), str)
+                and _REQ_PATTERN.match(ac["reqId"])
+            )
+        ],
         # Filter traceability: alleen geldige REQ-NNN IDs, whitelist keys, testRefs altijd als array
         "traceability": [
             {
@@ -1001,8 +1073,28 @@ Gegevens: {json.dumps(state["tests_design"], indent=2)}
             idx, result = f.result()
             sections[idx] = result
 
-    # ── Sectie 12: Traceability Matrix (direct opgebouwd, geen LLM) ──────────
-    print("  ✅ Sectie 12    (Traceability Matrix)")
+    # ── Sectie 12: Acceptance Criteria (direct opgebouwd, geen LLM) ─────────
+    print("  ✅ Sectie 12    (Acceptance Criteria)")
+    ac_rows = ""
+    for ac in state.get("acceptance_criteria", []):
+        ac_id    = ac.get("acId", "")
+        req_id   = ac.get("reqId", "")
+        given    = ac.get("given", "").replace("|", "\\|")
+        when     = ac.get("when", "").replace("|", "\\|")
+        then     = ac.get("then", "").replace("|", "\\|")
+        testtype = ac.get("testType", "")
+        ac_rows += f"| {ac_id} | {req_id} | {given} | {when} | {then} | {testtype} |\n"
+
+    acceptance_criteria_md = (
+        "## 12. Acceptance Criteria\n\n"
+        "| AC-ID | REQ | Gegeven | Wanneer | Dan | Testtype |\n"
+        "|-------|-----|---------|---------|-----|----------|\n"
+        + ac_rows
+    )
+    sections.append(acceptance_criteria_md)
+
+    # ── Sectie 13: Traceability Matrix (direct opgebouwd, geen LLM) ──────────
+    print("  ✅ Sectie 13    (Traceability Matrix)")
     traceability_rows = ""
     for t in state["traceability"]:
         req_id   = t.get("reqId", "")
@@ -1012,7 +1104,7 @@ Gegevens: {json.dumps(state["tests_design"], indent=2)}
         traceability_rows += f"| {req_id} | {backend} | {frontend} | {tests} |\n"
 
     traceability_md = (
-        "## 12. Traceability Matrix\n\n"
+        "## 13. Traceability Matrix\n\n"
         "| REQ | Backend | Frontend | Tests |\n"
         "|-----|---------|----------|-------|\n"
         + traceability_rows
@@ -1087,7 +1179,7 @@ def route_after_backend_design(state: TAState) -> str:
     """full-stack heeft ook een frontend; rest-api en event-driven slaan frontend over."""
     if state["fa_type"] == "full-stack":
         return "generate_frontend_design"
-    return "generate_traceability"
+    return "generate_acceptance_criteria"
 
 
 def after_validation(state: TAState) -> str:
@@ -1134,8 +1226,9 @@ def build_graph():
     graph.add_node("generate_api_design",       generate_api_design)
     graph.add_node("generate_messaging_design", generate_messaging_design)
     graph.add_node("generate_backend_design",   generate_backend_design)
-    graph.add_node("generate_frontend_design",  generate_frontend_design)
-    graph.add_node("generate_traceability",     generate_traceability)
+    graph.add_node("generate_frontend_design",       generate_frontend_design)
+    graph.add_node("generate_acceptance_criteria",   generate_acceptance_criteria)
+    graph.add_node("generate_traceability",          generate_traceability)
     graph.add_node("assemble_ta_json",          assemble_ta_json)
     graph.add_node("validate_schema",           validate_schema)
     graph.add_node("self_correct",              self_correct)
@@ -1156,13 +1249,16 @@ def build_graph():
     # Messaging design (event-driven) → backend
     graph.add_edge("generate_messaging_design",  "generate_backend_design")
 
-    # Na backend: full-stack → frontend, rest-api/event-driven → traceability
+    # Na backend: full-stack → frontend, rest-api/event-driven → acceptance criteria
     graph.add_conditional_edges("generate_backend_design", route_after_backend_design)
 
-    # Frontend (altijd) → traceability
-    graph.add_edge("generate_frontend_design",   "generate_traceability")
+    # Frontend (altijd) → acceptance criteria
+    graph.add_edge("generate_frontend_design",       "generate_acceptance_criteria")
 
-    graph.add_edge("generate_traceability",      "assemble_ta_json")
+    # Acceptance criteria → traceability
+    graph.add_edge("generate_acceptance_criteria",   "generate_traceability")
+
+    graph.add_edge("generate_traceability",          "assemble_ta_json")
     graph.add_edge("assemble_ta_json",           "validate_schema")
     graph.add_conditional_edges("validate_schema", after_validation)
     graph.add_edge("self_correct",               "validate_schema")
@@ -1298,8 +1394,9 @@ def main():
         "messaging_design": {},
         "backend_design":   {},
         "frontend_design":  {},
-        "tests_design":     {"unit": [], "integration": [], "e2e": []},
-        "traceability":     [],
+        "tests_design":         {"unit": [], "integration": [], "e2e": []},
+        "acceptance_criteria":  [],
+        "traceability":         [],
         "ta_json":          {},
         "ta_markdown":      "",
         "validation_errors": [],

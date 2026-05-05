@@ -95,7 +95,14 @@
 ### E2E tests
 - {wat wordt getest}
 
-## 12. Traceability Matrix
+## 12. Acceptance Criteria
+
+| AC-ID | REQ | Gegeven | Wanneer | Dan | Testtype |
+|-------|-----|---------|---------|-----|----------|
+| AC-001-1 | REQ-001 | {context} | {actie} | {verwacht resultaat} | integration |
+| AC-001-2 | REQ-001 | {ongeldige context} | {actie} | {foutmelding} | integration |
+
+## 13. Traceability Matrix
 
 | REQ | Backend | Frontend | Tests |
 |-----|---------|----------|-------|
