@@ -174,16 +174,25 @@ Geef voor ELKE pagina aan of het een visuele pagina is (diagram, ERD, UI-mockup,
 wireframe, deployment/component/sequence diagram, Figma-design, grafiek, foto)
 of een tekstpagina.
 
+Voor visuele pagina's: geef ook de crop-box van het diagram zelf (zonder paginaheader,
+paginanummer, omringende tekst en witruimte). Waarden zijn fracties van de paginagrootte
+tussen 0.0 en 1.0: top=afstand vanaf boven, left=afstand vanaf links,
+right=afstand vanaf links tot rechterrand, bottom=afstand vanaf boven tot onderrand.
+Wees nauwkeurig — dit wordt gebruikt om de afbeelding bij te snijden.
+
 Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
 {{
   "pages": [
     {{"page": 1, "visual": false, "title": "exacte sectietitel of null"}},
-    {{"page": 2, "visual": true,  "title": "exacte diagramtitel uit de PDF", "type": "ui-mockup"}},
+    {{"page": 2, "visual": true, "title": "exacte diagramtitel uit de PDF",
+      "type": "ui-mockup",
+      "crop": {{"top": 0.12, "left": 0.03, "right": 0.97, "bottom": 0.88}}}},
     ...
   ]
 }}
 
 type is één van: erd, deployment, component, sequence, ui-mockup, other-visual
+crop is verplicht voor elke visuele pagina
 """
 
 
@@ -306,14 +315,18 @@ def _build_image_content(page_images: list[Path]) -> list[dict]:
     return content
 
 
-def _identify_visual_pages(page_images: list[Path]) -> dict[int, str]:
+def _identify_visual_pages(
+    page_images: list[Path],
+) -> tuple[dict[int, str], dict[int, dict]]:
     """
-    Pass 1: vraag Gemini welke pagina's visueel zijn en wat hun titels zijn.
-    Geeft {paginanummer: titel} terug voor alle visuele pagina's.
+    Pass 1: vraag Gemini welke pagina's visueel zijn, hun titels en crop-boxes.
+    Geeft twee dicts terug:
+      - {paginanummer: titel}  voor visuele pagina's
+      - {paginanummer: crop}   crop = {"top": f, "left": f, "right": f, "bottom": f}
     """
     import json as _json
     n = len(page_images)
-    print(f"  🔍 Pass 1 — visuele pagina's identificeren ({n} pagina's)...")
+    print(f"  🔍 Pass 1 — visuele pagina's identificeren en bijsnijden ({n} pagina's)...")
     content = _build_image_content(page_images)
     content.append({
         "type": "text",
@@ -322,23 +335,42 @@ def _identify_visual_pages(page_images: list[Path]) -> dict[int, str]:
     response = get_llm().invoke([HumanMessage(content=content)])
     raw = response.content.strip()
 
-    # Strip eventuele code fences
     if "```" in raw:
         raw = raw[raw.find("{"):raw.rfind("}") + 1]
 
     try:
         data = _json.loads(raw)
-        result = {
-            p["page"]: p["title"]
-            for p in data.get("pages", [])
-            if p.get("visual") and p.get("title")
-        }
-        visual_count = len(result)
-        print(f"  ✅ {visual_count} visuele pagina('s) gevonden: {sorted(result.keys())}")
-        return result
+        titles: dict[int, str] = {}
+        crops: dict[int, dict] = {}
+        for p in data.get("pages", []):
+            if not p.get("visual") or not p.get("title"):
+                continue
+            page_num = p["page"]
+            titles[page_num] = p["title"]
+            if "crop" in p and isinstance(p["crop"], dict):
+                crops[page_num] = p["crop"]
+        print(f"  ✅ {len(titles)} visuele pagina('s): {sorted(titles.keys())}")
+        return titles, crops
     except Exception as e:
         print(f"  ⚠️  Identificatie mislukt ({e}) — alle pagina's als visueel behandeld")
-        return {i: f"Pagina {i}" for i in range(1, n + 1)}
+        titles = {i: f"Pagina {i}" for i in range(1, n + 1)}
+        return titles, {}
+
+
+def _crop_image(img_path: Path, crop: dict) -> None:
+    """Snijd de afbeelding bij tot de opgegeven crop-box (fracties 0.0–1.0)."""
+    try:
+        from PIL import Image as _Image
+        img = _Image.open(img_path)
+        w, h = img.size
+        left   = int(max(0.0, crop.get("left",   0.0)) * w)
+        top    = int(max(0.0, crop.get("top",    0.0)) * h)
+        right  = int(min(1.0, crop.get("right",  1.0)) * w)
+        bottom = int(min(1.0, crop.get("bottom", 1.0)) * h)
+        if right > left and bottom > top:
+            img.crop((left, top, right, bottom)).save(img_path)
+    except Exception as e:
+        print(f"  ⚠️  Bijsnijden mislukt voor {img_path.name}: {e}")
 
 
 def convert_with_page_images(
@@ -349,14 +381,20 @@ def convert_with_page_images(
 ) -> str:
     """
     Twee-pass conversie:
-    Pass 1 — identificeer welke pagina's visueel zijn (diagram, UI, etc.)
+    Pass 1 — identificeer visuele pagina's, titels en crop-boxes; pas bijsnijden toe
     Pass 2 — genereer de FA met afbeeldingsreferenties voor visuele pagina's
-              en tekst-extractie voor tekstpagina's
     """
-    # Pass 1
-    visual_pages = _identify_visual_pages(page_images)
+    # Pass 1: identificeer + bijsnijden
+    visual_pages, crops = _identify_visual_pages(page_images)
 
-    # Pass 2
+    if crops:
+        print(f"  ✂️  Afbeeldingen bijsnijden ({len(crops)} pagina('s))...")
+        for page_num, crop in crops.items():
+            img_path = page_images[page_num - 1]
+            _crop_image(img_path, crop)
+        print("  ✅ Bijsnijden klaar")
+
+    # Pass 2: genereer FA
     print(f"  📤 Pass 2 — FA genereren ({len(page_images)} pagina's)...")
     content = _build_image_content(page_images)
     content.append({
