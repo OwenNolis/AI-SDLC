@@ -166,41 +166,47 @@ def get_llm() -> ChatGoogleGenerativeAI:
 
 # ── Prompts ────────────────────────────────────────────────────────────────────
 
-_IDENTIFY_PROMPT = """\
+# Stap 1a: classificeer welke pagina's visuele content hebben (alle pagina's tegelijk)
+_CLASSIFY_PROMPT = """\
 Je ontvangt {n} afbeeldingen. Elke afbeelding is één pagina van een PDF.
 Afbeelding 1 = Pagina 1, Afbeelding 2 = Pagina 2, …, Afbeelding {n} = Pagina {n}.
 
-Analyseer ELKE pagina zorgvuldig op basis van wat je erin ziet.
-
-STAP 1 — Bepaal per pagina of er visuele content op staat:
-Visuele content = een diagram, ERD, UI-mockup, wireframe, Figma-design,
-deployment/component/sequence diagram, grafiek of foto.
+Geef voor elke pagina aan of ze visuele content bevatten.
+Visuele content = diagram, ERD, UI-mockup, wireframe, Figma-design,
+deployment/component/sequence diagram, grafiek of schermontwerp.
 Tekstpagina's bevatten alleen lopende tekst, bullet lists of tabellen.
 
-STAP 2 — Voor elke visueel frame dat je ziet:
-- Lees de TITEL zoals die zichtbaar is in of direct boven het frame in de afbeelding.
-  Gebruik exact die tekst — verzin geen titel.
-- Een pagina kan 0, 1 of meerdere visuele frames bevatten. Rapporteer elk frame apart.
-- Bepaal de crop-box: de coördinaten van het visuele frame zelf.
-  Sluit alles buiten het frame uit: pagina-header, sectienummer, paginanummer,
-  titeltekst boven het frame, beschrijvingstekst onder het frame en lege witruimte.
-  Waarden zijn fracties van de paginagrootte (0.0 = bovenkant/linkerkant, 1.0 = onderkant/rechterkant).
-  Wees zo nauwkeurig mogelijk.
+Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
+{{"visual_pages": [<paginanummers met visuele content>]}}
+"""
 
-Geef ALLEEN het volgende JSON object terug (geen uitleg, geen markdown, geen code block):
+# Stap 1b: analyseer één enkele visuele pagina in detail
+_CROP_PROMPT = """\
+Je ontvangt één afbeelding: pagina {page} van een PDF.
+
+Zoek alle afzonderlijke visuele frames op deze pagina.
+Een visueel frame is een diagram, UI-mockup, wireframe of schermontwerp dat
+duidelijk visueel afgebakend is (bv. door een kader, achtergrondkleur of whitespace).
+
+Voor elk frame:
+1. Lees de TITEL exact zoals zichtbaar in of direct boven het frame — verzin niets.
+2. Bepaal de crop-box: ALLEEN het visuele frame zelf.
+   Sluit uit: paginaheader, sectienummer (bv. "2."), titeltekst boven het frame,
+   beschrijvingstekst onder het frame, paginanummer en omringende witruimte.
+   Waarden zijn fracties 0.0–1.0 van de paginagrootte.
+   top = bovenkant frame, bottom = onderkant frame,
+   left = linkerkant frame, right = rechterkant frame.
+
+Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
 {{
-  "pages": [
-    {{"page": <paginanummer>, "visual": false}},
-    {{"page": <paginanummer>, "visual": true,
-      "title": "<exacte titel zoals zichtbaar in de afbeelding>",
-      "type": "<erd|deployment|component|sequence|ui-mockup|other-visual>",
-      "crop": {{"top": <0.0-1.0>, "left": <0.0-1.0>, "right": <0.0-1.0>, "bottom": <0.0-1.0>}}}},
-    ...
+  "designs": [
+    {{
+      "title": "<exacte titel uit de afbeelding>",
+      "type": "<erd|deployment|component|sequence|ui-mockup|other>",
+      "crop": {{"top": <0.0-1.0>, "left": <0.0-1.0>, "right": <0.0-1.0>, "bottom": <0.0-1.0>}}
+    }}
   ]
 }}
-
-Elke pagina moet exact één entry hebben als hij alleen tekst bevat.
-Elke pagina mag meerdere entries hebben als er meerdere visuele frames op staan.
 """
 
 
@@ -329,53 +335,71 @@ class _VisualEntry:
         self.out_name = out_name  # bv. "page-3.png" of "page-3-1.png"
 
 
-def _identify_visual_pages(
-    page_images: list[Path],
-) -> list[_VisualEntry]:
-    """
-    Pass 1: vraag Gemini welke pagina's visueel zijn, hun titels en crop-boxes.
-    Ondersteunt meerdere designs per pagina.
-    Geeft een lijst van _VisualEntry terug, inclusief uitvoerbestandsnaam.
-    """
+def _classify_visual_pages(page_images: list[Path]) -> list[int]:
+    """Stap 1a: stuur alle pagina's tegelijk en vraag welke visuele content bevatten."""
     import json as _json
     n = len(page_images)
-    print(f"  🔍 Pass 1 — visuele pagina's identificeren ({n} pagina's)...")
+    print(f"  🔍 Stap 1a — visuele pagina's classificeren ({n} pagina's)...")
     content = _build_image_content(page_images)
-    content.append({"type": "text", "text": _IDENTIFY_PROMPT.format(n=n)})
+    content.append({"type": "text", "text": _CLASSIFY_PROMPT.format(n=n)})
     response = get_llm().invoke([HumanMessage(content=content)])
     raw = response.content.strip()
-
     if "```" in raw:
         raw = raw[raw.find("{"):raw.rfind("}") + 1]
-
-    entries: list[_VisualEntry] = []
     try:
         data = _json.loads(raw)
-        page_counts: dict[int, int] = {}
-        for p in data.get("pages", []):
-            if not p.get("visual") or not p.get("title"):
-                continue
-            page_num = p["page"]
-            crop = p.get("crop") if isinstance(p.get("crop"), dict) else {}
-            count = page_counts.get(page_num, 0) + 1
-            page_counts[page_num] = count
-            # Naam: page-3.png voor eerste design, page-3-2.png voor tweede, etc.
-            out_name = f"page-{page_num}.png" if count == 1 else f"page-{page_num}-{count}.png"
-            entries.append(_VisualEntry(page_num, p["title"], crop, out_name))
-
-        # Hernoem page-3.png → page-3-1.png als die pagina meerdere designs heeft
-        for entry in entries:
-            if page_counts[entry.page] > 1 and entry.out_name == f"page-{entry.page}.png":
-                entry.out_name = f"page-{entry.page}-1.png"
-
-        visual_pages = sorted({e.page for e in entries})
-        print(f"  ✅ {len(entries)} visuele design(s) op pagina('s): {visual_pages}")
+        visual = sorted(int(p) for p in data.get("visual_pages", []))
+        print(f"  ✅ Visuele pagina('s): {visual}")
+        return visual
     except Exception as e:
-        print(f"  ⚠️  Identificatie mislukt ({e}) — alle pagina's als visueel behandeld")
-        entries = [
-            _VisualEntry(i, f"Pagina {i}", {}, f"page-{i}.png")
-            for i in range(1, n + 1)
+        print(f"  ⚠️  Classificatie mislukt ({e}) — alle pagina's als visueel behandeld")
+        return list(range(1, n + 1))
+
+
+def _identify_designs_on_page(page_img: Path, page_num: int) -> list[tuple[str, dict]]:
+    """Stap 1b: stuur één pagina en vraag naar alle afzonderlijke designs met crop-boxes."""
+    import json as _json
+    b64 = base64.standard_b64encode(page_img.read_bytes()).decode()
+    content = [
+        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}},
+        {"type": "text", "text": _CROP_PROMPT.format(page=page_num)},
+    ]
+    response = get_llm().invoke([HumanMessage(content=content)])
+    raw = response.content.strip()
+    if "```" in raw:
+        raw = raw[raw.find("{"):raw.rfind("}") + 1]
+    try:
+        data = _json.loads(raw)
+        return [
+            (d["title"], d.get("crop", {}))
+            for d in data.get("designs", [])
+            if d.get("title")
         ]
+    except Exception as e:
+        print(f"  ⚠️  Crop-analyse mislukt voor pagina {page_num} ({e})")
+        return [(f"Pagina {page_num}", {})]
+
+
+def _identify_visual_pages(page_images: list[Path]) -> list[_VisualEntry]:
+    """
+    Twee-staps identificatie:
+    1a — classificeer welke pagina's visueel zijn (alle pagina's tegelijk, snel)
+    1b — analyseer elke visuele pagina apart voor precieze crop-boxes per design
+    """
+    visual_page_nums = _classify_visual_pages(page_images)
+
+    entries: list[_VisualEntry] = []
+    for page_num in visual_page_nums:
+        page_img = page_images[page_num - 1]
+        print(f"  ✂️  Stap 1b — designs analyseren op pagina {page_num}...")
+        designs = _identify_designs_on_page(page_img, page_num)
+        count = len(designs)
+        for i, (title, crop) in enumerate(designs, 1):
+            out_name = f"page-{page_num}.png" if count == 1 else f"page-{page_num}-{i}.png"
+            entries.append(_VisualEntry(page_num, title, crop, out_name))
+            label = out_name
+            print(f"    → {label}: {title}")
+
     return entries
 
 
