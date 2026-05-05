@@ -1,0 +1,2027 @@
+{
+  "meta": {
+    "featureId": "feature-009-product-catalog",
+    "title": "Feature-009: Product Catalog Management",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "inScope": [
+      "Aanmaken van nieuwe producten met naam, beschrijving, prijs en initi\u00eble voorraad",
+      "Bewerken van bestaande productgegevens (naam, beschrijving, prijs)",
+      "Archiveren van producten (soft delete \u2014 product verdwijnt uit catalogus maar blijft in orderhistorie zichtbaar)",
+      "Voorraad bijwerken via een aparte stock-aanpassing (positief = aanvulling, negatief = correctie)",
+      "Zoeken en filteren van producten op naam, categorie en beschikbaarheid",
+      "Paginering van de productlijst (10 per pagina, gesorteerd op naam)",
+      "Lage-voorraadwaarschuwing: producten met stock \u2264 drempelwaarde worden als \"low stock\" gemarkeerd",
+      "Categorie\u00ebn beheren: aanmaken, hernoemen, verwijderen (alleen als geen actieve producten gekoppeld)"
+    ],
+    "outOfScope": [
+      "Productafbeeldingen uploaden en beheren",
+      "Prijshistorie of tijdgebonden kortingen",
+      "Bulkimport via CSV of Excel",
+      "Integratie met externe ERP- of voorraadsystemen",
+      "Klantgerichte productpagina's (dit is uitsluitend een beheerscherm)"
+    ]
+  },
+  "assumptions": [],
+  "openQuestions": [],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "Een beheerder kan een nieuw product aanmaken met: naam, beschrijving, prijs (\u20ac), categorie en initi\u00eble voorraad.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "text": "Naam is verplicht, uniek binnen de catalogus en maximaal 200 tekens lang.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-003",
+      "text": "Prijs is verplicht, minimaal \u20ac0,01 en maximaal \u20ac99.999,99, opgeslagen met twee decimalen.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-004",
+      "text": "Initi\u00eble voorraad is verplicht, minimaal 0 (uitverkocht) en maximaal 999.999 stuks.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-005",
+      "text": "Een beheerder kan naam, beschrijving, prijs en categorie van een bestaand product bewerken; de voorraad wordt uitsluitend via een stock-aanpassing gewijzigd.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-006",
+      "text": "Een beheerder kan een product archiveren; het product verdwijnt uit het actieve assortiment maar blijft gekoppeld aan historische orderregels.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-007",
+      "text": "Een beheerder kan de voorraad van een product aanpassen met een delta (bv. +50 of -10) en een verplichte reden (RESTOCK, CORRECTION, DAMAGE, RETURN).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-008",
+      "text": "Een negatieve stock-aanpassing mag de voorraad niet onder 0 brengen; dit wordt afgewezen met een foutmelding.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-009",
+      "text": "Producten met een voorraad \u2264 de ingestelde drempelwaarde (standaard 10) worden in de lijst gemarkeerd als \"low stock\".",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-010",
+      "text": "De productlijst ondersteunt paginering (10 per pagina), sortering op naam (standaard oplopend) en filteren op naam (bevat), categorie en beschikbaarheid (actief / gearchiveerd / low stock).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-011",
+      "text": "Een categorie kan alleen worden verwijderd als er geen actieve producten aan gekoppeld zijn.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-012",
+      "text": "Een beheerder kan een nieuwe categorie aanmaken met een unieke naam van maximaal 100 tekens.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-013",
+      "text": "Productnaam moet uniek zijn binnen alle niet-gearchiveerde producten; gearchiveerde producten tellen niet mee bij de uniekheidscontrole.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-014",
+      "text": "Een gearchiveerd product kan niet meer worden bewerkt of opnieuw gearchiveerd, maar kan wel worden hersteld (unarchive) als beheerder.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-015",
+      "text": "Stock-aanpassingen worden gelogd in een audit-tabel (product_id, delta, reden, beheerder-id, tijdstip); dit log is niet verwijderbaar.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-016",
+      "text": "De lage-voorraaddrempel is configureerbaar per product (optioneel); als geen drempel is ingesteld, geldt de globale standaard van 10 stuks.",
+      "priority": "should"
+    },
+    {
+      "id": "REQ-017",
+      "text": "Prijswijzigingen hebben geen terugwerkende kracht op bestaande orders.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-018",
+      "text": "Een product kan niet worden aangemaakt met dezelfde naam als een gearchiveerd product zonder expliciete bevestiging (conflict-melding met optie om het gearchiveerde product te herstellen).",
+      "priority": "should"
+    },
+    {
+      "id": "REQ-019",
+      "text": "API response time p95 < 300ms voor het ophalen van de productlijst (inclusief filters en paginering).",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-020",
+      "text": "API response time p95 < 500ms voor aanmaken en bewerken van producten.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-021",
+      "text": "Alle schrijfoperaties (aanmaken, bewerken, archiveren, stock-aanpassing) worden gelogd met correlationId en beheerder-id.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-022",
+      "text": "Toegang tot alle product-endpoints is beperkt tot gebruikers met de rol ROLE_ADMIN.",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-023",
+      "text": "De productlijst ondersteunt minimaal 10.000 actieve producten zonder merkbare prestatiedegradatie.",
+      "priority": "must"
+    }
+  ],
+  "domain": {
+    "entities": [
+      {
+        "name": "Category",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "name",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "maxLength:100"
+            ],
+            "testCases": [
+              "empty",
+              "too_long",
+              "missing",
+              "invalid_value",
+              "duplicate_per_day"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "updatedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Product",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "name",
+            "type": "String",
+            "constraints": [
+              "notNull",
+              "maxLength:200"
+            ],
+            "testCases": [
+              "empty",
+              "too_long",
+              "missing",
+              "invalid_value",
+              "duplicate_per_day"
+            ]
+          },
+          {
+            "name": "description",
+            "type": "String",
+            "constraints": [],
+            "testCases": [
+              "empty",
+              "too_long",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "price",
+            "type": "BigDecimal",
+            "constraints": [
+              "notNull",
+              "min:0.01",
+              "max:99999.99"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value",
+              "too_short",
+              "too_long"
+            ]
+          },
+          {
+            "name": "stockQuantity",
+            "type": "Integer",
+            "constraints": [
+              "notNull",
+              "min:0",
+              "max:999999"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value",
+              "too_short",
+              "too_long"
+            ]
+          },
+          {
+            "name": "lowStockThreshold",
+            "type": "Integer",
+            "constraints": [
+              "min:0"
+            ],
+            "testCases": [
+              "empty",
+              "invalid_value",
+              "too_short",
+              "too_long"
+            ]
+          },
+          {
+            "name": "archived",
+            "type": "Boolean",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "category",
+            "type": "Category",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "updatedAt",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "createdByUserId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "lastModifiedByUserId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "StockAdjustment",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "product",
+            "type": "Product",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "delta",
+            "type": "Integer",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "reason",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "adjustedByUserId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "adjustmentTimestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "correlationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "AuditLog",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "operation",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "entityType",
+            "type": "String",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "empty",
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "entityId",
+            "type": "Long",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "userId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "logTimestamp",
+            "type": "LocalDateTime",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "correlationId",
+            "type": "UUID",
+            "constraints": [
+              "notNull"
+            ],
+            "testCases": [
+              "missing",
+              "invalid_value"
+            ]
+          },
+          {
+            "name": "details",
+            "type": "String",
+            "constraints": [],
+            "testCases": [
+              "empty",
+              "too_long",
+              "invalid_value"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "errorFormat": {
+      "type": "ApiError",
+      "fields": [
+        "status",
+        "error",
+        "correlationId",
+        "fields"
+      ]
+    },
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/api/products",
+        "summary": "Maak een nieuw product aan",
+        "request": {
+          "bodySchemaRef": "CreateProductRequest",
+          "validationRules": [
+            "name: verplicht, maximaal 200 tekens, uniek voor niet-gearchiveerde producten",
+            "description: optioneel, maximaal 200 tekens",
+            "price: verplicht, minimaal 0.01, maximaal 99999.99, twee decimalen",
+            "stockQuantity: verplicht, minimaal 0, maximaal 999999",
+            "categoryId: optioneel, moet verwijzen naar een bestaande categorie",
+            "lowStockThreshold: optioneel, minimaal 0"
+          ]
+        },
+        "responses": [
+          {
+            "status": 201,
+            "bodySchemaRef": "ProductResponse",
+            "notes": "Product succesvol aangemaakt"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body"
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Productnaam is niet uniek voor niet-gearchiveerde producten"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/products",
+        "summary": "Haal een gepagineerde lijst met producten op",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "ProductListResponse",
+            "notes": "Lijst met producten"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/products/{id}",
+        "summary": "Haal de details van een specifiek product op",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "ProductResponse",
+            "notes": "Productdetails"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Product niet gevonden"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/products/{id}",
+        "summary": "Bewerk een bestaand product",
+        "request": {
+          "bodySchemaRef": "UpdateProductRequest",
+          "validationRules": [
+            "name: verplicht, maximaal 200 tekens, uniek voor niet-gearchiveerde producten",
+            "description: optioneel, maximaal 200 tekens",
+            "price: verplicht, minimaal 0.01, maximaal 99999.99, twee decimalen",
+            "categoryId: optioneel, moet verwijzen naar een bestaande categorie",
+            "lowStockThreshold: optioneel, minimaal 0"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "ProductResponse",
+            "notes": "Product succesvol bijgewerkt"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Product niet gevonden"
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Productnaam is niet uniek voor niet-gearchiveerde producten"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/products/{id}",
+        "summary": "Archiveer een product (soft delete)",
+        "request": {},
+        "responses": [
+          {
+            "status": 204,
+            "notes": "Product succesvol gearchiveerd",
+            "bodySchemaRef": "EmptyResponse"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Product niet gevonden"
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Product kan niet worden gearchiveerd omdat het nog gekoppeld is aan actieve orders (dit is een aanname, de FA specificeert dit niet expliciet maar het is een logische beperking)"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/products/{id}/stock",
+        "summary": "Pas de voorraad van een product aan",
+        "request": {
+          "bodySchemaRef": "StockAdjustmentRequest",
+          "validationRules": [
+            "delta: verplicht",
+            "reason: verplicht, moet een van de toegestane redenen zijn (RESTOCK, CORRECTION, DAMAGE, RETURN)"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "ProductResponse",
+            "notes": "Voorraad succesvol aangepast"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body of voorraad wordt negatief"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Product niet gevonden"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/products/{id}/stock-adjustments",
+        "summary": "Haal de auditlog van stock-aanpassingen voor een product op",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "StockAdjustmentListResponse",
+            "notes": "Lijst met stock-aanpassingen"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Product niet gevonden"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "POST",
+        "path": "/api/categories",
+        "summary": "Maak een nieuwe categorie aan",
+        "request": {
+          "bodySchemaRef": "CreateCategoryRequest",
+          "validationRules": [
+            "name: verplicht, maximaal 100 tekens, uniek"
+          ]
+        },
+        "responses": [
+          {
+            "status": 201,
+            "bodySchemaRef": "CategoryResponse",
+            "notes": "Categorie succesvol aangemaakt"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body"
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Categorie naam is al in gebruik"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "GET",
+        "path": "/api/categories",
+        "summary": "Haal alle categorie\u00ebn op",
+        "request": {},
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "CategoryListResponse",
+            "notes": "Lijst met categorie\u00ebn"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/categories/{id}",
+        "summary": "Hernoem een categorie",
+        "request": {
+          "bodySchemaRef": "UpdateCategoryRequest",
+          "validationRules": [
+            "name: verplicht, maximaal 100 tekens, uniek"
+          ]
+        },
+        "responses": [
+          {
+            "status": 200,
+            "bodySchemaRef": "CategoryResponse",
+            "notes": "Categorie succesvol hernoemd"
+          },
+          {
+            "status": 400,
+            "bodySchemaRef": "ApiError",
+            "notes": "Validatiefout in request body"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Categorie niet gevonden"
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Nieuwe categorie naam is al in gebruik"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/categories/{id}",
+        "summary": "Verwijder een categorie",
+        "request": {},
+        "responses": [
+          {
+            "status": 204,
+            "notes": "Categorie succesvol verwijderd",
+            "bodySchemaRef": "EmptyResponse"
+          },
+          {
+            "status": 404,
+            "bodySchemaRef": "ApiError",
+            "notes": "Categorie niet gevonden"
+          },
+          {
+            "status": 409,
+            "bodySchemaRef": "ApiError",
+            "notes": "Categorie kan niet worden verwijderd omdat er nog actieve producten aan gekoppeld zijn"
+          },
+          {
+            "status": 500,
+            "bodySchemaRef": "ApiError",
+            "notes": "Onverwachte serverfout"
+          }
+        ],
+        "auth": "bearer"
+      }
+    ]
+  },
+  "backend": {
+    "modules": [
+      {
+        "name": "product",
+        "classes": [
+          {
+            "name": "ProductController",
+            "responsibility": "Exposeert REST endpoints voor productbeheer."
+          },
+          {
+            "name": "ProductService",
+            "responsibility": "Orchestreert de businesslogica voor productoperaties."
+          },
+          {
+            "name": "ProductRepository",
+            "responsibility": "Verantwoordelijk voor datatoegang tot productgegevens."
+          },
+          {
+            "name": "ProductEntity",
+            "responsibility": "Representeert de productentiteit in de database."
+          },
+          {
+            "name": "CreateProductRequestDto",
+            "responsibility": "Data Transfer Object voor het aanmaken van een product."
+          },
+          {
+            "name": "UpdateProductRequestDto",
+            "responsibility": "Data Transfer Object voor het bijwerken van een product."
+          },
+          {
+            "name": "ProductResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van productgegevens."
+          },
+          {
+            "name": "ProductListResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van een lijst met producten."
+          },
+          {
+            "name": "ProductCreateValidator",
+            "responsibility": "Valideert de input voor het aanmaken van een product."
+          },
+          {
+            "name": "ProductUpdateValidator",
+            "responsibility": "Valideert de input voor het bijwerken van een product."
+          },
+          {
+            "name": "ProductNameUniquenessValidator",
+            "responsibility": "Controleert de uniekheid van productnamen voor niet-gearchiveerde producten."
+          },
+          {
+            "name": "ProductArchivedStatusValidator",
+            "responsibility": "Valideert de status van een product bij archiveringspogingen."
+          },
+          {
+            "name": "ProductNotFoundException",
+            "responsibility": "Exception voor wanneer een product niet wordt gevonden."
+          },
+          {
+            "name": "ProductNameConflictException",
+            "responsibility": "Exception voor wanneer een productnaam al in gebruik is."
+          },
+          {
+            "name": "ProductCannotArchiveException",
+            "responsibility": "Exception voor wanneer een product niet gearchiveerd kan worden."
+          }
+        ]
+      },
+      {
+        "name": "stock",
+        "classes": [
+          {
+            "name": "StockController",
+            "responsibility": "Exposeert REST endpoints voor voorraadbeheer."
+          },
+          {
+            "name": "StockService",
+            "responsibility": "Orchestreert de businesslogica voor voorraadoperaties."
+          },
+          {
+            "name": "StockAdjustmentRepository",
+            "responsibility": "Verantwoordelijk voor datatoegang tot stock-aanpassingen."
+          },
+          {
+            "name": "StockAdjustmentEntity",
+            "responsibility": "Representeert een stock-aanpassing in de database."
+          },
+          {
+            "name": "StockAdjustmentRequestDto",
+            "responsibility": "Data Transfer Object voor het aanpassen van voorraad."
+          },
+          {
+            "name": "StockAdjustmentListResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van een lijst met stock-aanpassingen."
+          },
+          {
+            "name": "StockAdjustmentValidator",
+            "responsibility": "Valideert de input voor stock-aanpassingen."
+          },
+          {
+            "name": "NegativeStockPreventionValidator",
+            "responsibility": "Voorkomt dat voorraad negatief wordt door stock-aanpassingen."
+          },
+          {
+            "name": "StockAdjustmentReasonEnum",
+            "responsibility": "Definieert de toegestane redenen voor stock-aanpassingen."
+          }
+        ]
+      },
+      {
+        "name": "category",
+        "classes": [
+          {
+            "name": "CategoryController",
+            "responsibility": "Exposeert REST endpoints voor categoribeheer."
+          },
+          {
+            "name": "CategoryService",
+            "responsibility": "Orchestreert de businesslogica voor categorieoperaties."
+          },
+          {
+            "name": "CategoryRepository",
+            "responsibility": "Verantwoordelijk voor datatoegang tot categorigegevens."
+          },
+          {
+            "name": "CategoryEntity",
+            "responsibility": "Representeert de categorieentiteit in de database."
+          },
+          {
+            "name": "CreateCategoryRequestDto",
+            "responsibility": "Data Transfer Object voor het aanmaken van een categorie."
+          },
+          {
+            "name": "UpdateCategoryRequestDto",
+            "responsibility": "Data Transfer Object voor het bijwerken van een categorie."
+          },
+          {
+            "name": "CategoryResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van categorigegevens."
+          },
+          {
+            "name": "CategoryListResponseDto",
+            "responsibility": "Data Transfer Object voor het retourneren van een lijst met categorie\u00ebn."
+          },
+          {
+            "name": "CategoryNameUniquenessValidator",
+            "responsibility": "Controleert de uniekheid van categorienamen."
+          },
+          {
+            "name": "CategoryCannotDeleteException",
+            "responsibility": "Exception voor wanneer een categorie niet verwijderd kan worden."
+          },
+          {
+            "name": "CategoryNotFoundException",
+            "responsibility": "Exception voor wanneer een categorie niet wordt gevonden."
+          },
+          {
+            "name": "CategoryNameConflictException",
+            "responsibility": "Exception voor wanneer een categorienaam al in gebruik is."
+          }
+        ]
+      },
+      {
+        "name": "audit",
+        "classes": [
+          {
+            "name": "AuditLogService",
+            "responsibility": "Verantwoordelijk voor het loggen van audit-gebeurtenissen."
+          },
+          {
+            "name": "AuditLogRepository",
+            "responsibility": "Verantwoordelijk voor datatoegang tot auditloggegevens."
+          },
+          {
+            "name": "AuditLogEntity",
+            "responsibility": "Representeert een auditlog-entry in de database."
+          },
+          {
+            "name": "AuditOperationEnum",
+            "responsibility": "Definieert de mogelijke audit-operaties."
+          },
+          {
+            "name": "AuditEntityTypeEnum",
+            "responsibility": "Definieert de mogelijke entiteitstypes voor auditlogs."
+          }
+        ]
+      },
+      {
+        "name": "common",
+        "classes": [
+          {
+            "name": "ApiErrorDto",
+            "responsibility": "Standaard formaat voor API-foutmeldingen."
+          },
+          {
+            "name": "GlobalExceptionHandler",
+            "responsibility": "Centrale afhandeling van exceptions voor de API."
+          },
+          {
+            "name": "SecurityConfig",
+            "responsibility": "Configureert beveiligingsinstellingen, inclusief authenticatie en autorisatie."
+          },
+          {
+            "name": "JwtAuthenticationFilter",
+            "responsibility": "Filter voor het verwerken van JWT-tokens voor authenticatie."
+          },
+          {
+            "name": "PageableRequestDto",
+            "responsibility": "Data Transfer Object voor paginering- en sorteerparameters."
+          },
+          {
+            "name": "PageableResponseDto",
+            "responsibility": "Data Transfer Object voor gepagineerde antwoorden."
+          },
+          {
+            "name": "UuidGenerator",
+            "responsibility": "Utility voor het genereren van UUID's."
+          },
+          {
+            "name": "BigDecimalConfig",
+            "responsibility": "Configuratie voor BigDecimal precisie en schaal."
+          }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "routes": [
+      "/admin/products",
+      "/admin/products/new",
+      "/admin/products/:id/edit",
+      "/admin/categories"
+    ],
+    "components": [
+      "ProductListPage",
+      "ProductTable",
+      "LowStockBadge",
+      "Pagination",
+      "ConfirmDialog",
+      "ProductFormPage",
+      "ProductForm",
+      "CategoryDropdown",
+      "ProductEditPage",
+      "StockAdjustmentButton",
+      "StockAdjustmentModal",
+      "CategoryManagerPage",
+      "CategoryManager"
+    ]
+  },
+  "tests": {
+    "unit": [
+      "ProductListPage.render",
+      "ProductTable.render",
+      "LowStockBadge.render",
+      "Pagination.render",
+      "ConfirmDialog.render",
+      "ProductFormPage.render",
+      "ProductForm.render",
+      "CategoryDropdown.render",
+      "ProductEditPage.render",
+      "StockAdjustmentButton.render",
+      "StockAdjustmentModal.render",
+      "CategoryManagerPage.render",
+      "CategoryManager.render",
+      "api/products.createProduct",
+      "api/products.getProducts",
+      "api/products.getProductById",
+      "api/products.updateProduct",
+      "api/products.archiveProduct",
+      "api/products.adjustStock",
+      "api/categories.createCategory",
+      "api/categories.getCategories",
+      "api/categories.updateCategory",
+      "api/categories.deleteCategory"
+    ],
+    "integration": [
+      "POST /api/products \u2192 201 Created",
+      "GET /api/products \u2192 200 OK",
+      "GET /api/products/{id} \u2192 200 OK",
+      "PUT /api/products/{id} \u2192 200 OK",
+      "DELETE /api/products/{id} \u2192 204 No Content",
+      "PATCH /api/products/{id}/stock \u2192 200 OK",
+      "POST /api/categories \u2192 201 Created",
+      "GET /api/categories \u2192 200 OK",
+      "PUT /api/categories/{id} \u2192 200 OK",
+      "DELETE /api/categories/{id} \u2192 204 No Content"
+    ],
+    "e2e": [
+      "Als beheerder wil ik een nieuw product kunnen aanmaken, de lijst met producten kunnen bekijken met filters en sortering, een product kunnen bewerken, een product kunnen archiveren en de voorraad van een product kunnen aanpassen.",
+      "Als beheerder wil ik categorie\u00ebn kunnen aanmaken, hernoemen en verwijderen (mits er geen producten aan gekoppeld zijn)."
+    ]
+  },
+  "acceptanceCriteria": [
+    {
+      "acId": "AC-001-1",
+      "reqId": "REQ-001",
+      "given": "Een beheerder is ingelogd en bevindt zich op de productbeheerpagina",
+      "when": "De beheerder vult de velden 'naam', 'beschrijving', 'prijs', 'categorie' en 'initi\u00eble voorraad' in en klikt op 'Product aanmaken'",
+      "then": "Het nieuwe product wordt succesvol aangemaakt en is zichtbaar in de productlijst",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-002-1",
+      "reqId": "REQ-002",
+      "given": "Een beheerder probeert een nieuw product aan te maken",
+      "when": "Het veld 'naam' wordt leeg gelaten en de beheerder klikt op 'Product aanmaken'",
+      "then": "Er wordt een foutmelding getoond dat de naam verplicht is en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-002-2",
+      "reqId": "REQ-002",
+      "given": "Een beheerder probeert een nieuw product aan te maken met een naam langer dan 200 tekens",
+      "when": "De beheerder vult een naam in die 201 tekens lang is en klikt op 'Product aanmaken'",
+      "then": "Er wordt een foutmelding getoond dat de naam maximaal 200 tekens lang mag zijn en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-002-3",
+      "reqId": "REQ-002",
+      "given": "Er bestaat al een product met de naam 'Test Product'",
+      "when": "Een beheerder probeert een nieuw product aan te maken met de naam 'Test Product'",
+      "then": "Er wordt een foutmelding getoond dat de naam al in gebruik is en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-003-1",
+      "reqId": "REQ-003",
+      "given": "Een beheerder probeert een nieuw product aan te maken",
+      "when": "Het veld 'prijs' wordt leeg gelaten en de beheerder klikt op 'Product aanmaken'",
+      "then": "Er wordt een foutmelding getoond dat de prijs verplicht is en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-003-2",
+      "reqId": "REQ-003",
+      "given": "Een beheerder probeert een nieuw product aan te maken met een prijs van \u20ac0,00",
+      "when": "De beheerder vult de prijs in als '0.00' en klikt op 'Product aanmaken'",
+      "then": "Er wordt een foutmelding getoond dat de prijs minimaal \u20ac0,01 moet zijn en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-003-3",
+      "reqId": "REQ-003",
+      "given": "Een beheerder probeert een nieuw product aan te maken met een prijs van \u20ac100.000,00",
+      "when": "De beheerder vult de prijs in als '100000.00' en klikt op 'Product aanmaken'",
+      "then": "Er wordt een foutmelding getoond dat de prijs maximaal \u20ac99.999,99 mag zijn en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-003-4",
+      "reqId": "REQ-003",
+      "given": "Een beheerder probeert een nieuw product aan te maken met een prijs van \u20ac123,456",
+      "when": "De beheerder vult de prijs in als '123.456' en klikt op 'Product aanmaken'",
+      "then": "De prijs wordt correct opgeslagen als \u20ac123,46 (afgerond op twee decimalen) en het product wordt aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-1",
+      "reqId": "REQ-004",
+      "given": "Een beheerder probeert een nieuw product aan te maken",
+      "when": "Het veld 'initi\u00eble voorraad' wordt leeg gelaten en de beheerder klikt op 'Product aanmaken'",
+      "then": "Er wordt een foutmelding getoond dat de initi\u00eble voorraad verplicht is en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-2",
+      "reqId": "REQ-004",
+      "given": "Een beheerder probeert een nieuw product aan te maken met een initi\u00eble voorraad van -1",
+      "when": "De beheerder vult de initi\u00eble voorraad in als '-1' en klikt op 'Product aanmaken'",
+      "then": "Er wordt een foutmelding getoond dat de initi\u00eble voorraad minimaal 0 moet zijn en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-004-3",
+      "reqId": "REQ-004",
+      "given": "Een beheerder probeert een nieuw product aan te maken met een initi\u00eble voorraad van 1.000.000",
+      "when": "De beheerder vult de initi\u00eble voorraad in als '1000000' en klikt op 'Product aanmaken'",
+      "then": "Er wordt een foutmelding getoond dat de initi\u00eble voorraad maximaal 999.999 mag zijn en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-005-1",
+      "reqId": "REQ-005",
+      "given": "Een beheerder is ingelogd en heeft een bestaand product geselecteerd voor bewerking",
+      "when": "De beheerder wijzigt de 'naam', 'beschrijving', 'prijs' en 'categorie' en klikt op 'Opslaan'",
+      "then": "De wijzigingen aan naam, beschrijving, prijs en categorie worden succesvol opgeslagen en het product wordt bijgewerkt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-005-2",
+      "reqId": "REQ-005",
+      "given": "Een beheerder is ingelogd en heeft een bestaand product geselecteerd voor bewerking",
+      "when": "De beheerder probeert de 'initi\u00eble voorraad' direct te wijzigen via het productbewerkingsformulier en klikt op 'Opslaan'",
+      "then": "De wijziging aan de voorraad wordt genegeerd en er wordt een melding getoond dat de voorraad alleen via stock-aanpassing gewijzigd kan worden",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-006-1",
+      "reqId": "REQ-006",
+      "given": "Een beheerder is ingelogd en heeft een actief product geselecteerd",
+      "when": "De beheerder klikt op de 'Archiveer' knop voor het product",
+      "then": "Het product wordt succesvol gearchiveerd, verdwijnt uit het actieve assortiment en is niet meer zichtbaar in de standaard productlijst",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-006-2",
+      "reqId": "REQ-006",
+      "given": "Een product is gearchiveerd en er zijn historische orderregels aan gekoppeld",
+      "when": "De beheerder bekijkt de historische orderregels",
+      "then": "Het gearchiveerde product blijft correct gekoppeld aan de historische orderregels",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-007-1",
+      "reqId": "REQ-007",
+      "given": "Een beheerder is ingelogd en heeft een product geselecteerd waarvan de voorraad aangepast moet worden",
+      "when": "De beheerder voert een delta van '+50' in, selecteert de reden 'RESTOCK' en klikt op 'Voorraad aanpassen'",
+      "then": "De voorraad van het product wordt met 50 verhoogd en de aanpassing wordt gelogd",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-007-2",
+      "reqId": "REQ-007",
+      "given": "Een beheerder is ingelogd en heeft een product geselecteerd waarvan de voorraad aangepast moet worden",
+      "when": "De beheerder voert een delta van '-10' in, selecteert de reden 'DAMAGE' en klikt op 'Voorraad aanpassen'",
+      "then": "De voorraad van het product wordt met 10 verlaagd en de aanpassing wordt gelogd",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-007-3",
+      "reqId": "REQ-007",
+      "given": "Een beheerder probeert de voorraad van een product aan te passen",
+      "when": "De beheerder laat het veld 'reden' leeg en klikt op 'Voorraad aanpassen'",
+      "then": "Er wordt een foutmelding getoond dat de reden verplicht is en de voorraad wordt niet aangepast",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-008-1",
+      "reqId": "REQ-008",
+      "given": "Een product heeft een huidige voorraad van 5 stuks",
+      "when": "Een beheerder probeert de voorraad aan te passen met een delta van '-10' en de reden 'CORRECTION'",
+      "then": "De voorraad wordt niet onder 0 gebracht; de aanpassing wordt afgewezen met een foutmelding dat de voorraad niet negatief mag worden",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-008-2",
+      "reqId": "REQ-008",
+      "given": "Een product heeft een huidige voorraad van 0 stuks",
+      "when": "Een beheerder probeert de voorraad aan te passen met een delta van '-5' en de reden 'RETURN'",
+      "then": "De voorraad wordt niet onder 0 gebracht; de aanpassing wordt afgewezen met een foutmelding dat de voorraad niet negatief mag worden",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-009-1",
+      "reqId": "REQ-009",
+      "given": "Een product heeft een voorraad van 8 stuks en de drempelwaarde is ingesteld op 10",
+      "when": "De productlijst wordt geladen",
+      "then": "Het product wordt gemarkeerd als 'low stock'",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-009-2",
+      "reqId": "REQ-009",
+      "given": "Een product heeft een voorraad van 12 stuks en de drempelwaarde is ingesteld op 10",
+      "when": "De productlijst wordt geladen",
+      "then": "Het product wordt niet gemarkeerd als 'low stock'",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-009-3",
+      "reqId": "REQ-009",
+      "given": "Een product heeft een voorraad van 10 stuks en de drempelwaarde is ingesteld op 10",
+      "when": "De productlijst wordt geladen",
+      "then": "Het product wordt niet gemarkeerd als 'low stock'",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-010-1",
+      "reqId": "REQ-010",
+      "given": "Er zijn 25 producten in de catalogus",
+      "when": "De beheerder navigeert naar de productlijst",
+      "then": "De productlijst toont de eerste 10 producten, met navigatieknoppen voor de volgende pagina's",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-010-2",
+      "reqId": "REQ-010",
+      "given": "De productlijst is geopend",
+      "when": "De beheerder klikt op de sorteerknop voor 'naam' oplopend",
+      "then": "De producten worden alfabetisch gesorteerd op naam (A-Z)",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-010-3",
+      "reqId": "REQ-010",
+      "given": "De productlijst is geopend",
+      "when": "De beheerder voert 'Laptop' in het filterveld 'naam' in",
+      "then": "Alleen producten waarvan de naam 'Laptop' bevat worden getoond",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-010-4",
+      "reqId": "REQ-010",
+      "given": "De productlijst is geopend",
+      "when": "De beheerder selecteert de categorie 'Elektronica' uit het filter",
+      "then": "Alleen producten in de categorie 'Elektronica' worden getoond",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-010-5",
+      "reqId": "REQ-010",
+      "given": "De productlijst is geopend",
+      "when": "De beheerder selecteert de filter 'beschikbaarheid: gearchiveerd'",
+      "then": "Alleen gearchiveerde producten worden getoond",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-010-6",
+      "reqId": "REQ-010",
+      "given": "De productlijst is geopend",
+      "when": "De beheerder selecteert de filter 'beschikbaarheid: low stock'",
+      "then": "Alleen producten met een voorraad lager dan of gelijk aan de drempelwaarde worden getoond",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-011-1",
+      "reqId": "REQ-011",
+      "given": "Er zijn geen actieve producten gekoppeld aan de categorie 'Oude Gadgets'",
+      "when": "Een beheerder probeert de categorie 'Oude Gadgets' te verwijderen",
+      "then": "De categorie 'Oude Gadgets' wordt succesvol verwijderd",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-011-2",
+      "reqId": "REQ-011",
+      "given": "Er is een actief product gekoppeld aan de categorie 'Elektronica'",
+      "when": "Een beheerder probeert de categorie 'Elektronica' te verwijderen",
+      "then": "De categorie 'Elektronica' kan niet worden verwijderd en er wordt een foutmelding getoond dat er nog actieve producten aan gekoppeld zijn",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-012-1",
+      "reqId": "REQ-012",
+      "given": "Een beheerder is ingelogd op de categoriebeheerpagina",
+      "when": "De beheerder vult de naam 'Nieuwe Categorie' in en klikt op 'Categorie aanmaken'",
+      "then": "De nieuwe categorie 'Nieuwe Categorie' wordt succesvol aangemaakt en is zichtbaar in de lijst",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-012-2",
+      "reqId": "REQ-012",
+      "given": "Een beheerder probeert een nieuwe categorie aan te maken met een naam langer dan 100 tekens",
+      "when": "De beheerder vult een naam in die 101 tekens lang is en klikt op 'Categorie aanmaken'",
+      "then": "Er wordt een foutmelding getoond dat de naam maximaal 100 tekens lang mag zijn en de categorie wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-012-3",
+      "reqId": "REQ-012",
+      "given": "Er bestaat al een categorie met de naam 'Bestaande Categorie'",
+      "when": "Een beheerder probeert een nieuwe categorie aan te maken met de naam 'Bestaande Categorie'",
+      "then": "Er wordt een foutmelding getoond dat de naam van de categorie al in gebruik is en de categorie wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-013-1",
+      "reqId": "REQ-013",
+      "given": "Er bestaat een actief product met de naam 'Uniek Product'",
+      "when": "Een beheerder probeert een nieuw product aan te maken met de naam 'Uniek Product'",
+      "then": "Er wordt een foutmelding getoond dat de productnaam al in gebruik is voor een actief product en het product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-013-2",
+      "reqId": "REQ-013",
+      "given": "Er bestaat een gearchiveerd product met de naam 'Gearchiveerd Product'",
+      "when": "Een beheerder probeert een nieuw product aan te maken met de naam 'Gearchiveerd Product'",
+      "then": "Het product wordt succesvol aangemaakt, omdat de uniekheidscontrole niet geldt voor gearchiveerde producten",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-014-1",
+      "reqId": "REQ-014",
+      "given": "Een product is gearchiveerd",
+      "when": "Een beheerder probeert het gearchiveerde product te bewerken",
+      "then": "De bewerkingsopties voor het product zijn uitgeschakeld of niet beschikbaar, en er wordt een melding getoond dat gearchiveerde producten niet bewerkt kunnen worden",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-014-2",
+      "reqId": "REQ-014",
+      "given": "Een product is gearchiveerd",
+      "when": "Een beheerder probeert het gearchiveerde product opnieuw te archiveren",
+      "then": "Er gebeurt niets en er wordt een melding getoond dat het product al gearchiveerd is",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-014-3",
+      "reqId": "REQ-014",
+      "given": "Een product is gearchiveerd",
+      "when": "Een beheerder klikt op de 'Herstel' (unarchive) knop voor het product",
+      "then": "Het product wordt succesvol hersteld, wordt weer actief in het assortiment en is zichtbaar in de productlijst",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-015-1",
+      "reqId": "REQ-015",
+      "given": "Een beheerder past de voorraad van een product aan",
+      "when": "De stock-aanpassing is voltooid",
+      "then": "Er wordt een record aangemaakt in de audit-tabel met de product_id, delta, reden, beheerder-id en het tijdstip van de aanpassing",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-015-2",
+      "reqId": "REQ-015",
+      "given": "De audit-tabel bevat stock-aanpassingen",
+      "when": "Een beheerder probeert de records in de audit-tabel te verwijderen",
+      "then": "De verwijderoperatie wordt geweigerd en er wordt een foutmelding getoond dat de audit-log niet verwijderbaar is",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-016-1",
+      "reqId": "REQ-016",
+      "given": "Een product heeft geen specifieke lage-voorraaddrempel ingesteld",
+      "when": "De voorraad van dit product daalt tot 8 stuks en de globale drempel is 10",
+      "then": "Het product wordt gemarkeerd als 'low stock'",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-016-2",
+      "reqId": "REQ-016",
+      "given": "Een product heeft een specifieke lage-voorraaddrempel ingesteld op 5",
+      "when": "De voorraad van dit product daalt tot 4 stuks",
+      "then": "Het product wordt gemarkeerd als 'low stock'",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-016-3",
+      "reqId": "REQ-016",
+      "given": "Een product heeft een specifieke lage-voorraaddrempel ingesteld op 5",
+      "when": "De voorraad van dit product daalt tot 6 stuks",
+      "then": "Het product wordt niet gemarkeerd als 'low stock'",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-017-1",
+      "reqId": "REQ-017",
+      "given": "Er is een order geplaatst met product X tegen prijs Y",
+      "when": "De beheerder wijzigt de prijs van product X naar Z",
+      "then": "De prijs van product X in de bestaande order blijft Y en wordt niet be\u00efnvloed door de prijswijziging",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-018-1",
+      "reqId": "REQ-018",
+      "given": "Er bestaat een gearchiveerd product met de naam 'Conflict Product'",
+      "when": "Een beheerder probeert een nieuw product aan te maken met de naam 'Conflict Product' zonder expliciete bevestiging",
+      "then": "Er wordt een conflict-melding getoond met de optie om het gearchiveerde product te herstellen, en het nieuwe product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-018-2",
+      "reqId": "REQ-018",
+      "given": "Er bestaat een gearchiveerd product met de naam 'Conflict Product'",
+      "when": "Een beheerder probeert een nieuw product aan te maken met de naam 'Conflict Product' en bevestigt de conflict-melding om het gearchiveerde product te herstellen",
+      "then": "Het gearchiveerde product wordt hersteld en het nieuwe product wordt niet aangemaakt",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-019-1",
+      "reqId": "REQ-019",
+      "given": "De productcatalogus bevat 10.000 producten",
+      "when": "Een beheerder vraagt de productlijst op met standaard filters en paginering",
+      "then": "De API response time voor het ophalen van de productlijst is p95 < 300ms",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-020-1",
+      "reqId": "REQ-020",
+      "given": "Een beheerder wil een nieuw product aanmaken",
+      "when": "De beheerder verstuurt de aanvraag om een nieuw product aan te maken",
+      "then": "De API response time voor het aanmaken van het product is p95 < 500ms",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-020-2",
+      "reqId": "REQ-020",
+      "given": "Een beheerder wil een bestaand product bewerken",
+      "when": "De beheerder verstuurt de aanvraag om een bestaand product te bewerken",
+      "then": "De API response time voor het bewerken van het product is p95 < 500ms",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-021-1",
+      "reqId": "REQ-021",
+      "given": "Een beheerder maakt een nieuw product aan",
+      "when": "De aanmaakoperatie is voltooid",
+      "then": "De aanmaakoperatie wordt gelogd met de correlationId en de beheerder-id",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-021-2",
+      "reqId": "REQ-021",
+      "given": "Een beheerder bewerkt een bestaand product",
+      "when": "De bewerkingsoperatie is voltooid",
+      "then": "De bewerkingsoperatie wordt gelogd met de correlationId en de beheerder-id",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-021-3",
+      "reqId": "REQ-021",
+      "given": "Een beheerder archiveert een product",
+      "when": "De archiveringsoperatie is voltooid",
+      "then": "De archiveringsoperatie wordt gelogd met de correlationId en de beheerder-id",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-021-4",
+      "reqId": "REQ-021",
+      "given": "Een beheerder past de voorraad van een product aan",
+      "when": "De stock-aanpassing is voltooid",
+      "then": "De stock-aanpassing wordt gelogd met de correlationId en de beheerder-id",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-022-1",
+      "reqId": "REQ-022",
+      "given": "Een gebruiker met de rol 'ROLE_USER' probeert toegang te krijgen tot de productaanmaak-endpoint",
+      "when": "De gebruiker stuurt een POST-verzoek naar de productaanmaak-endpoint",
+      "then": "De API retourneert een HTTP 403 Forbidden foutmelding",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-022-2",
+      "reqId": "REQ-022",
+      "given": "Een gebruiker met de rol 'ROLE_ADMIN' probeert toegang te krijgen tot de productaanmaak-endpoint",
+      "when": "De gebruiker stuurt een POST-verzoek naar de productaanmaak-endpoint",
+      "then": "De API retourneert een HTTP 201 Created statuscode",
+      "testType": "integration"
+    },
+    {
+      "acId": "AC-023-1",
+      "reqId": "REQ-023",
+      "given": "De productcatalogus bevat 10.000 actieve producten",
+      "when": "Een beheerder laadt de productlijst met alle filters en sorteringen uitgeschakeld",
+      "then": "De laadtijd van de productlijst is acceptabel en er is geen merkbare prestatiedegradatie",
+      "testType": "integration"
+    }
+  ],
+  "traceability": [
+    {
+      "reqId": "REQ-001",
+      "backendRefs": [
+        "ProductController",
+        "ProductService",
+        "ProductRepository",
+        "ProductEntity",
+        "CreateProductRequestDto",
+        "ProductCreateValidator"
+      ],
+      "frontendRefs": [
+        "ProductFormPage",
+        "ProductForm"
+      ],
+      "testRefs": [
+        "Test het aanmaken van een nieuw product met alle verplichte velden (naam, beschrijving, prijs, categorie, initi\u00eble voorraad).",
+        "Test het aanmaken van een nieuw product met optionele velden (indien van toepassing).",
+        "Test het aanmaken van een nieuw product met ongeldige invoer voor elk veld om validatie te triggeren."
+      ]
+    },
+    {
+      "reqId": "REQ-002",
+      "backendRefs": [
+        "ProductCreateValidator",
+        "ProductUpdateValidator",
+        "ProductNameUniquenessValidator",
+        "ProductRepository"
+      ],
+      "frontendRefs": [
+        "ProductForm"
+      ],
+      "testRefs": [
+        "Test het aanmaken van een product met een lege naam.",
+        "Test het aanmaken van een product met een naam langer dan 200 tekens.",
+        "Test het aanmaken van een product met een naam die al bestaat voor een actief product.",
+        "Test het aanmaken van een product met een naam die al bestaat voor een gearchiveerd product (moet toegestaan zijn).",
+        "Test het aanmaken van een product met een unieke naam."
+      ]
+    },
+    {
+      "reqId": "REQ-003",
+      "backendRefs": [
+        "ProductCreateValidator",
+        "ProductUpdateValidator",
+        "BigDecimalConfig"
+      ],
+      "frontendRefs": [
+        "ProductForm"
+      ],
+      "testRefs": [
+        "Test het aanmaken/bewerken van een product met een prijs van 0.00.",
+        "Test het aanmaken/bewerken van een product met een prijs van 0.01.",
+        "Test het aanmaken/bewerken van een product met een prijs van 99999.99.",
+        "Test het aanmaken/bewerken van een product met een prijs lager dan 0.01.",
+        "Test het aanmaken/bewerken van een product met een prijs hoger dan 99999.99.",
+        "Test het aanmaken/bewerken van een product met een prijs met meer dan twee decimalen."
+      ]
+    },
+    {
+      "reqId": "REQ-004",
+      "backendRefs": [
+        "ProductCreateValidator",
+        "ProductUpdateValidator"
+      ],
+      "frontendRefs": [
+        "ProductForm"
+      ],
+      "testRefs": [
+        "Test het aanmaken/bewerken van een product met een initi\u00eble voorraad van 0.",
+        "Test het aanmaken/bewerken van een product met een initi\u00eble voorraad van 999999.",
+        "Test het aanmaken/bewerken van een product met een initi\u00eble voorraad lager dan 0.",
+        "Test het aanmaken/bewerken van een product met een initi\u00eble voorraad hoger dan 999999."
+      ]
+    },
+    {
+      "reqId": "REQ-005",
+      "backendRefs": [
+        "ProductController",
+        "ProductService",
+        "UpdateProductRequestDto",
+        "ProductUpdateValidator"
+      ],
+      "frontendRefs": [
+        "ProductEditPage",
+        "ProductForm"
+      ],
+      "testRefs": [
+        "Test het bewerken van de naam, beschrijving, prijs en categorie van een bestaand product.",
+        "Test dat de voorraad niet bewerkt kan worden via deze endpoint.",
+        "Test het bewerken van een product dat gearchiveerd is (moet niet kunnen)."
+      ]
+    },
+    {
+      "reqId": "REQ-006",
+      "backendRefs": [
+        "ProductController",
+        "ProductService",
+        "ProductRepository",
+        "ProductArchivedStatusValidator"
+      ],
+      "frontendRefs": [
+        "ProductTable",
+        "ConfirmDialog"
+      ],
+      "testRefs": [
+        "Test het archiveren van een actief product.",
+        "Test dat een gearchiveerd product niet meer zichtbaar is in de actieve productlijst.",
+        "Test dat een gearchiveerd product nog steeds gekoppeld is aan historische orderregels (vereist integratietest met ordersysteem)."
+      ]
+    },
+    {
+      "reqId": "REQ-007",
+      "backendRefs": [
+        "StockController",
+        "StockService",
+        "StockAdjustmentRepository",
+        "StockAdjustmentEntity",
+        "StockAdjustmentRequestDto",
+        "StockAdjustmentValidator",
+        "StockAdjustmentReasonEnum"
+      ],
+      "frontendRefs": [
+        "StockAdjustmentButton",
+        "StockAdjustmentModal"
+      ],
+      "testRefs": [
+        "Test het aanpassen van de voorraad met een positieve delta (bv. +50) met geldige redenen.",
+        "Test het aanpassen van de voorraad met een negatieve delta (bv. -10) met geldige redenen.",
+        "Test het aanpassen van de voorraad met een ongeldige reden.",
+        "Test het aanpassen van de voorraad van een gearchiveerd product (moet niet kunnen)."
+      ]
+    },
+    {
+      "reqId": "REQ-008",
+      "backendRefs": [
+        "StockService",
+        "NegativeStockPreventionValidator",
+        "ProductRepository"
+      ],
+      "frontendRefs": [
+        "StockAdjustmentModal"
+      ],
+      "testRefs": [
+        "Test het aanpassen van de voorraad met een negatieve delta die de voorraad onder 0 zou brengen.",
+        "Test dat de voorraad niet onder 0 kan komen en dat er een foutmelding wordt getoond."
+      ]
+    },
+    {
+      "reqId": "REQ-009",
+      "backendRefs": [
+        "ProductService",
+        "ProductRepository"
+      ],
+      "frontendRefs": [
+        "ProductTable",
+        "LowStockBadge"
+      ],
+      "testRefs": [
+        "Test dat producten met een voorraad gelijk aan de drempelwaarde (standaard 10) gemarkeerd worden als 'low stock'.",
+        "Test dat producten met een voorraad net boven de drempelwaarde niet gemarkeerd worden.",
+        "Test dat producten met een voorraad net onder de drempelwaarde wel gemarkeerd worden."
+      ]
+    },
+    {
+      "reqId": "REQ-010",
+      "backendRefs": [
+        "ProductController",
+        "ProductService",
+        "PageableRequestDto",
+        "PageableResponseDto"
+      ],
+      "frontendRefs": [
+        "ProductListPage",
+        "ProductTable",
+        "Pagination"
+      ],
+      "testRefs": [
+        "Test paginering van de productlijst (10 per pagina).",
+        "Test sortering op naam (oplopend en aflopend).",
+        "Test filteren op naam (bevat).",
+        "Test filteren op categorie.",
+        "Test filteren op beschikbaarheid (actief).",
+        "Test filteren op beschikbaarheid (gearchiveerd).",
+        "Test filteren op beschikbaarheid (low stock)."
+      ]
+    },
+    {
+      "reqId": "REQ-011",
+      "backendRefs": [
+        "CategoryService",
+        "CategoryRepository",
+        "ProductRepository",
+        "CategoryCannotDeleteException"
+      ],
+      "frontendRefs": [
+        "CategoryManagerPage",
+        "CategoryManager",
+        "ConfirmDialog"
+      ],
+      "testRefs": [
+        "Test het verwijderen van een categorie waaraan nog actieve producten gekoppeld zijn (moet geweigerd worden).",
+        "Test het verwijderen van een categorie waaraan geen actieve producten gekoppeld zijn."
+      ]
+    },
+    {
+      "reqId": "REQ-012",
+      "backendRefs": [
+        "CategoryController",
+        "CategoryService",
+        "CategoryRepository",
+        "CreateCategoryRequestDto",
+        "CategoryNameUniquenessValidator"
+      ],
+      "frontendRefs": [
+        "CategoryManagerPage",
+        "CategoryManager"
+      ],
+      "testRefs": [
+        "Test het aanmaken van een nieuwe categorie met een unieke naam (max 100 tekens).",
+        "Test het aanmaken van een categorie met een naam langer dan 100 tekens.",
+        "Test het aanmaken van een categorie met een naam die al bestaat."
+      ]
+    },
+    {
+      "reqId": "REQ-013",
+      "backendRefs": [
+        "ProductNameUniquenessValidator",
+        "ProductRepository"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test het aanmaken van een product met een naam die al bestaat voor een ander actief product.",
+        "Test het aanmaken van een product met een naam die al bestaat voor een gearchiveerd product (moet toegestaan zijn).",
+        "Test het aanmaken van een product met een naam die al bestaat voor een ander gearchiveerd product (moet toegestaan zijn)."
+      ]
+    },
+    {
+      "reqId": "REQ-014",
+      "backendRefs": [
+        "ProductController",
+        "ProductService",
+        "ProductRepository",
+        "ProductArchivedStatusValidator"
+      ],
+      "frontendRefs": [
+        "ProductTable",
+        "ProductEditPage"
+      ],
+      "testRefs": [
+        "Test dat een gearchiveerd product niet bewerkt kan worden.",
+        "Test dat een gearchiveerd product niet opnieuw gearchiveerd kan worden.",
+        "Test het herstellen (unarchive) van een gearchiveerd product."
+      ]
+    },
+    {
+      "reqId": "REQ-015",
+      "backendRefs": [
+        "StockService",
+        "AuditLogService",
+        "AuditLogRepository",
+        "AuditLogEntity",
+        "AuditOperationEnum",
+        "AuditEntityTypeEnum"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat elke stock-aanpassing wordt gelogd in de audit-tabel met de juiste velden (product_id, delta, reden, beheerder-id, tijdstip).",
+        "Test dat de audit-log niet verwijderbaar is."
+      ]
+    },
+    {
+      "reqId": "REQ-016",
+      "backendRefs": [
+        "ProductService",
+        "ProductRepository"
+      ],
+      "frontendRefs": [
+        "ProductForm"
+      ],
+      "testRefs": [
+        "Test het instellen van een specifieke lage-voorraaddrempel voor een product.",
+        "Test dat de ingestelde drempelwaarde wordt gebruikt voor de 'low stock' markering.",
+        "Test dat de globale standaard drempelwaarde (10) wordt gebruikt als er geen specifieke drempel is ingesteld voor een product."
+      ]
+    },
+    {
+      "reqId": "REQ-017",
+      "backendRefs": [
+        "ProductService",
+        "ProductRepository"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat een prijswijziging van een product geen invloed heeft op reeds geplaatste orders die dat product bevatten."
+      ]
+    },
+    {
+      "reqId": "REQ-018",
+      "backendRefs": [
+        "ProductCreateValidator",
+        "ProductNameConflictException",
+        "ProductRepository"
+      ],
+      "frontendRefs": [
+        "ProductForm",
+        "ConfirmDialog"
+      ],
+      "testRefs": [
+        "Test het aanmaken van een product met dezelfde naam als een gearchiveerd product zonder expliciete bevestiging (moet conflict geven).",
+        "Test het aanmaken van een product met dezelfde naam als een gearchiveerd product met expliciete bevestiging (moet toegestaan zijn).",
+        "Test de conflict-melding met de optie om het gearchiveerde product te herstellen."
+      ]
+    },
+    {
+      "reqId": "REQ-019",
+      "backendRefs": [
+        "ProductController",
+        "ProductService",
+        "PageableRequestDto",
+        "PageableResponseDto"
+      ],
+      "frontendRefs": [
+        "ProductListPage"
+      ],
+      "testRefs": [
+        "Meet de response time van de API voor het ophalen van de productlijst met verschillende filters en paginering.",
+        "Valideer dat de p95 response time onder de 300ms blijft voor minimaal 10.000 producten."
+      ]
+    },
+    {
+      "reqId": "REQ-020",
+      "backendRefs": [
+        "ProductController",
+        "ProductService",
+        "CreateProductRequestDto",
+        "UpdateProductRequestDto"
+      ],
+      "frontendRefs": [
+        "ProductFormPage",
+        "ProductEditPage"
+      ],
+      "testRefs": [
+        "Meet de response time van de API voor het aanmaken van een product.",
+        "Meet de response time van de API voor het bewerken van een product.",
+        "Valideer dat de p95 response time onder de 500ms blijft."
+      ]
+    },
+    {
+      "reqId": "REQ-021",
+      "backendRefs": [
+        "AuditLogService",
+        "AuditLogRepository",
+        "AuditLogEntity",
+        "AuditOperationEnum",
+        "AuditEntityTypeEnum",
+        "UuidGenerator"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test dat alle schrijfoperaties (aanmaken, bewerken, archiveren, stock-aanpassing) worden gelogd met een correlationId en beheerder-id.",
+        "Controleer de audit logs voor de aanwezigheid van correlationId en beheerder-id bij elke relevante operatie."
+      ]
+    },
+    {
+      "reqId": "REQ-022",
+      "backendRefs": [
+        "SecurityConfig",
+        "JwtAuthenticationFilter",
+        "ProductController",
+        "StockController",
+        "CategoryController"
+      ],
+      "frontendRefs": [],
+      "testRefs": [
+        "Test toegang tot alle product-gerelateerde API endpoints met een gebruiker zonder ROLE_ADMIN.",
+        "Test toegang tot alle product-gerelateerde API endpoints met een gebruiker met ROLE_ADMIN.",
+        "Test dat niet-geautoriseerde verzoeken worden afgewezen met een 403 Forbidden status."
+      ]
+    },
+    {
+      "reqId": "REQ-023",
+      "backendRefs": [
+        "ProductController",
+        "ProductService",
+        "PageableRequestDto",
+        "PageableResponseDto"
+      ],
+      "frontendRefs": [
+        "ProductListPage",
+        "ProductTable"
+      ],
+      "testRefs": [
+        "Simuleer een database met minimaal 10.000 actieve producten.",
+        "Test het laden van de productlijst en controleer op merkbare prestatiedegradatie.",
+        "Test de laadtijd van de productlijstpagina en de producttabel."
+      ]
+    }
+  ]
+}
