@@ -167,42 +167,40 @@ def get_llm() -> ChatGoogleGenerativeAI:
 # ── Prompts ────────────────────────────────────────────────────────────────────
 
 _IDENTIFY_PROMPT = """\
-Je ontvangt {n} afbeeldingen — elke afbeelding is één pagina van een PDF.
+Je ontvangt {n} afbeeldingen. Elke afbeelding is één pagina van een PDF.
 Afbeelding 1 = Pagina 1, Afbeelding 2 = Pagina 2, …, Afbeelding {n} = Pagina {n}.
 
-Geef voor ELKE pagina aan of het een visuele pagina is (diagram, ERD, UI-mockup,
-wireframe, deployment/component/sequence diagram, Figma-design, grafiek, foto)
-of een tekstpagina. Een pagina kan meerdere visuele ontwerpen bevatten.
+Analyseer ELKE pagina zorgvuldig op basis van wat je erin ziet.
 
-Voor elke visuele entry:
-- Geef de crop-box van het VISUELE FRAME zelf — alleen het gekleurde/getekende gedeelte.
-- Sluit ALLES buiten het frame uit: paginaheaders, sectienummers, titeltekst boven
-  het frame, beschrijvingstekst onder het frame, paginanummers en witruimte.
-- Als een pagina meerdere aparte designs bevat, geef dan één entry per design
-  met een eigen crop-box en titel.
-- Waarden zijn fracties 0.0–1.0 (top/bottom = afstand vanaf bovenkant,
-  left/right = afstand vanaf linkerkant). Wees zo nauwkeurig mogelijk.
+STAP 1 — Bepaal per pagina of er visuele content op staat:
+Visuele content = een diagram, ERD, UI-mockup, wireframe, Figma-design,
+deployment/component/sequence diagram, grafiek of foto.
+Tekstpagina's bevatten alleen lopende tekst, bullet lists of tabellen.
 
-Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
+STAP 2 — Voor elke visueel frame dat je ziet:
+- Lees de TITEL zoals die zichtbaar is in of direct boven het frame in de afbeelding.
+  Gebruik exact die tekst — verzin geen titel.
+- Een pagina kan 0, 1 of meerdere visuele frames bevatten. Rapporteer elk frame apart.
+- Bepaal de crop-box: de coördinaten van het visuele frame zelf.
+  Sluit alles buiten het frame uit: pagina-header, sectienummer, paginanummer,
+  titeltekst boven het frame, beschrijvingstekst onder het frame en lege witruimte.
+  Waarden zijn fracties van de paginagrootte (0.0 = bovenkant/linkerkant, 1.0 = onderkant/rechterkant).
+  Wees zo nauwkeurig mogelijk.
+
+Geef ALLEEN het volgende JSON object terug (geen uitleg, geen markdown, geen code block):
 {{
   "pages": [
-    {{"page": 1, "visual": false, "title": "paginatitel of null"}},
-    {{"page": 2, "visual": true, "title": "exacte diagramtitel uit de PDF",
-      "type": "erd",
-      "crop": {{"top": 0.15, "left": 0.03, "right": 0.97, "bottom": 0.85}}}},
-    {{"page": 3, "visual": true, "title": "titel eerste design op pagina 3",
-      "type": "ui-mockup",
-      "crop": {{"top": 0.05, "left": 0.04, "right": 0.96, "bottom": 0.48}}}},
-    {{"page": 3, "visual": true, "title": "titel tweede design op pagina 3",
-      "type": "ui-mockup",
-      "crop": {{"top": 0.51, "left": 0.04, "right": 0.96, "bottom": 0.95}}}},
+    {{"page": <paginanummer>, "visual": false}},
+    {{"page": <paginanummer>, "visual": true,
+      "title": "<exacte titel zoals zichtbaar in de afbeelding>",
+      "type": "<erd|deployment|component|sequence|ui-mockup|other-visual>",
+      "crop": {{"top": <0.0-1.0>, "left": <0.0-1.0>, "right": <0.0-1.0>, "bottom": <0.0-1.0>}}}},
     ...
   ]
 }}
 
-type is één van: erd, deployment, component, sequence, ui-mockup, other-visual
-crop is verplicht voor elke visuele entry.
-Meerdere entries met hetzelfde paginanummer zijn toegestaan als een pagina meerdere designs bevat.
+Elke pagina moet exact één entry hebben als hij alleen tekst bevat.
+Elke pagina mag meerdere entries hebben als er meerdere visuele frames op staan.
 """
 
 
