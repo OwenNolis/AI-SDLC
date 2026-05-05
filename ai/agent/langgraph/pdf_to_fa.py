@@ -172,27 +172,37 @@ Afbeelding 1 = Pagina 1, Afbeelding 2 = Pagina 2, …, Afbeelding {n} = Pagina {
 
 Geef voor ELKE pagina aan of het een visuele pagina is (diagram, ERD, UI-mockup,
 wireframe, deployment/component/sequence diagram, Figma-design, grafiek, foto)
-of een tekstpagina.
+of een tekstpagina. Een pagina kan meerdere visuele ontwerpen bevatten.
 
-Voor visuele pagina's: geef ook de crop-box van het diagram zelf (zonder paginaheader,
-paginanummer, omringende tekst en witruimte). Waarden zijn fracties van de paginagrootte
-tussen 0.0 en 1.0: top=afstand vanaf boven, left=afstand vanaf links,
-right=afstand vanaf links tot rechterrand, bottom=afstand vanaf boven tot onderrand.
-Wees nauwkeurig — dit wordt gebruikt om de afbeelding bij te snijden.
+Voor elke visuele entry:
+- Geef de crop-box van het VISUELE FRAME zelf — alleen het gekleurde/getekende gedeelte.
+- Sluit ALLES buiten het frame uit: paginaheaders, sectienummers, titeltekst boven
+  het frame, beschrijvingstekst onder het frame, paginanummers en witruimte.
+- Als een pagina meerdere aparte designs bevat, geef dan één entry per design
+  met een eigen crop-box en titel.
+- Waarden zijn fracties 0.0–1.0 (top/bottom = afstand vanaf bovenkant,
+  left/right = afstand vanaf linkerkant). Wees zo nauwkeurig mogelijk.
 
 Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
 {{
   "pages": [
-    {{"page": 1, "visual": false, "title": "exacte sectietitel of null"}},
+    {{"page": 1, "visual": false, "title": "paginatitel of null"}},
     {{"page": 2, "visual": true, "title": "exacte diagramtitel uit de PDF",
+      "type": "erd",
+      "crop": {{"top": 0.15, "left": 0.03, "right": 0.97, "bottom": 0.85}}}},
+    {{"page": 3, "visual": true, "title": "titel eerste design op pagina 3",
       "type": "ui-mockup",
-      "crop": {{"top": 0.12, "left": 0.03, "right": 0.97, "bottom": 0.88}}}},
+      "crop": {{"top": 0.05, "left": 0.04, "right": 0.96, "bottom": 0.48}}}},
+    {{"page": 3, "visual": true, "title": "titel tweede design op pagina 3",
+      "type": "ui-mockup",
+      "crop": {{"top": 0.51, "left": 0.04, "right": 0.96, "bottom": 0.95}}}},
     ...
   ]
 }}
 
 type is één van: erd, deployment, component, sequence, ui-mockup, other-visual
-crop is verplicht voor elke visuele pagina
+crop is verplicht voor elke visuele entry.
+Meerdere entries met hetzelfde paginanummer zijn toegestaan als een pagina meerdere designs bevat.
 """
 
 
@@ -224,18 +234,26 @@ Je ontvangt {num_pages} afbeeldingen (één per pagina). De volgende pagina's zi
 
 ── REGELS VOOR VISUELE PAGINA'S ───────────────────────────────────────────────
 Voor elke visuele pagina (diagram, ERD, UI-design, etc.):
-1. Maak een ## sectie met de EXACTE PDF-titel van die pagina
-2. Voeg DIRECT NA de ## titel deze afbeeldingsreferentie in:
-   ![<titel>]({img_dir_name}/page-N.png)   (N = het paginanummer)
-3. Voeg daarna maximaal 3 zinnen samenvatting toe — beschrijf NIET elk element
-   afzonderlijk, de afbeelding spreekt voor zichzelf
+1. Maak een ## sectie met de EXACTE PDF-titel
+2. Voeg DIRECT NA de ## titel de afbeeldingsreferentie in — en NIETS ANDERS:
+   ![<titel>]({img_dir_name}/page-N[-M].png)
+   waarbij N het paginanummer is en M het volgnummer als een pagina meerdere
+   designs heeft (bv. page-3-1.png en page-3-2.png)
+3. GEEN beschrijvingstekst, GEEN samenvatting, GEEN bullets — alleen titel + afbeelding
 
-Voorbeeld voor pagina 3 met titel "Database ERD":
+Voorbeeld voor pagina 3 "Database ERD":
 ## Database ERD
 
 ![Database ERD]({img_dir_name}/page-3.png)
 
-ERD met 5 tabellen: users, orders, products, categories en stock_adjustments.
+Voorbeeld voor pagina 5 met twee designs:
+## Homepage
+
+![Homepage]({img_dir_name}/page-5-1.png)
+
+## Checkout
+
+![Checkout]({img_dir_name}/page-5-2.png)
 
 ── REGELS VOOR TEKSTPAGINA'S ──────────────────────────────────────────────────
 Extraheer de volledige tekstinhoud. Behoud alle technische details:
@@ -315,62 +333,83 @@ def _build_image_content(page_images: list[Path]) -> list[dict]:
     return content
 
 
+class _VisualEntry:
+    """Één visueel design: paginanummer, titel, crop-box en uitvoerbestandsnaam."""
+    __slots__ = ("page", "title", "crop", "out_name")
+
+    def __init__(self, page: int, title: str, crop: dict, out_name: str):
+        self.page = page
+        self.title = title
+        self.crop = crop
+        self.out_name = out_name  # bv. "page-3.png" of "page-3-1.png"
+
+
 def _identify_visual_pages(
     page_images: list[Path],
-) -> tuple[dict[int, str], dict[int, dict]]:
+) -> list[_VisualEntry]:
     """
     Pass 1: vraag Gemini welke pagina's visueel zijn, hun titels en crop-boxes.
-    Geeft twee dicts terug:
-      - {paginanummer: titel}  voor visuele pagina's
-      - {paginanummer: crop}   crop = {"top": f, "left": f, "right": f, "bottom": f}
+    Ondersteunt meerdere designs per pagina.
+    Geeft een lijst van _VisualEntry terug, inclusief uitvoerbestandsnaam.
     """
     import json as _json
     n = len(page_images)
-    print(f"  🔍 Pass 1 — visuele pagina's identificeren en bijsnijden ({n} pagina's)...")
+    print(f"  🔍 Pass 1 — visuele pagina's identificeren ({n} pagina's)...")
     content = _build_image_content(page_images)
-    content.append({
-        "type": "text",
-        "text": _IDENTIFY_PROMPT.format(n=n),
-    })
+    content.append({"type": "text", "text": _IDENTIFY_PROMPT.format(n=n)})
     response = get_llm().invoke([HumanMessage(content=content)])
     raw = response.content.strip()
 
     if "```" in raw:
         raw = raw[raw.find("{"):raw.rfind("}") + 1]
 
+    entries: list[_VisualEntry] = []
     try:
         data = _json.loads(raw)
-        titles: dict[int, str] = {}
-        crops: dict[int, dict] = {}
+        page_counts: dict[int, int] = {}
         for p in data.get("pages", []):
             if not p.get("visual") or not p.get("title"):
                 continue
             page_num = p["page"]
-            titles[page_num] = p["title"]
-            if "crop" in p and isinstance(p["crop"], dict):
-                crops[page_num] = p["crop"]
-        print(f"  ✅ {len(titles)} visuele pagina('s): {sorted(titles.keys())}")
-        return titles, crops
+            crop = p.get("crop") if isinstance(p.get("crop"), dict) else {}
+            count = page_counts.get(page_num, 0) + 1
+            page_counts[page_num] = count
+            # Naam: page-3.png voor eerste design, page-3-2.png voor tweede, etc.
+            out_name = f"page-{page_num}.png" if count == 1 else f"page-{page_num}-{count}.png"
+            entries.append(_VisualEntry(page_num, p["title"], crop, out_name))
+
+        # Hernoem page-3.png → page-3-1.png als die pagina meerdere designs heeft
+        for entry in entries:
+            if page_counts[entry.page] > 1 and entry.out_name == f"page-{entry.page}.png":
+                entry.out_name = f"page-{entry.page}-1.png"
+
+        visual_pages = sorted({e.page for e in entries})
+        print(f"  ✅ {len(entries)} visuele design(s) op pagina('s): {visual_pages}")
     except Exception as e:
         print(f"  ⚠️  Identificatie mislukt ({e}) — alle pagina's als visueel behandeld")
-        titles = {i: f"Pagina {i}" for i in range(1, n + 1)}
-        return titles, {}
+        entries = [
+            _VisualEntry(i, f"Pagina {i}", {}, f"page-{i}.png")
+            for i in range(1, n + 1)
+        ]
+    return entries
 
 
-def _crop_image(img_path: Path, crop: dict) -> None:
-    """Snijd de afbeelding bij tot de opgegeven crop-box (fracties 0.0–1.0)."""
+def _crop_and_save(src: Path, out: Path, crop: dict) -> None:
+    """Crop de bronafbeelding naar crop-box en sla op als out."""
     try:
         from PIL import Image as _Image
-        img = _Image.open(img_path)
+        img = _Image.open(src)
         w, h = img.size
-        left   = int(max(0.0, crop.get("left",   0.0)) * w)
-        top    = int(max(0.0, crop.get("top",    0.0)) * h)
-        right  = int(min(1.0, crop.get("right",  1.0)) * w)
-        bottom = int(min(1.0, crop.get("bottom", 1.0)) * h)
-        if right > left and bottom > top:
-            img.crop((left, top, right, bottom)).save(img_path)
+        if crop:
+            left   = int(max(0.0, crop.get("left",   0.0)) * w)
+            top    = int(max(0.0, crop.get("top",    0.0)) * h)
+            right  = int(min(1.0, crop.get("right",  1.0)) * w)
+            bottom = int(min(1.0, crop.get("bottom", 1.0)) * h)
+            if right > left and bottom > top:
+                img = img.crop((left, top, right, bottom))
+        img.save(out)
     except Exception as e:
-        print(f"  ⚠️  Bijsnijden mislukt voor {img_path.name}: {e}")
+        print(f"  ⚠️  Bijsnijden mislukt voor {out.name}: {e}")
 
 
 def convert_with_page_images(
@@ -384,15 +423,19 @@ def convert_with_page_images(
     Pass 1 — identificeer visuele pagina's, titels en crop-boxes; pas bijsnijden toe
     Pass 2 — genereer de FA met afbeeldingsreferenties voor visuele pagina's
     """
-    # Pass 1: identificeer + bijsnijden
-    visual_pages, crops = _identify_visual_pages(page_images)
+    # Pass 1: identificeer designs en bijsnijden
+    entries = _identify_visual_pages(page_images)
 
-    if crops:
-        print(f"  ✂️  Afbeeldingen bijsnijden ({len(crops)} pagina('s))...")
-        for page_num, crop in crops.items():
-            img_path = page_images[page_num - 1]
-            _crop_image(img_path, crop)
-        print("  ✅ Bijsnijden klaar")
+    print(f"  ✂️  Afbeeldingen bijsnijden en opslaan ({len(entries)} design(s))...")
+    img_dir = page_images[0].parent
+    for entry in entries:
+        src = page_images[entry.page - 1]
+        out = img_dir / entry.out_name
+        _crop_and_save(src, out, entry.crop)
+    print("  ✅ Bijsnijden klaar")
+
+    # Bouw visual_pages dict voor Pass 2 prompt {paginanummer: titel}
+    visual_pages = {e.page: e.title for e in entries}
 
     # Pass 2: genereer FA
     print(f"  📤 Pass 2 — FA genereren ({len(page_images)} pagina's)...")
