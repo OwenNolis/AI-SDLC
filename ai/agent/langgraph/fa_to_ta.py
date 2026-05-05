@@ -1253,6 +1253,49 @@ def _clean_messaging(raw: dict) -> dict:
     }
 
 
+def expand_fa_images(fa_text: str, fa_path: Path) -> str:
+    """
+    Zoek alle Markdown afbeeldingsreferenties in de FA (![...](pad)) op,
+    beschrijf elke afbeelding via het LLM en vervang de referentie inline
+    door een leesbare tekstbeschrijving.
+
+    Relatieve paden worden opgelost ten opzichte van de FA-bestandslocatie.
+    Afbeeldingen die niet gevonden worden of een niet-ondersteund formaat hebben,
+    worden overgeslagen (de originele referentie blijft staan).
+    """
+    import re as _re
+    pattern = _re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+    fa_dir = fa_path.parent
+
+    def _replace(match: "_re.Match") -> str:  # type: ignore[name-defined]
+        alt_text = match.group(1)
+        img_src  = match.group(2).strip()
+
+        # Sla data-URI's en externe URLs over
+        if img_src.startswith("http://") or img_src.startswith("https://") or img_src.startswith("data:"):
+            return match.group(0)
+
+        img_path = (fa_dir / img_src).resolve()
+        if not img_path.is_file():
+            print(f"  ⚠️  Afbeelding niet gevonden in FA: {img_src}", file=sys.stderr)
+            return match.group(0)
+
+        if img_path.suffix.lower() not in IMAGE_EXTENSIONS:
+            return match.group(0)
+
+        label = alt_text if alt_text else img_path.name
+        print(f"  🖼️  Afbeelding analyseren (FA): {img_path.name}")
+        description = _describe_image(img_path)
+        print(f"  ✅ Afbeelding verwerkt (FA): {img_path.name}")
+        return (
+            f"<!-- Afbeelding: {label} -->\n"
+            f"**[Afbeelding: {label}]**\n\n"
+            f"{description}\n"
+        )
+
+    return pattern.sub(_replace, fa_text)
+
+
 def _extract_title(fa_content: str, fallback: str) -> str:
     """Haal de feature titel uit de eerste # heading van de FA."""
     for line in fa_content.splitlines():
@@ -1436,7 +1479,7 @@ def main():
     app = build_graph()
     final = app.invoke({
         "feature_id":       feature_id,
-        "fa_content":       fa_path.read_text(),
+        "fa_content":       expand_fa_images(fa_path.read_text(), fa_path),
         "fa_type":          "",
         "fa_type_manual":   args.fa_type,
         "extra_context":    extra_context,
