@@ -34,7 +34,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
-from pypdf import PdfReader
+
+try:
+    from pypdf import PdfReader as _PdfReader
+    _PYPDF_AVAILABLE = True
+except Exception:
+    _PdfReader = None  # type: ignore[assignment,misc]
+    _PYPDF_AVAILABLE = False
 
 # Laad .env vanuit de repo root
 load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
@@ -161,7 +167,9 @@ def convert_with_multimodal(pdf_bytes: bytes, feature_id: str, lang: str) -> str
 
 def extract_text_pypdf(pdf_path: Path) -> str:
     """Extraheer ruwe tekst uit de PDF met pypdf als fallback."""
-    reader = PdfReader(pdf_path)
+    if not _PYPDF_AVAILABLE:
+        return ""
+    reader = _PdfReader(pdf_path)
     pages = []
     for i, page in enumerate(reader.pages, 1):
         text = page.extract_text() or ""
@@ -172,11 +180,14 @@ def extract_text_pypdf(pdf_path: Path) -> str:
 
 def convert_with_text_fallback(pdf_path: Path, feature_id: str, lang: str) -> str:
     """Extraheer tekst met pypdf en laat Gemini de FA structureren."""
-    print("  📄 Tekst extraheren met pypdf (fallback voor grote PDF)...")
-    raw_text = extract_text_pypdf(pdf_path)
-
-    if not raw_text.strip():
-        print("  ⚠️  Geen tekst gevonden in PDF (scan-only?). Resultaat kan leeg zijn.", file=sys.stderr)
+    if _PYPDF_AVAILABLE:
+        print("  📄 Tekst extraheren met pypdf (fallback voor grote PDF)...")
+        raw_text = extract_text_pypdf(pdf_path)
+        if not raw_text.strip():
+            print("  ⚠️  Geen tekst gevonden in PDF (scan-only?). Resultaat kan leeg zijn.", file=sys.stderr)
+    else:
+        print("  ⚠️  pypdf niet beschikbaar — PDF wordt zonder tekst-extractie verwerkt.", file=sys.stderr)
+        raw_text = ""
 
     prompt = _build_prompt(feature_id, lang, extra_text=raw_text)
     message = HumanMessage(content=prompt)
@@ -260,8 +271,11 @@ def main():
     # Converteer
     pdf_bytes = pdf_path.read_bytes()
     pdf_size = len(pdf_bytes)
-    num_pages = len(PdfReader(pdf_path).pages)
-    print(f"📂 PDF geladen: {pdf_size / 1024:.1f} KB, {num_pages} pagina('s)")
+    if _PYPDF_AVAILABLE:
+        num_pages = len(_PdfReader(pdf_path).pages)
+        print(f"📂 PDF geladen: {pdf_size / 1024:.1f} KB, {num_pages} pagina('s)")
+    else:
+        print(f"📂 PDF geladen: {pdf_size / 1024:.1f} KB")
 
     if pdf_size <= _MAX_PDF_BYTES_FOR_MULTIMODAL:
         fa_markdown = convert_with_multimodal(pdf_bytes, args.feature_id, args.lang)
