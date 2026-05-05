@@ -76,72 +76,60 @@ def _build_prompt(feature_id: str, lang: str, extra_text: str = "") -> str:
         else ""
     )
 
-    return f"""Je bent een SDLC-documentatie assistent.
-Jouw taak: converteer de inhoud van deze PDF Functionele Analyse naar een gestructureerde Markdown FA.
+    return f"""Je bent een SDLC-documentatie assistent met expertise in technische documentatie.
+Jouw taak: converteer ALLE inhoud van deze PDF Functionele Analyse naar een volledige Markdown FA.
 {lang_instruction}
 {extra_hint}
-KRITIEKE REGELS:
-- Behoud ALLE technische details: veldnamen, types, constraints, HTTP-methodes, paden, statuscode, enum-waarden
+
+Werk in drie fasen:
+
+── FASE 1: INVENTARISEER ELKE PAGINA ──────────────────────────────────────
+Ga door elke pagina van de PDF. Stel voor jezelf vast:
+- Wat is de exacte sectietitel of heading op deze pagina?
+- Bevat de pagina tekst, een diagram, een tabel, een UI-mockup of een combinatie?
+
+── FASE 2: EXTRAHEER VISUELE INHOUD ───────────────────────────────────────
+Voor ELKE pagina met een diagram, afbeelding of visuele inhoud — beschrijf de inhoud
+VOLLEDIG en EXACT. Sla niets over. Gebruik per diagramtype de volgende aanpak:
+
+- **Database ERD / datamodel**: per tabel een ### heading; vermeld ELKE kolom met naam,
+  datatype, nullable/not-null, primary key, foreign keys en relaties (1:1, 1:N, N:M)
+- **Deployment diagram**: elke service/node met naam, technologie, poorten en verbindingen
+- **Component diagram**: alle componenten, interfaces en afhankelijkheden
+- **Sequence diagram**: alle actoren en stappen in volgorde, inclusief retourwaarden
+- **Figma / UI-mockup / wireframe**: elk scherm apart; vermeld elk formulierveld,
+  label, placeholder, knop, dropdown, validatie, navigatieflow en foutstate
+- **Overige afbeeldingen**: beschrijf inhoud volledig
+
+── FASE 3: SCHRIJF DE VOLLEDIGE MARKDOWN FA ──────────────────────────────
+Schrijf de FA op basis van fasen 1 en 2. Houd je aan deze VERPLICHTE REGELS:
+
+Structuur:
+- Begin met: # Feature-{feature_id}: {{exacte titel uit de PDF}}
+- Gebruik de EXACTE sectietitels uit de PDF als ## headings
+- Voeg voor elk diagram een eigen ## sectie toe met de exacte PDF-titel
+  (bv. ## Database ERD, ## Deployment Diagram, ## Component Diagram,
+   ## Sequence Diagram, ## UI Designs, ## Recap)
+- Plaats de volledige diagrambeschrijving uit fase 2 in die sectie
+- Standaardsecties die aanwezig zijn in de PDF altijd meenemen:
+  ## Doel, ## Scope, ## Requirements, ## Business rules, ## Non-functional,
+  ## Data, ## API notes, ## Acceptance Criteria, ## UX notes
+
+Inhoud:
 - Verzin NIETS — als iets niet in de PDF staat, laat het dan weg
-- Als de PDF al REQ-/BR-/NFR-/AC-nummering heeft, gebruik die exact; anders genereer doorlopende nummering
-- Als de PDF diagrammen of afbeeldingen bevat, beschrijf ze inline als een ## Data sectie met alle entiteiten, velden en relaties
-- Laat geen enkel requirement, business rule of acceptance criterion uit de PDF weg
-- Het feature-id voor dit document is: {feature_id}
+- Behoud alle technische details exact: veldnamen, types, constraints,
+  HTTP-methodes, paden, statuscodes, enum-waarden, queries, formules
+- Gebruik REQ-/BR-/NFR-/AC-nummering exact zoals in de PDF;
+  genereer doorlopende nummering als die ontbreekt
+- Laat geen enkel requirement, business rule, acceptance criterion of
+  diagramsectie weg
 
-Geef de output als RAW Markdown (geen code block omheen), exact in het volgende formaat:
+Opmaak:
+- Geef de output als RAW Markdown — geen code block omheen
+- Gebruik bullet lists voor requirements, business rules en NFRs
+- Gebruik tabellen of geneste bullet lists voor diagraminhoud waar dat overzichtelijk is
 
-# Feature-{feature_id}: {{titel uit de PDF}}
-
-## Doel
-
-Als {{actor}} wil ik {{actie}} zodat {{voordeel}}.
-
-## Scope
-
-In scope:
-
-- {{item}}
-
-Out of scope:
-
-- {{item}}
-
-## Requirements
-
-- REQ-001: {{requirement}}
-
-## Business rules
-
-- BR-001: {{business rule}}
-
-## Non-functional
-
-- NFR-001: {{non-functionele eis}}
-
-## Data
-
-- Entiteit: {{naam}}, velden: {{veld: type, ...}}
-- Enum: {{naam}} — {{WAARDE1, WAARDE2, ...}}
-
-## API notes
-
-- Endpoint: {{METHOD /pad}} — {{beschrijving}}
-- Request: {{{{veld, ...}}}}
-- Response: {{{{veld, ...}}}}
-
-## Acceptance Criteria
-
-### REQ-001: {{requirement samenvatting}}
-
-- **AC-001-1**: Gegeven {{context}}, wanneer {{actie}}, dan {{verwacht resultaat}}
-- **AC-001-2**: Gegeven {{randgeval of ongeldige input}}, wanneer {{actie}}, dan {{foutmelding of afwijzing}}
-
-## UX notes
-
-- {{ux opmerking of schermopbouw}}
-
-Secties die niet van toepassing zijn (bv. geen UX voor een pure API feature) mag je weglaten.
-Voeg secties toe die in de PDF staan maar niet in het template (bv. ## Integraties, ## Migratie).
+Het feature-id voor dit document is: {feature_id}
 """
 
 
