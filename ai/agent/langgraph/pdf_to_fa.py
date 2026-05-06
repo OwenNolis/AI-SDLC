@@ -274,7 +274,10 @@ Voor elk design uit de lijst hierboven:
 3. GEEN beschrijvingstekst, GEEN samenvatting, GEEN bullets — alleen ## titel + afbeelding
 
 ── REGELS VOOR TEKSTPAGINA'S ──────────────────────────────────────────────────
-Extraheer de volledige tekstinhoud. Behoud alle technische details:
+Extraheer de VOLLEDIGE tekstinhoud van ELKE pagina. Sla GEEN enkele sectie over.
+Dit geldt expliciet ook voor: API contracten, Non-functional requirements,
+Acceptance criteria, Requirements, Business rules, Data, Scope en UX notes.
+Behoud alle technische details exact:
 veldnamen, types, constraints, HTTP-methodes, paden, statuscodes, enum-waarden.
 Gebruik de REQ-/BR-/NFR-/AC-nummering exact zoals in de PDF.
 
@@ -429,12 +432,19 @@ def _identify_visual_pages(page_images: list[Path]) -> list[_VisualEntry]:
     return entries
 
 
-def _crop_and_save(src: Path, out: Path, crop: dict) -> None:
-    """Crop de bronafbeelding naar crop-box en sla op als out."""
+def _crop_and_save(src: Path, out: Path, crop: dict, padding: int = 8) -> None:
+    """Crop de bronafbeelding naar crop-box en sla op als out.
+
+    Stap 1: pas de door Gemini opgegeven crop-box toe (fracties 0.0–1.0).
+    Stap 2: trim automatisch alle resterende witruimte (bijna-witte pixels) weg
+            zodat alleen de echte content overblijft, met een kleine rand (padding px).
+    """
     try:
-        from PIL import Image as _Image
-        img = _Image.open(src)
+        from PIL import Image as _Image, ImageChops as _IChops
+        img = _Image.open(src).convert("RGB")
         w, h = img.size
+
+        # Stap 1 — Gemini crop
         if crop:
             left   = int(max(0.0, crop.get("left",   0.0)) * w)
             top    = int(max(0.0, crop.get("top",    0.0)) * h)
@@ -442,6 +452,21 @@ def _crop_and_save(src: Path, out: Path, crop: dict) -> None:
             bottom = int(min(1.0, crop.get("bottom", 1.0)) * h)
             if right > left and bottom > top:
                 img = img.crop((left, top, right, bottom))
+
+        # Stap 2 — auto-trim witruimte
+        # Vergelijk met een volledig witte achtergrond; alles wat afwijkt is content.
+        bg = _Image.new("RGB", img.size, (255, 255, 255))
+        diff = _IChops.difference(img, bg)
+        bbox = diff.getbbox()
+        if bbox:
+            cl, ct, cr, cb = bbox
+            iw, ih = img.size
+            cl = max(0, cl - padding)
+            ct = max(0, ct - padding)
+            cr = min(iw, cr + padding)
+            cb = min(ih, cb + padding)
+            img = img.crop((cl, ct, cr, cb))
+
         img.save(out)
     except Exception as e:
         print(f"  ⚠️  Bijsnijden mislukt voor {out.name}: {e}")
