@@ -268,15 +268,25 @@ Gebruik UITSLUITEND de opgegeven bestandsnamen — verzin geen andere paden:
 {design_lines}
 
 ── REGELS VOOR VISUELE DESIGNS ────────────────────────────────────────────────
-De lijst hierboven bevat EXACTE titels gekoppeld aan EXACTE bestandsnamen.
-VERPLICHTE regels — geen uitzonderingen:
-1. Elke entry in de lijst krijgt een EIGEN ## sectie. Combineer nooit twee entries.
-2. De ## titel is EXACT de titel uit de lijst — geen vertaling, geen samenvatting,
-   geen combinatie met een andere titel (ook niet "Checkout en order summary" als
-   de lijst "Checkout" en "Order summary" apart vermeldt).
-3. De afbeeldingsreferentie gebruikt het EXACTE pad uit de lijst:
-   ![titel](pad/zoals/hierboven/opgegeven.png)
-4. GEEN beschrijvingstekst, GEEN bullets — alleen ## titel + afbeelding per entry.
+De lijst hierboven bevat gedetecteerde design-titels + bestandsnamen.
+De titels in de lijst hoeven NIET exact overeen te komen met de sectietitels in de PDF —
+match op het EERSTE BETEKENISVOLLE WOORD (of de eerste 1-2 kernwoorden):
+
+  Voorbeelden van geldige matches:
+  • Lijsttitel "Checkout"           → PDF-sectie "Checkout en order summary"  ✓
+  • Lijsttitel "Order summary"      → PDF-sectie "Order summary"              ✓
+  • Lijsttitel "3. Uitgebreide …"   → PDF-sectie "Sequence diagram …"        → zoek de sectie
+    waarop de afbeelding op de bijbehorende pagina thuishoort (gebruik de pagina-hint)
+  • Lijsttitel "Sequence diagram"   → PDF-sectie "Sequence diagram - …"      ✓
+
+VERPLICHTE regels:
+1. Elke entry in de lijst plaatst de afbeelding in de sectie van de PDF waarvan de
+   titel het meest overeenkomt (eerste kernwoord(en) of pagina-positie).
+2. Elke entry krijgt een EIGEN afbeelding — combineer nooit twee entries in één sectie.
+3. Gebruik UITSLUITEND het EXACTE pad uit de lijst:
+   ![sectietitel](pad/zoals/in/de/lijst.png)
+4. Gebruik de sectietitel uit de PDF als ## heading (niet de lijsttitel).
+5. GEEN beschrijvingstekst — alleen ## sectietitel + afbeelding.
 
 ── REGELS VOOR TEKSTPAGINA'S ──────────────────────────────────────────────────
 Extraheer de VOLLEDIGE tekstinhoud van ELKE pagina. Sla GEEN enkele sectie over.
