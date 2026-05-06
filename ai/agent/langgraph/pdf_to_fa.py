@@ -488,6 +488,21 @@ def convert_with_page_images(
 
     print(f"  ✂️  Afbeeldingen bijsnijden en opslaan ({len(entries)} design(s))...")
     img_dir = page_images[0].parent
+
+    # Verwijder verouderde bijgesneden bestanden van vorige runs voor elke visuele pagina.
+    # Zonder deze stap blijven page-N-1.png / page-N-2.png bestaan wanneer een nieuwe
+    # run op dezelfde pagina slechts één design detecteert (en page-N.png schrijft).
+    processed_pages = {e.page for e in entries}
+    for page_num in processed_pages:
+        for stale in img_dir.glob(f"page-{page_num}-*.png"):
+            stale.unlink(missing_ok=True)
+        # Verwijder ook de enkelvoudige variant als er nu meerdere designs zijn
+        multi = [e for e in entries if e.page == page_num]
+        if len(multi) > 1:
+            single = img_dir / f"page-{page_num}.png"
+            if single.exists():
+                single.unlink()
+
     for entry in entries:
         src = page_images[entry.page - 1]
         out = img_dir / entry.out_name
