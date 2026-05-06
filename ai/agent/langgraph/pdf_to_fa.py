@@ -211,17 +211,18 @@ Een VISUEEL frame is NIET:
 Als de pagina ALLEEN tekst, lijsten of tekst-tabellen bevat, geef dan "designs": [] terug.
 
 Voor elk ECHT visueel frame:
-1. Lees de TITEL exact zoals zichtbaar in of direct boven het frame — verzin niets.
-2. Bepaal de crop-box: de TITEL + eventuele korte beschrijvingstekst direct onder de titel
-   + het visuele frame zelf, als één geheel.
-   De bovenkant van de crop begint bij de titeltekst direct boven het frame.
-   Sluit uit: paginaheader, sectienummer (bv. "2."), paginanummer,
-   en alle witruimte en andere content ver buiten het frame+titel blok.
+1. Lees de DIRECTE TITEL van dit frame exact — de heading die onmiddellijk boven of
+   binnen dit specifieke frame staat. Gebruik NIET een overkoepelende paginakop of
+   sectienummer (bv. "3. Uitgebreide UML diagrams") als titel tenzij dat de enige
+   heading op de pagina is; gebruik in dat geval de specifieke diagramnaam.
+2. Bepaal de crop-box voor ALLEEN dit ene frame:
+   - top    = bovenkant van de directe titel van DIT frame (niet eerder op de pagina)
+   - bottom = onderkant van het visuele frame zelf (niet verder)
+   - left/right = krap om het frame+titel blok, zonder brede marges
+   Sluit uit: paginaheader, overkoepelende sectiekoppen boven dit frame,
+   paginanummer, beschrijvingstekst van andere frames en omringende witruimte.
    Waarden zijn fracties 0.0–1.0 van de paginagrootte.
-   top = bovenkant van de titel boven het frame,
-   bottom = onderkant van het visuele frame (niet verder),
-   left = linkerkant van het frame/titel blok (krap, zonder brede marges),
-   right = rechterkant van het frame/titel blok (krap, zonder brede marges).
+   Elk frame krijgt een eigen ONAFHANKELIJKE crop-box — overlap is niet toegestaan.
 
 Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
 {{
@@ -267,11 +268,15 @@ Gebruik UITSLUITEND de opgegeven bestandsnamen — verzin geen andere paden:
 {design_lines}
 
 ── REGELS VOOR VISUELE DESIGNS ────────────────────────────────────────────────
-Voor elk design uit de lijst hierboven:
-1. Maak een ## sectie met exact de opgegeven titel
-2. Voeg op de volgende regel de afbeeldingsreferentie in met het EXACTE opgegeven pad:
+De lijst hierboven bevat EXACTE titels gekoppeld aan EXACTE bestandsnamen.
+VERPLICHTE regels — geen uitzonderingen:
+1. Elke entry in de lijst krijgt een EIGEN ## sectie. Combineer nooit twee entries.
+2. De ## titel is EXACT de titel uit de lijst — geen vertaling, geen samenvatting,
+   geen combinatie met een andere titel (ook niet "Checkout en order summary" als
+   de lijst "Checkout" en "Order summary" apart vermeldt).
+3. De afbeeldingsreferentie gebruikt het EXACTE pad uit de lijst:
    ![titel](pad/zoals/hierboven/opgegeven.png)
-3. GEEN beschrijvingstekst, GEEN samenvatting, GEEN bullets — alleen ## titel + afbeelding
+4. GEEN beschrijvingstekst, GEEN bullets — alleen ## titel + afbeelding per entry.
 
 ── REGELS VOOR TEKSTPAGINA'S ──────────────────────────────────────────────────
 Extraheer de VOLLEDIGE tekstinhoud van ELKE pagina. Sla GEEN enkele sectie over.
@@ -453,11 +458,12 @@ def _crop_and_save(src: Path, out: Path, crop: dict, padding: int = 8) -> None:
             if right > left and bottom > top:
                 img = img.crop((left, top, right, bottom))
 
-        # Stap 2 — auto-trim witruimte
-        # Vergelijk met een volledig witte achtergrond; alles wat afwijkt is content.
-        bg = _Image.new("RGB", img.size, (255, 255, 255))
-        diff = _IChops.difference(img, bg)
-        bbox = diff.getbbox()
+        # Stap 2 — auto-trim witruimte met drempelwaarde
+        # Gebruik grijswaarden + drempelwaarde (240) zodat lichtgrijze achtergronden
+        # ook worden weggesneden, niet alleen exacte pixels met waarde (255,255,255).
+        gray = img.convert("L")
+        content_mask = gray.point(lambda p: 255 if p < 240 else 0)
+        bbox = content_mask.getbbox()
         if bbox:
             cl, ct, cr, cb = bbox
             iw, ih = img.size
