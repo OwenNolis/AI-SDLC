@@ -128,6 +128,8 @@ class TAState(TypedDict):
     # Inputs
     feature_id: str
     fa_content: str
+    fa_path_str: str   # Absoluut pad naar de FA .md (voor afbeeldingen)
+    ta_path_str: str   # Absoluut pad naar de TA .md (voor relatieve afbeeldingspaden)
     fa_type: str            # rest-api | full-stack | frontend-only | event-driven
     fa_type_manual: str     # handmatig opgegeven type (leeg = auto-detect)
     extra_context: str      # optionele extra context meegegeven via --context
@@ -1256,6 +1258,15 @@ Gegevens: {json.dumps(state["tests_design"], indent=2)}
     sections.append(traceability_md)
 
     markdown = f"# {title}\n\n" + "\n\n".join(sections)
+
+    # Voeg FA-afbeeldingen in op de juiste TA-secties
+    fa_path_str = state.get("fa_path_str", "")
+    ta_path_str = state.get("ta_path_str", "")
+    if fa_path_str and ta_path_str:
+        fa_md_text = Path(fa_path_str).read_text(encoding="utf-8")
+        images = _extract_fa_images(fa_md_text, Path(fa_path_str), Path(ta_path_str))
+        markdown = _inject_images_into_ta(markdown, images)
+
     return {"ta_markdown": markdown}
 
 
@@ -1392,6 +1403,106 @@ def expand_fa_images(fa_text: str, fa_path: Path) -> str:
         )
 
     return pattern.sub(_replace, fa_text)
+
+
+_FA_IMAGE_CATEGORIES = {
+    "frontend":  {"homepage", "shop", "overzicht", "product", "checkout", "order", "cart", "ui",
+                  "mockup", "wireframe", "figma", "scherm", "pagina", "detail", "login", "register"},
+    "backend":   {"sequence", "component", "deployment", "uml", "diagram", "flow", "architectuur",
+                  "service", "module", "class"},
+    "database":  {"erd", "database", "db", "schema", "datamodel", "domein", "entity", "model"},
+    "api":       {"api", "contract", "endpoint", "swagger", "openapi", "rest"},
+}
+
+# TA section headings to inject images under (regex-safe prefix of the heading line)
+_SECTION_HEADINGS = {
+    "frontend": "## 7. Frontend Design",
+    "backend":  "## 6. Backend Design",
+    "database": "## 4. Domain Model",
+    "api":      "## 5. API",
+}
+
+
+def _categorize_section(heading: str) -> str | None:
+    """Geef de categorie terug op basis van de sectiekop (lowercase)."""
+    h = heading.lower()
+    for cat, keywords in _FA_IMAGE_CATEGORIES.items():
+        if any(k in h for k in keywords):
+            return cat
+    return None
+
+
+def _extract_fa_images(fa_text: str, fa_path: Path, ta_path: Path) -> dict[str, list[str]]:
+    """
+    Parseer de FA-markdown en categoriseer alle afbeeldingsreferenties op TA-sectie.
+
+    Retourneert een dict {"frontend": [...md_refs...], "backend": [...], "database": [...], "api": [...]}.
+    Paden worden omgezet naar relatieve paden ten opzichte van de TA-map.
+    """
+    import re as _re
+
+    result: dict[str, list[str]] = {"frontend": [], "backend": [], "database": [], "api": []}
+    current_cat: str | None = None
+    pattern = _re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+
+    for line in fa_text.splitlines():
+        if line.startswith("#"):
+            heading = line.lstrip("#").strip()
+            current_cat = _categorize_section(heading)
+
+        m = pattern.search(line)
+        if not m:
+            continue
+        alt = m.group(1).strip()
+        src = m.group(2).strip()
+
+        if src.startswith("http") or src.startswith("https") or src.startswith("data:"):
+            continue
+
+        img_abs = (fa_path.parent / src).resolve()
+        if not img_abs.is_file():
+            continue
+
+        try:
+            rel = os.path.relpath(img_abs, ta_path.parent)
+        except ValueError:
+            rel = str(img_abs)
+
+        md_ref = f"![{alt}]({rel})"
+
+        # Gebruik sectiekategorie; als onbekend, probeer alt-tekst
+        cat = current_cat or _categorize_section(alt)
+        if cat and cat in result:
+            result[cat].append(md_ref)
+
+    return result
+
+
+def _inject_images_into_ta(ta_markdown: str, images: dict[str, list[str]]) -> str:
+    """
+    Voeg FA-afbeeldingen in op de juiste plek in de TA-markdown.
+
+    Per categorie: zoek de bijbehorende ## sectie-heading en voeg de
+    afbeeldingen in als blok direct na de heading-regel.
+    """
+    lines = ta_markdown.splitlines(keepends=True)
+    output: list[str] = []
+    inserted: set[str] = set()
+
+    for line in lines:
+        output.append(line)
+        stripped = line.rstrip("\n")
+        for cat, heading_prefix in _SECTION_HEADINGS.items():
+            if stripped.startswith(heading_prefix) and cat not in inserted:
+                refs = images.get(cat, [])
+                if refs:
+                    output.append("\n")
+                    for ref in refs:
+                        output.append(f"{ref}\n\n")
+                    inserted.add(cat)
+                break
+
+    return "".join(output)
 
 
 def _extract_title(fa_content: str, fallback: str) -> str:
@@ -1578,6 +1689,8 @@ def main():
     final = app.invoke({
         "feature_id":       feature_id,
         "fa_content":       expand_fa_images(fa_path.read_text(), fa_path),
+        "fa_path_str":      str(fa_path),
+        "ta_path_str":      str(ta_md_path),
         "fa_type":          "",
         "fa_type_manual":   args.fa_type,
         "extra_context":    extra_context,
