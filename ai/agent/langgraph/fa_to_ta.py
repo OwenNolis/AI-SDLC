@@ -39,7 +39,12 @@ from jsonschema import ValidationError, validate
 from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
-from pypdf import PdfReader
+try:
+    from pypdf import PdfReader as _PdfReader
+    _PYPDF_AVAILABLE = True
+except Exception:
+    _PdfReader = None  # type: ignore[assignment,misc]
+    _PYPDF_AVAILABLE = False
 
 # Laad .env vanuit de repo root
 load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
@@ -105,7 +110,9 @@ def read_context_file(f: Path) -> str:
     if suffix in IMAGE_EXTENSIONS:
         return _describe_image(f)
     if suffix == ".pdf":
-        reader = PdfReader(f)
+        if not _PYPDF_AVAILABLE:
+            return f"[PDF: {f.name} — pypdf niet beschikbaar op Python 3.14]"
+        reader = _PdfReader(f)
         return "\n".join(page.extract_text() or "" for page in reader.pages)
     return f.read_text(encoding="utf-8")
 
