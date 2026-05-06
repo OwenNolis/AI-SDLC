@@ -171,10 +171,22 @@ _CLASSIFY_PROMPT = """\
 Je ontvangt {n} afbeeldingen. Elke afbeelding is één pagina van een PDF.
 Afbeelding 1 = Pagina 1, Afbeelding 2 = Pagina 2, …, Afbeelding {n} = Pagina {n}.
 
-Geef voor elke pagina aan of ze visuele content bevatten.
-Visuele content = diagram, ERD, UI-mockup, wireframe, Figma-design,
-deployment/component/sequence diagram, grafiek of schermontwerp.
-Tekstpagina's bevatten alleen lopende tekst, bullet lists of tabellen.
+Geef voor elke pagina aan of ze ECHTE visuele content bevatten.
+
+VISUEEL (telt mee) — de pagina bevat minstens één van:
+  • Een diagram met vormen, pijlen of verbindingen (ERD, sequence, component, deployment)
+  • Een UI-mockup, wireframe of Figma-schermontwerp met herkenbare interface-elementen
+  • Een grafiek of technisch schermontwerp
+
+GEEN VISUEEL (telt NIET mee) — de pagina bestaat uitsluitend uit:
+  • Lopende tekst, titels of subtitels
+  • Bullet lists, genummerde lijsten of acceptance-criteria opsommingen
+  • Tabellen van tekstuele data (ook als ze gekleurde headers hebben)
+  • Requirements, business rules, NFR's of AC's als tekstblokken
+  • Paginatitels, inhoudsopgave of sectiekoppen
+
+Twijfelregel: als de pagina ALLEEN tekst, lijsten of tekst-tabellen bevat —
+ook met opmaak, kleur of kaders — dan is het GEEN visuele pagina.
 
 Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
 {{"visual_pages": [<paginanummers met visuele content>]}}
@@ -184,18 +196,32 @@ Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
 _CROP_PROMPT = """\
 Je ontvangt één afbeelding: pagina {page} van een PDF.
 
-Zoek alle afzonderlijke visuele frames op deze pagina.
-Een visueel frame is een diagram, UI-mockup, wireframe of schermontwerp dat
-duidelijk visueel afgebakend is (bv. door een kader, achtergrondkleur of whitespace).
+Zoek alle afzonderlijke VISUELE frames op deze pagina.
 
-Voor elk frame:
+Een VISUEEL frame IS:
+  • Een diagram met vormen, pijlen of verbindingen (ERD, sequence, component, deployment)
+  • Een UI-mockup, wireframe of Figma-schermontwerp met interface-elementen (knoppen, velden, menu's)
+
+Een VISUEEL frame is NIET:
+  • Een tekstblok, lijst of tabel van tekst — ook niet met gekleurde achtergrond of kaders
+  • Acceptance criteria, requirements of business rules als tekst
+  • Titels, subtitels of sectiekoppen
+  • Tekst-rijen in een tabel
+
+Als de pagina ALLEEN tekst, lijsten of tekst-tabellen bevat, geef dan "designs": [] terug.
+
+Voor elk ECHT visueel frame:
 1. Lees de TITEL exact zoals zichtbaar in of direct boven het frame — verzin niets.
-2. Bepaal de crop-box: ALLEEN het visuele frame zelf.
-   Sluit uit: paginaheader, sectienummer (bv. "2."), titeltekst boven het frame,
-   beschrijvingstekst onder het frame, paginanummer en omringende witruimte.
+2. Bepaal de crop-box: de TITEL + eventuele korte beschrijvingstekst direct onder de titel
+   + het visuele frame zelf, als één geheel.
+   De bovenkant van de crop begint bij de titeltekst direct boven het frame.
+   Sluit uit: paginaheader, sectienummer (bv. "2."), paginanummer,
+   en alle witruimte en andere content ver buiten het frame+titel blok.
    Waarden zijn fracties 0.0–1.0 van de paginagrootte.
-   top = bovenkant frame, bottom = onderkant frame,
-   left = linkerkant frame, right = rechterkant frame.
+   top = bovenkant van de titel boven het frame,
+   bottom = onderkant van het visuele frame (niet verder),
+   left = linkerkant van het frame/titel blok (krap, zonder brede marges),
+   right = rechterkant van het frame/titel blok (krap, zonder brede marges).
 
 Geef ALLEEN dit JSON object terug (geen uitleg, geen code block):
 {{
