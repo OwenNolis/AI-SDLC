@@ -1506,11 +1506,26 @@ def _inject_images_into_ta(ta_markdown: str, images: dict[str, list[str]]) -> st
 
 
 def _extract_title(fa_content: str, fallback: str) -> str:
-    """Haal de feature titel uit de eerste # heading van de FA."""
+    """
+    Haal de feature naam uit de eerste # heading van de FA en bouw er een
+    TA-titel van: "Technische Analyse - <naam>".
+
+    Strips het "Feature-<id>:" prefix en vervangt "Functionele analyse" door
+    "Technische Analyse".
+    """
+    import re as _re
     for line in fa_content.splitlines():
         if line.startswith("# "):
-            return line[2:].strip()
-    return fallback
+            raw = line[2:].strip()
+            # Verwijder "Feature-<id>:" prefix (bv. "Feature-feature-011-foo: ")
+            raw = _re.sub(r'^Feature-[^:]+:\s*', '', raw, flags=_re.IGNORECASE)
+            # Vervang "Functionele analyse" (varianten) door "Technische Analyse"
+            raw = _re.sub(r'Functionele\s+[Aa]nalyse', 'Technische Analyse', raw)
+            # Zorg dat het altijd begint met "Technische Analyse"
+            if not raw.lower().startswith("technische analyse"):
+                raw = f"Technische Analyse - {raw}"
+            return raw
+    return f"Technische Analyse - {fallback}"
 
 
 # ── Graph ──────────────────────────────────────────────────────────────────────
