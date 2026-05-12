@@ -122,12 +122,12 @@ jobs:
           # In --full mode, also include all source files not in the diff
           if [ "$MODE" = "full" ]; then
             FULL_CONTENT=""
-            find backend/src/main -name "*.java" 2>/dev/null | while read -r f; do
-              FULL_CONTENT="${FULL_CONTENT}\n\n### File: ${f}\n\`\`\`java\n$(cat "$f" | head -150)\n\`\`\`"
-            done
-            find frontend/src -name "*.tsx" -o -name "*.ts" 2>/dev/null | while read -r f; do
-              FULL_CONTENT="${FULL_CONTENT}\n\n### File: ${f}\n\`\`\`typescript\n$(cat "$f" | head -150)\n\`\`\`"
-            done
+            while IFS= read -r f; do
+              FULL_CONTENT="${FULL_CONTENT}\n\n### File: ${f}\n\`\`\`java\n$(head -150 "$f")\n\`\`\`"
+            done < <(find backend/src/main -name "*.java" 2>/dev/null)
+            while IFS= read -r f; do
+              FULL_CONTENT="${FULL_CONTENT}\n\n### File: ${f}\n\`\`\`typescript\n$(head -150 "$f")\n\`\`\`"
+            done < <(find frontend/src \( -name "*.tsx" -o -name "*.ts" \) 2>/dev/null)
             DIFF_CONTENT="${DIFF_CONTENT}${FULL_CONTENT}"
           fi
 
