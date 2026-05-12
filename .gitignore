@@ -15,5 +15,4 @@ ai_suggestions.md
 compilation_errors.log
 test_failures.log
 sonar_issues.json
-docs/.DS_Store
-docs/functional-analysis/.DS_Store
+**/.DS_Store
