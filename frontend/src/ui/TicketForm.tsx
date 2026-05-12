@@ -41,7 +41,7 @@ export function TicketForm({ loading, error, onSubmit }: Props) {
   );
 
   const fieldError = (name: keyof TicketFormValues) =>
-    clientErrors[name] ?? serverFieldErrors.get(name as string) ?? null;
+    clientErrors[name] ?? serverFieldErrors.get(name) ?? null;
 
   return (
     <form

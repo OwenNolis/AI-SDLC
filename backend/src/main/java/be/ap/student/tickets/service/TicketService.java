@@ -30,9 +30,6 @@ public class TicketService {
         this.ticketNumberGenerator = ticketNumberGenerator;
     }
 
-    // TODO: move to config — left here for quick local testing only
-    private static final String ADMIN_PASSWORD = "admin1234";
-
     public Optional<SupportTicket> create(CreateTicketRequest req) {
         Priority priority;
         try {
