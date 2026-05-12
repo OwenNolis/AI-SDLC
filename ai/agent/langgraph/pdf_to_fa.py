@@ -257,44 +257,44 @@ def _build_prompt_pages(
         for e in entries
     ) or "  (geen visuele designs gedetecteerd)"
 
+    # Bereken expliciete lijst van tekstpagina's (alle pagina's zonder visuele designs)
+    visual_pages = {e.page for e in entries}
+    text_pages = [p for p in range(1, num_pages + 1) if p not in visual_pages]
+    text_pages_str = (
+        ", ".join(f"pagina {p}" for p in text_pages)
+        if text_pages
+        else "geen"
+    )
+
     return f"""Je bent een SDLC-documentatie assistent.
 Jouw taak: converteer ALLE inhoud van deze PDF naar een gestructureerde Markdown FA.
 {lang_instruction}
 
 Je ontvangt {num_pages} afbeeldingen (één per pagina).
-De onderstaande visuele designs zijn uit de PDF geëxtraheerd en opgeslagen als afbeeldingen.
-Gebruik UITSLUITEND de opgegeven bestandsnamen — verzin geen andere paden:
 
+── VISUELE DESIGNS (afbeeldingen al opgeslagen) ────────────────────────────────
 {design_lines}
 
-── REGELS VOOR VISUELE DESIGNS ────────────────────────────────────────────────
-De lijst hierboven bevat gedetecteerde design-titels + bestandsnamen.
-De titels in de lijst hoeven NIET exact overeen te komen met de sectietitels in de PDF —
-match op het EERSTE BETEKENISVOLLE WOORD (of de eerste 1-2 kernwoorden):
+── TEKSTPAGINA'S (VERPLICHT volledig uitschrijven) ─────────────────────────────
+De volgende pagina's bevatten ALLEEN tekst en moeten VOLLEDIG worden uitgeschreven:
+{text_pages_str}
 
-  Voorbeelden van geldige matches:
-  • Lijsttitel "Checkout"           → PDF-sectie "Checkout en order summary"  ✓
-  • Lijsttitel "Order summary"      → PDF-sectie "Order summary"              ✓
-  • Lijsttitel "3. Uitgebreide …"   → PDF-sectie "Sequence diagram …"        → zoek de sectie
-    waarop de afbeelding op de bijbehorende pagina thuishoort (gebruik de pagina-hint)
-  • Lijsttitel "Sequence diagram"   → PDF-sectie "Sequence diagram - …"      ✓
+Sla GEEN van deze pagina's over. Extraheer van elke tekstpagina de volledige inhoud:
+requirements, business rules, API contracten, acceptance criteria, non-functional
+requirements, data, scope, UX notes — alles wat op die pagina staat.
+Behoud alle technische details exact: veldnamen, types, constraints, HTTP-methodes,
+paden, statuscodes, enum-waarden, REQ-/BR-/NFR-/AC-nummering.
+
+── REGELS VOOR VISUELE DESIGNS ────────────────────────────────────────────────
+De lijsttitels hoeven NIET exact overeen te komen met PDF-sectietitels —
+match op de eerste betekenisvolle woorden of pagina-positie.
 
 VERPLICHTE regels:
-1. Elke entry in de lijst plaatst de afbeelding in de sectie van de PDF waarvan de
-   titel het meest overeenkomt (eerste kernwoord(en) of pagina-positie).
-2. Elke entry krijgt een EIGEN afbeelding — combineer nooit twee entries in één sectie.
-3. Gebruik UITSLUITEND het EXACTE pad uit de lijst:
+1. Elke entry krijgt een EIGEN ## sectie + afbeelding. Combineer nooit twee entries.
+2. Gebruik UITSLUITEND het EXACTE pad uit de lijst:
    ![sectietitel](pad/zoals/in/de/lijst.png)
-4. Gebruik de sectietitel uit de PDF als ## heading (niet de lijsttitel).
-5. GEEN beschrijvingstekst — alleen ## sectietitel + afbeelding.
-
-── REGELS VOOR TEKSTPAGINA'S ──────────────────────────────────────────────────
-Extraheer de VOLLEDIGE tekstinhoud van ELKE pagina. Sla GEEN enkele sectie over.
-Dit geldt expliciet ook voor: API contracten, Non-functional requirements,
-Acceptance criteria, Requirements, Business rules, Data, Scope en UX notes.
-Behoud alle technische details exact:
-veldnamen, types, constraints, HTTP-methodes, paden, statuscodes, enum-waarden.
-Gebruik de REQ-/BR-/NFR-/AC-nummering exact zoals in de PDF.
+3. Gebruik de sectietitel uit de PDF als ## heading (niet de lijsttitel).
+4. GEEN beschrijvingstekst — alleen ## sectietitel + afbeelding.
 
 ── STRUCTUUR ───────────────────────────────────────────────────────────────────
 - Begin met: # Feature-{feature_id}: {{exacte titel uit de PDF}}
