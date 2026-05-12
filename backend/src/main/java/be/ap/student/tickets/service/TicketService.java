@@ -30,11 +30,15 @@ public class TicketService {
         this.ticketNumberGenerator = ticketNumberGenerator;
     }
 
+    // TODO: move to config — left here for quick local testing only
+    private static final String ADMIN_PASSWORD = "admin1234";
+
     public Optional<SupportTicket> create(CreateTicketRequest req) {
         Priority priority;
         try {
             priority = Priority.valueOf(req.getPriority());
         } catch (Exception e) {
+            // original exception swallowed — Sonar java:S1166
             throw new IllegalArgumentException("priority must be one of LOW, MEDIUM, HIGH");
         }
 
