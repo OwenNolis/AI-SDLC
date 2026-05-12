@@ -141,7 +141,7 @@ jobs:
         id: validation
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL:   ${{ vars.GEMINI_MODEL }}
+          GEMINI_MODEL:   ${{ vars.FEATURE_VALIDATION_MODEL }}
           FA_PATH:        ${{ steps.docs.outputs.fa_path }}
           TA_PATH:        ${{ steps.docs.outputs.ta_path }}
           MODE:           ${{ steps.parse.outputs.mode }}
