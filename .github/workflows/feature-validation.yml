@@ -255,7 +255,7 @@ jobs:
           HTTP_CODE="$(curl -sS -o /tmp/gemini.json -w "%{http_code}" \
             -H "Content-Type: application/json" \
             -H "x-goog-api-key: ${GEMINI_API_KEY}" \
-            "https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateContent" \
+            "https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent" \
             -d "$REQUEST_JSON" || true)"
 
           echo "Gemini HTTP status: $HTTP_CODE"
