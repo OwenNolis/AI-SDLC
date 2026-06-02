@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createTicket } from "../api/ticket";
 import type { CreateTicketResponse } from "../api/ticket";
-import type { ApiError } from "../api/http";
+import { HttpError, type ApiError } from "../api/http";
 import { TicketForm } from "../ui/TicketForm";
 import type { TicketFormValues } from "../ui/TicketForm";
 
@@ -16,8 +16,33 @@ export function TicketCreatePage() {
     try {
       const res = await createTicket(values);
       setSuccess(res);
-    } catch (e) {
-      setError(e as ApiError);
+    } catch (e: unknown) {
+      if (e instanceof HttpError) {
+        // Explicitly create an ApiError object from HttpError properties
+        // to satisfy SonarQube rule typescript:S4325 if HttpError doesn't formally implement ApiError.
+        setError({
+          correlationId: e.correlationId,
+          code: e.code,
+          message: e.message,
+          fieldErrors: e.fieldErrors,
+        });
+      } else if (e instanceof Error) {
+        // For generic JS errors, create a basic ApiError structure
+        setError({
+          correlationId: "unknown",
+          code: "CLIENT_ERROR",
+          message: e.message,
+          fieldErrors: [],
+        });
+      } else {
+        // Fallback for truly unexpected non-Error throws
+        setError({
+          correlationId: "unknown",
+          code: "UNKNOWN_ERROR",
+          message: "An unexpected error occurred.",
+          fieldErrors: [],
+        });
+      }
     } finally {
       setLoading(false);
     }
