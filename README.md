@@ -235,25 +235,101 @@ Een drielaagse kwaliteitsloop die volledig zonder menselijke interventie draait:
 
 ### Feature 3 — PR Validatie
 
-Via een PR-commentaar (`/validate-feature-011`) valideert de workflow automatisch of de code in de PR de requirements uit de FA en TA correct implementeert. Het rapport bevat per REQ/BR/AC/NFR een status (✅/⚠️/❌) en een eindverdict `PASS`, `PARTIAL` of `FAIL`.
+Op elk moment kan een developer een PR-commentaar plaatsen om te controleren of de geïmplementeerde code overeenkomt met de originele analyses. De `feature-validation.yml` workflow leest automatisch de FA en TA op uit `docs/functional-analysis/` en `docs/technical-analysis/`, verzamelt de code-context van de gewijzigde bestanden in de PR, en stuurt alles naar Gemini.
+
+**Twee modi:**
+- **Standaard** (`/validate-feature-011`) — stuurt de volledige bestandsinhoud van enkel de gewijzigde PR-bestanden naar Gemini. Meest geschikt voor gerichte validatie van een specifieke implementatie.
+- **Full** (`/validate-feature-011 --full`) — includeert ook de eerste 150 regels van alle Java- en TypeScript-bronbestanden in de repo. Geschikt voor een globaal overzicht van de implementatiestatus.
+
+**Wat het rapport controleert:**
+
+| Sectie | Bron | Wat wordt gecontroleerd |
+|--------|------|------------------------|
+| Requirements (REQ-xxx) | FA | Geïmplementeerd / ontbrekend / gedeeltelijk |
+| Business Rules (BR-xxx) | FA | Afgedwongen / ontbrekend / gedeeltelijk |
+| Acceptance Criteria (AC-xxx) | FA | Gedekt / niet gedekt / gedeeltelijk |
+| Non-Functional Requirements (NFR-xxx) | FA | Aanwezig / ontbrekend / gedeeltelijk |
+| API Contracts | TA | Paden, methodes, request/response, statuscodes |
+| Domain Model & Database | TA | Entiteiten, velden, relaties, constraints |
+| Backend Design | TA | Controller/service/repository-structuur |
+| Frontend Design | TA | Componenten en routes |
+| **Eindverdict** | FA + TA + code | **PASS / PARTIAL / FAIL** |
+
+De workflow reageert met een 👍-reactie op het commentaar en plaatst het volledige rapport als nieuw PR-commentaar binnen 1–2 minuten. De validatie blokkeert nooit een merge — het rapport is puur informatief.
 
 ---
 
 ### Feature 4 — Dependabot PR + Jira Issues
 
-Koppelt het dependency-update-proces aan Jira en AI-review. Dependabot-PRs krijgen automatisch een Jira-ticket dat na het mergen automatisch wordt gesloten. Gemini beoordeelt elke update op risico en breaking changes. Veilige patch-updates worden automatisch gemerged.
+Koppelt het dependency-update-proces aan Jira en AI-review. Dependabot detecteert dagelijks verouderde afhankelijkheden (Maven, npm, GitHub Actions) en opent automatisch PRs.
+
+**`dependabot-jira.yml`** zorgt voor de Jira-koppeling:
+- Bij het openen van een Dependabot-PR wordt automatisch een Jira Task aangemaakt via de Jira REST API (v3, ADF-formaat) met de PR-titel, body en een directe link naar de PR.
+- De Jira issue-key wordt als commentaar op de PR geplaatst (`🎫 Jira task created: [ABC-123]`).
+- Wanneer de PR wordt gemerged of gesloten, zoekt de workflow het Jira-commentaar op, haalt de beschikbare transities op en sluit het ticket automatisch via de `Closed` of `Done` transitie.
+- De aanmaak is idempotent: als er al een Jira-commentaar bestaat voor de PR, wordt de aanmaak overgeslagen.
+
+**`dependabot-automation.yml`** verzorgt de AI-review en auto-merge:
+- Gemini ontvangt de PR-titel, body en een diff-samenvatting en genereert een gestructureerde Markdown-review met risicoclassificatie (`LOW`/`MEDIUM`/`HIGH`), een inschatting van breaking changes, verificatiestappen en een aanbeveling.
+- Bij `APPROVE` wordt de PR automatisch goedgekeurd. Bij `semver-patch` + groene CI + `APPROVE` wordt de PR automatisch gemerged.
+- `MINOR`- en `MAJOR`-updates krijgen altijd `HOLD` en vereisen handmatige review.
+- Fallback zonder Gemini: `semver-patch` → `APPROVE`, alles anders → `HOLD`.
 
 ---
 
 ### Feature 5 — Docker Deployment & Packages
 
-Na een geslaagde Quality Gate bouwt de CI-pipeline automatisch Docker-images voor backend en frontend en publiceert deze naar GHCR. Elke push naar `main` resulteert in een verse deploymentmet zowel een `:latest` als een specifiek `:git-sha` tag voor rollbacks.
+De Docker-integratie is volledig onderdeel van de centrale CI-workflow (`ci.yml`) en wordt enkel uitgevoerd bij een directe push naar `main` — niet bij PRs — en enkel als de SonarCloud Quality Gate is geslaagd.
+
+**Wat er gebeurt bij elke succesvolle push naar `main`:**
+
+1. **Backend packaging** — `mvn package -DskipTests` bouwt een uitvoerbaar JAR-bestand.
+2. **Frontend build** — `npm run build` compileert de React-applicatie naar statische bestanden.
+3. **Docker login** — inloggen op GitHub Container Registry (GHCR) via het automatische `GITHUB_TOKEN`.
+4. **Backend image bouwen en pushen** — op basis van `backend/Dockerfile` (Eclipse Temurin 21 JRE Alpine, poort 9090). Getagd als `:latest` én `:<git-sha>`.
+5. **Frontend image bouwen en pushen** — op basis van `frontend/Dockerfile` (nginx-alpine, poort 80). Getagd als `:latest` én `:<git-sha>`.
+6. **Deployment** — `docker compose pull && docker compose up -d` haalt de nieuwe images op en herstart de containers.
+
+**Tagging-strategie:**  
+Elke image krijgt twee tags: `:latest` voor de meest recente versie en `:<git-sha>` voor een exacte, reproduceerbare versie die gebruikt kan worden voor rollbacks. De `docker-compose.yml` krijgt tijdens de deployment de volledige `ghcr.io/<owner>/<image>:<git-sha>`-referentie als omgevingsvariabele mee zodat altijd de exacte nieuwe versie wordt uitgerold.
 
 ---
 
 ### Feature 6 — Parent/Child Repository Patroon
 
-Deze repository is de **parent**: alle workflow-logica, scripts en AI-tooling leven hier centraal. Child-repositories bevatten alleen applicatiecode en vijf dunne caller-workflows (elk 10-15 regels) die via GitHub's reusable workflows-mechanisme volledig delegeren aan de parent. Scripts worden bij elke run automatisch opgehaald via sparse-checkout. Updates aan de parent gelden automatisch voor alle child-repos.
+Dit patroon lost het onderhoudsprobleem van gedupliceerde CI-logica op. Alle workflow-intelligentie (AI-scripts, prompts, schema's, shell-utilities, testgeneratoren) leeft uitsluitend in deze **parent repository**. Een child-repository bevat enkel applicatiecode en vijf dunne caller-workflows.
+
+**Hoe de koppeling werkt:**
+
+Elke caller-workflow in een child repo delegeert volledig via GitHub's `workflow_call` mechanisme:
+
+```yaml
+# In child repo: .github/workflows/ci.yml (volledig bestand, ~15 regels)
+jobs:
+  ci:
+    uses: OwenNolis/AI-SDLC/.github/workflows/ci.yml@main
+    secrets: inherit
+    with:
+      FEATURE_ID: ${{ vars.FEATURE_ID }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+      # ...
+```
+
+De vijf caller-workflows in een child repo zijn: `ci.yml`, `ai-code-fixes.yml`, `sonarcloud.yml`, `dependabot-jira.yml` en `dependabot-automation.yml`.
+
+**Hoe AI-scripts de child repo bereiken:**  
+De parent CI-workflow doet een tweede sparse-checkout van zichzelf tijdens de uitvoering in de child-context:
+
+```
+Checkout AI-SDLC tools → .sdlc-tools/
+  - .github/scripts/       ← shell utilities
+  - .github/ai-fix-config.env
+  - ai/                    ← flow.sh, testgeneratoren, prompts, schema's
+```
+
+De scripts komen tijdelijk in `.sdlc-tools/` terecht in de werkruimte van de child. Ze worden nooit opgeslagen in de child repo. Bij elke run wordt de nieuwste versie uit de parent opgehaald — een update in de parent is onmiddellijk van kracht in alle child repos zonder dat er iets in de child hoeft te worden aangepast.
+
+**Wat nooit in een child repo staat:** alle workflow-logica, AI-scripts, prompts, schema's, testgeneratoren, de validator en de child-repo-templates zelf.
 
 ---
 
