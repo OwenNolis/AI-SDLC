@@ -4,10 +4,11 @@
  * - Feature: feature-011-preworkout-website
  * - Source: docs/test-scenarios/feature-011-preworkout-website.flow.json
  */
+declare const require: NodeRequire;
 
-import { render, screen } from "@testing-library/react";
-import { fireEvent } from "@testing-library/dom";
-import { TicketForm } from "../TicketForm";
+const { render, screen } = require("@testing-library/react");
+const { fireEvent } = require("@testing-library/dom");
+const { TicketForm } = require("../TicketForm");
 
 describe("feature-011-preworkout-website - generated UI tests", () => {
   test("submit disabled when form invalid", () => {
@@ -47,6 +48,6 @@ describe("feature-011-preworkout-website - generated UI tests", () => {
     render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
 
     fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
-    expect(screen.getAllByRole("alert").map(a => a.textContent).join(" ")).toMatch(/at least 5/i);
+    expect(screen.getAllByRole("alert").map((a: HTMLElement) => a.textContent).join(" ")).toMatch(/at least 5/i);
   });
 });
