@@ -47,6 +47,6 @@ describe("feature-011-preworkout-website - generated UI tests", () => {
     render(<TicketForm loading={false} error={null} onSubmit={onSubmit} />);
 
     fireEvent.change(screen.getByLabelText(/subject/i), { target: { value: "abc" } });
-    expect(screen.getAllByRole("alert").map(a => a.textContent).join(" ")).toMatch(/at least 5/i);
+    expect(screen.getAllByRole("alert").map((a: HTMLElement) => a.textContent).join(" ")).toMatch(/at least 5/i);
   });
 });
