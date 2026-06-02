@@ -1,9 +1,10 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.app.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "types": ["jest", "@testing-library/jest-dom"],
-    "esModuleInterop": true
+    "types": ["vite/client", "jest", "@testing-library/jest-dom"],
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
