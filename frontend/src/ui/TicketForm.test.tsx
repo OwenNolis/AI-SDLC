@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react"; // OLD IMPORT - WILL CAUSE MODULE ERROR
+import { render, screen, fireEvent } from "@testing-library/react";
+import { test, expect, jest } from '@jest/globals';
 import { TicketForm } from "./TicketForm";
 
 test("submit disabled when invalid", () => {
