@@ -1,5 +1,6 @@
+import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import { HttpError, postJson } from "./http";
-import type { ApiError } from "./http";
+type ApiError = import("./http").ApiError;
 
 // ── HttpError ──────────────────────────────────────────────
 

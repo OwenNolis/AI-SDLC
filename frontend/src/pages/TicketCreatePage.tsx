@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createTicket } from "../api/ticket";
 import type { CreateTicketResponse } from "../api/ticket";
-import type { ApiError } from "../api/http";
+import { HttpError, type ApiError } from "../api/http";
 import { TicketForm } from "../ui/TicketForm";
 import type { TicketFormValues } from "../ui/TicketForm";
 
@@ -17,7 +17,24 @@ export function TicketCreatePage() {
       const res = await createTicket(values);
       setSuccess(res);
     } catch (e) {
-      setError(e as ApiError);
+      // Implement robust type guarding for error handling.
+      // If 'e' is an HttpError (which implements ApiError), set it directly.
+      // Otherwise, create a generic ApiError for other types of errors.
+      if (e instanceof HttpError) {
+        setError(e);
+      } else if (e instanceof Error) {
+        setError({
+          correlationId: "unknown",
+          code: "CLIENT_ERROR",
+          message: e.message || "An unexpected client-side error occurred.",
+        });
+      } else {
+        setError({
+          correlationId: "unknown",
+          code: "UNKNOWN_ERROR",
+          message: "An entirely unknown error occurred.",
+        });
+      }
     } finally {
       setLoading(false);
     }

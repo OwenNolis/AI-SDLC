@@ -7,6 +7,7 @@
 
 import { render, screen } from "@testing-library/react";
 import { fireEvent } from "@testing-library/dom";
+import { describe, test, expect, jest } from '@jest/globals';
 import { TicketForm } from "../TicketForm";
 
 describe("feature-001-support-ticket - generated UI tests", () => {
