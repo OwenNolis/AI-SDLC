@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createTicket } from "../api/ticket";
 import type { CreateTicketResponse } from "../api/ticket";
-import type { ApiError } from "../api/http";
+import { HttpError, type ApiError } from "../api/http";
 import { TicketForm } from "../ui/TicketForm";
 import type { TicketFormValues } from "../ui/TicketForm";
 
@@ -16,8 +16,18 @@ export function TicketCreatePage() {
     try {
       const res = await createTicket(values);
       setSuccess(res);
-    } catch (e) {
-      setError(e as ApiError);
+    } catch (e: unknown) {
+      if (e instanceof HttpError) {
+        // HttpError wraps an ApiError. Assign the wrapped ApiError object.
+        // Assuming HttpError has a public 'apiError' property that holds the original ApiError.
+        setError(e.apiError);
+      } else if (e instanceof Error) {
+        // For generic Error objects
+        setError({ code: 'CLIENT_ERROR', message: e.message });
+      } else {
+        // For anything else, convert to a string message
+        setError({ code: 'UNKNOWN_ERROR', message: String(e) });
+      }
     } finally {
       setLoading(false);
     }
