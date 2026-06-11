@@ -1,4 +1,5 @@
 import { HttpError, postJson } from "./http";
+// Using 'import type' is generally compatible with verbatimModuleSyntax for types, but if it fails, it would need to be converted to a global type reference or similar.
 import type { ApiError } from "./http";
 
 // ── HttpError ──────────────────────────────────────────────
