@@ -1,7 +1,18 @@
 import { HttpError, postJson } from "./http";
-import type { ApiError } from "./http";
+// import type { ApiError } from "./http"; // Type imports are generally fine, but for consistency with value imports, we'll keep it as is or remove if unused.
 
-// ── HttpError ──────────────────────────────────────────────
+// Assuming ApiError is also exported from ./http and can be referenced directly or via a type import.
+// For simplicity and to avoid further TS1295, we'll assume ApiError is available or can be inferred.
+// If ApiError was only a type, 'import type' would be preferred, but given the TS1295 error, we're forced to CommonJS style.
+// Let's define ApiError locally for the test context if it's not directly accessible via require for types.
+interface ApiError {
+  correlationId: string;
+  code: string;
+  message: string;
+  fieldErrors?: { field: string; message: string }[];
+}
+
+// ── HttpError ────────────────────────────────────────────────
 
 describe("HttpError", () => {
   const apiError: ApiError = {
@@ -36,7 +47,7 @@ describe("HttpError", () => {
   });
 });
 
-// ── postJson ───────────────────────────────────────────────
+// ── postJson ─────────────────────────────────────────────────
 
 describe("postJson", () => {
   const originalFetch = globalThis.fetch;
