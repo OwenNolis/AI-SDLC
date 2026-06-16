@@ -5,9 +5,8 @@
  * - Source: docs/test-scenarios/feature-001-support-ticket.flow.json
  */
 
-import { render, screen } from "@testing-library/react";
-import { fireEvent } from "@testing-library/dom";
-import { TicketForm } from "../TicketForm";
+const { render, screen, fireEvent } = require("@testing-library/react");
+const { TicketForm } = require("../TicketForm");
 
 describe("feature-001-support-ticket - generated UI tests", () => {
   test("submit disabled when form invalid", () => {

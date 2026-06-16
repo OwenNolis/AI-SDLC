@@ -1,5 +1,5 @@
-import { HttpError, postJson } from "./http";
 import type { ApiError } from "./http";
+const { HttpError, postJson } = require("./http");
 
 // ── HttpError ──────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react"; // OLD IMPORT - WILL CAUSE MODULE ERROR
-import { TicketForm } from "./TicketForm";
+const { render, screen, fireEvent } = require("@testing-library/react");
+const { TicketForm } = require("./TicketForm");
 
 test("submit disabled when invalid", () => {
   const onSubmit = jest.fn();

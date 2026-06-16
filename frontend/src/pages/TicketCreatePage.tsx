@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createTicket } from "../api/ticket";
 import type { CreateTicketResponse } from "../api/ticket";
+import { HttpError } from "../api/http";
 import type { ApiError } from "../api/http";
 import { TicketForm } from "../ui/TicketForm";
 import type { TicketFormValues } from "../ui/TicketForm";
@@ -16,8 +17,22 @@ export function TicketCreatePage() {
     try {
       const res = await createTicket(values);
       setSuccess(res);
-    } catch (e) {
-      setError(e as ApiError);
+    } catch (e: unknown) {
+      if (e instanceof HttpError) {
+        setError(e);
+      } else if (e instanceof Error) {
+        setError({
+          correlationId: "unknown",
+          code: "CLIENT_ERROR",
+          message: e.message,
+        });
+      } else {
+        setError({
+          correlationId: "unknown",
+          code: "CLIENT_ERROR",
+          message: String(e),
+        });
+      }
     } finally {
       setLoading(false);
     }
