@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createTicket } from "../api/ticket";
 import type { CreateTicketResponse } from "../api/ticket";
+import { HttpError } from "../api/http"; // Import HttpError for runtime instanceof check
 import type { ApiError } from "../api/http";
 import { TicketForm } from "../ui/TicketForm";
 import type { TicketFormValues } from "../ui/TicketForm";
@@ -17,7 +18,25 @@ export function TicketCreatePage() {
       const res = await createTicket(values);
       setSuccess(res);
     } catch (e) {
-      setError(e as ApiError);
+      if (e instanceof HttpError) {
+        setError(e);
+      } else if (e instanceof Error) {
+        // For generic JS errors, create a basic ApiError structure
+        setError({
+          correlationId: "unknown", // A real app might generate a UUID here
+          code: "CLIENT_ERROR",
+          message: e.message,
+          fieldErrors: [],
+        });
+      } else {
+        // Fallback for truly unknown error types
+        setError({
+          correlationId: "unknown",
+          code: "UNKNOWN_ERROR",
+          message: "An unexpected error occurred.",
+          fieldErrors: [],
+        });
+      }
     } finally {
       setLoading(false);
     }
