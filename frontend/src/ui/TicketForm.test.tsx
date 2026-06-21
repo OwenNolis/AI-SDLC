@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react"; // OLD IMPORT - WILL CAUSE MODULE ERROR
+import { render, screen } from "@testing-library/react";
+import { fireEvent } from "@testing-library/dom"; // Aligning with generated tests for fireEvent
 import { TicketForm } from "./TicketForm";
 
 test("submit disabled when invalid", () => {
